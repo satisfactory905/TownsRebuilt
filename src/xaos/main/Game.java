@@ -67,6 +67,7 @@ import xaos.tiles.terrain.Terrain;
 import xaos.tiles.terrain.TerrainManager;
 import xaos.utils.AStarQueue;
 import xaos.utils.ColorGL;
+import xaos.utils.HitDetection;
 import xaos.utils.Log;
 import xaos.utils.Messages;
 import xaos.utils.Names;
@@ -1079,8 +1080,9 @@ public final class Game {
 					// Primero miramos que no haya un contextmenu
 					if (getCurrentState () == STATE_SHOWING_CONTEXT_MENU) {
 						// Context menu, miramos donde clica
-						if (mouseX >= getCurrentContextMenu ().getX () && mouseX < (getCurrentContextMenu ().getX () + getCurrentContextMenu ().getWidth ()) && mouseY >= getCurrentContextMenu ().getY () && mouseY < (getCurrentContextMenu ().getY () + getCurrentContextMenu ().getHeight ())) {
-							getCurrentContextMenu ().mousePressed (mouseX - getCurrentContextMenu ().getX (), mouseY - getCurrentContextMenu ().getY ());
+						ContextMenu ctx = getCurrentContextMenu ();
+						if (HitDetection.isPointInRect (mouseX, mouseY, ctx.getX (), ctx.getY (), ctx.getWidth (), ctx.getHeight ())) {
+							ctx.mousePressed (mouseX - ctx.getX (), mouseY - ctx.getY ());
 						} else {
 							// Cierra el menu
 							deleteCurrentContextMenu ();
@@ -1147,7 +1149,8 @@ public final class Game {
 				if (mouseX < BORDE) {
 					if (Game.isMouseScrollEarsON () || !UIPanel.isMouseCloseToOpenCloseProductionIcon (mouseX, mouseY)) {
 						if (getCurrentState () == STATE_SHOWING_CONTEXT_MENU) {
-							if (!(mouseX >= getCurrentContextMenu ().getX () && mouseX < (getCurrentContextMenu ().getX () + getCurrentContextMenu ().getWidth ()) && mouseY >= getCurrentContextMenu ().getY () && mouseY < (getCurrentContextMenu ().getY () + getCurrentContextMenu ().getHeight ()))) {
+							ContextMenu ctx = getCurrentContextMenu ();
+							if (!HitDetection.isPointInRect (mouseX, mouseY, ctx.getX (), ctx.getY (), ctx.getWidth (), ctx.getHeight ())) {
 								world.keyPressed (KeyMapper.KEY_NONE, UtilsKeyboard.FN_LEFT);
 							}
 						} else {
@@ -1158,7 +1161,8 @@ public final class Game {
 					// Miramos que no este cerca del boton de abrir/cerrar el menu
 					if (Game.isMouseScrollEarsON () || !UIPanel.isMouseCloseToOpenCloseMenuIcon (mouseX, mouseY)) {
 						if (getCurrentState () == STATE_SHOWING_CONTEXT_MENU) {
-							if (!(mouseX >= getCurrentContextMenu ().getX () && mouseX < (getCurrentContextMenu ().getX () + getCurrentContextMenu ().getWidth ()) && mouseY >= getCurrentContextMenu ().getY () && mouseY < (getCurrentContextMenu ().getY () + getCurrentContextMenu ().getHeight ()))) {
+							ContextMenu ctx = getCurrentContextMenu ();
+							if (!HitDetection.isPointInRect (mouseX, mouseY, ctx.getX (), ctx.getY (), ctx.getWidth (), ctx.getHeight ())) {
 								world.keyPressed (KeyMapper.KEY_NONE, UtilsKeyboard.FN_RIGHT);
 							}
 						} else {
@@ -1168,7 +1172,8 @@ public final class Game {
 				}
 				if (mouseY < BORDE) {
 					if (getCurrentState () == STATE_SHOWING_CONTEXT_MENU) {
-						if (!(mouseX >= getCurrentContextMenu ().getX () && mouseX < (getCurrentContextMenu ().getX () + getCurrentContextMenu ().getWidth ()) && mouseY >= getCurrentContextMenu ().getY () && mouseY < (getCurrentContextMenu ().getY () + getCurrentContextMenu ().getHeight ()))) {
+						ContextMenu ctx = getCurrentContextMenu ();
+						if (!HitDetection.isPointInRect (mouseX, mouseY, ctx.getX (), ctx.getY (), ctx.getWidth (), ctx.getHeight ())) {
 							world.keyPressed (KeyMapper.KEY_NONE, UtilsKeyboard.FN_UP);
 						}
 					} else {
@@ -1177,7 +1182,8 @@ public final class Game {
 				} else if (mouseY > (UtilsGL.getHeight () - BORDE - 1)) {
 					if (Game.isMouseScrollEarsON () || !UIPanel.isMouseCloseToOpenCloseBottomIcon (mouseX, mouseY)) {
 						if (getCurrentState () == STATE_SHOWING_CONTEXT_MENU) {
-							if (!(mouseX >= getCurrentContextMenu ().getX () && mouseX < (getCurrentContextMenu ().getX () + getCurrentContextMenu ().getWidth ()) && mouseY >= getCurrentContextMenu ().getY () && mouseY < (getCurrentContextMenu ().getY () + getCurrentContextMenu ().getHeight ()))) {
+							ContextMenu ctx = getCurrentContextMenu ();
+							if (!HitDetection.isPointInRect (mouseX, mouseY, ctx.getX (), ctx.getY (), ctx.getWidth (), ctx.getHeight ())) {
 								world.keyPressed (KeyMapper.KEY_NONE, UtilsKeyboard.FN_DOWN);
 							}
 						} else {
