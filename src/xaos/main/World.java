@@ -324,13 +324,6 @@ public final class World implements Externalizable {
 		globalEvents = new GlobalEventData ();
 		events = new ArrayList<EventData> ();
 
-		// Gods
-		// gods = new ArrayList<GodData> ();
-		// if (Game.GODS_ACTIVATED) {
-		// for (int i = 0; i < MapGenerator.NUM_GODS; i++) {
-		// addGod ();
-		// }
-		// }
 		setNumFloorsDiscovered (World.MAP_NUM_LEVELS_OUTSIDE + 1);
 
 		// Date
@@ -928,69 +921,6 @@ public final class World implements Externalizable {
 	}
 
 
-	// public ArrayList<GodData> getGods () {
-	// return gods;
-	// }
-	// private void addGod () {
-	// // Buscamos un god a random para meter
-	// // Si al cabo de X intentos no se consigue uno que no este en la lista, se recorre a manija la lista, uno a uno
-	//
-	// String sGodID;
-	// GodManagerItem gmi;
-	// int iTries = 100; // 100 randoms
-	// while (iTries > 0) {
-	// gmi = GodManager.getItemAtRandom ();
-	//
-	// if (gmi != null) {
-	// iTries--;
-	// sGodID = gmi.getId ();
-	//
-	// // Miramos que no exista
-	// boolean bExists = false;
-	// for (int g = 0; g < gods.size (); g++) {
-	// if (gods.get (g).getGodID ().equals (sGodID)) {
-	// // Ya existia
-	// bExists = true;
-	// break;
-	// }
-	// }
-	//
-	// if (bExists) {
-	// continue;
-	// }
-	//
-	// // Si llega aqui ya lo tenemos
-	// gods.add (gmi.getGodDataInstance ());
-	// return;
-	// }
-	// }
-	//
-	// // Si llega aqui nos recorreremos la lista de gods a manija
-	// HashMap<String, GodManagerItem> hmGods = GodManager.getAllItems ();
-	// Iterator<String> itGods = hmGods.keySet ().iterator ();
-	// while (itGods.hasNext ()) {
-	// gmi = hmGods.get (itGods.next ());
-	// sGodID = gmi.getId ();
-	// // Miramos que no exista
-	//
-	// boolean bExists = false;
-	// for (int g = 0; g < gods.size (); g++) {
-	// if (gods.get (g).getGodID ().equals (sGodID)) {
-	// // Ya existia
-	// bExists = true;
-	// break;
-	// }
-	// }
-	//
-	// if (bExists) {
-	// continue;
-	// }
-	//
-	// // Si llega aqui ya lo tenemos
-	// gods.add (gmi.getGodDataInstance ());
-	// return;
-	// }
-	// }
 	/**
 	 * Anade un evento a la lista, comprueba los prerequisitos y elimina los eventos a los que es immune
 	 * 
@@ -1713,11 +1643,6 @@ public final class World implements Externalizable {
 
 			// Events
 			checkEvents ();
-
-			// Gods
-			// if (Game.GODS_ACTIVATED) {
-			// checkGodsStatus ();
-			// }
 		}
 
 		// Recorremos los items lanzando el nextTurn en cada uno
@@ -1859,12 +1784,6 @@ public final class World implements Externalizable {
 				modifyHappiness (citizen);
 			}
 		}
-		// for (int i = 0; i < getSoldierIDs ().size (); i++) {
-		// citizen = (Citizen) getLivingEntityByID (getSoldierIDs ().get (i));
-		// if (citizen != null) {
-		// modifyHappiness (citizen);
-		// }
-		// }
 
 		calculateHappinessAverage ();
 
@@ -1872,11 +1791,6 @@ public final class World implements Externalizable {
 
 
 	private void modifyHappiness (Citizen citizen) {
-		// Soldiers doesn't receive happiness
-		// if (citizen.getSoldierData ().isSoldier ()) {
-		// return;
-		// }
-
 		Cell cell;
 		// Modificador por tarea
 		// POPO citizen.getCitizenData ().setHappiness (citizen.getCitizenData ().getHappiness () + Task.getHappiness (citizen.getCurrentTask ()));
@@ -1895,7 +1809,7 @@ public final class World implements Externalizable {
 								// Evitamos la infravision (teniendo en cuenta que si que hay camino hasta la misma casilla donde esta)
 								// if ((x == citizen.getX () && y == citizen.getY ()) || Utils.bresenhamLineExists (citizen.getX (), citizen.getY (), x, y, citizen.getZ (), LivingEntity.TYPE_CITIZEN) || Utils.bresenhamLineExists (x, y, citizen.getX (), citizen.getY (), citizen.getZ (), LivingEntity.TYPE_CITIZEN)) {
 								if ((x == citizen.getX () && y == citizen.getY ()) || Utils.bresenhamLineExists (citizen.getX (), citizen.getY (), x, y, citizen.getZ ()) || Utils.bresenhamLineExists (x, y, citizen.getX (), citizen.getY (), citizen.getZ ())) {
-									alItemsHappy.add (new Integer (imi.getHappiness ()));
+									alItemsHappy.add (Integer.valueOf (imi.getHappiness ()));
 								}
 							}
 						}
@@ -1959,7 +1873,7 @@ public final class World implements Externalizable {
 							iASZID = getCell (getZones ().get (i).getPoints ().get (p)).getAstarZoneID ();
 							if (iASZID != -1) {
 								// Zona libre
-								alASZID.add (new Integer (iASZID));
+								alASZID.add (Integer.valueOf (iASZID));
 								alZonesID.add (zonePersonal.getID ());
 								alZonesPoint.add (Point3DShort.getPoolInstance (getZones ().get (i).getPoints ().get (p)));
 								iQtty--;
@@ -2142,7 +2056,7 @@ public final class World implements Externalizable {
 				if (!bPrerequisitesOK) {
 					if (alLeavingHeroes == null) {
 						alLeavingHeroes = new ArrayList<Integer> ();
-						alLeavingHeroes.add (new Integer (hero.getID ()));
+						alLeavingHeroes.add (Integer.valueOf (hero.getID ()));
 					}
 				}
 			}
@@ -4422,9 +4336,9 @@ public final class World implements Externalizable {
 		HashMap<String, Integer> hmKilled = getEnemiesKilled ();
 		if (hmKilled.containsKey (sIniHeader)) {
 			Integer iCount = hmKilled.remove (sIniHeader);
-			hmKilled.put (sIniHeader, new Integer (iCount.intValue () + 1));
+			hmKilled.put (sIniHeader, Integer.valueOf (iCount.intValue () + 1));
 		} else {
-			hmKilled.put (sIniHeader, new Integer (1));
+			hmKilled.put (sIniHeader, Integer.valueOf (1));
 		}
 	}
 
