@@ -130,40 +130,16 @@ optimization genuinely requires it.
   and FPS-counter blocks) to reduce reading noise. No behavior change to any
   live code path.
 
-## Static analysis (documented, not yet fixed)
+- **`World.java` minor cleanups.** Replaced five `new Integer(...)` constructor
+  calls in hot paths (`modifyHappiness`, `checkEvents`-adjacent allocation,
+  `onLeavingHero`, and the kill-count map) with `Integer.valueOf(...)` so the
+  JVM's -128..127 integer cache is used (and to get rid of the deprecation
+  warning on the explicit constructor). Deleted ~80 lines of commented-out
+  dead code: the `addGod()` / `getGods()` methods and their three call-site
+  stubs (constructor, `nextTurn`), plus two disabled soldier-happiness stubs
+  (the early-return guard inside `modifyHappiness(Citizen)` and the
+  parameterless `modifyHappiness()` soldier iteration loop). The gods feature
+  is compile-gated by `TownsProperties.GODS_ACTIVATED = false`, so the
+  commented stubs were unreachable anyway; the flag remains and still gates
+  the feature off. No behavior change to any live code path.
 
-Twelve of the largest source files have been analyzed for bugs, allocation hotspots,
-and algorithmic issues. Several confirmed bugs and performance issues are tracked but
-not yet addressed:
-
-- `LivingEntity.doHit()` — ranged damage falloff computes X distance twice; Y is never
-  used, so vertical separation has no effect on damage.
-- `Utils.sqrt()` — lookup table covers only inputs 1–225; silently returns `15` for
-  any larger input.
-- `Utils.getSaveFiles()` — sort comparator inverted; returns oldest-first.
-- `UIPanel.mousePressed()` — copy-paste bug calls `resizePilePanel()` instead of
-  `resizeProfessionsPanel()`.
-- `UIPanel` bottom-panel loop — off-by-one boundary check (`>` vs `>=`) risks
-  `IndexOutOfBoundsException`.
-- `ItemManagerItem.setLightRadius()` — mutates a static field as a side effect of an
-  instance setter called during XML load.
-- Performance: `TaskManager.assignHaulTasks()` O(n²), `Citizen.isCitizenWalkingToFood()`
-  O(n²), `Task.checkCancelTask()` O(n³), `LivingEntity.path` / `World` entity-map race
-  (main thread vs. A* background thread), `TaskManager.executeAll()` double-fires per
-  tick under certain timing conditions.
-
-Fixing these is planned but out of scope of the migration work so far.
-
-## Repository hygiene
-
-- **Added `.gitignore`** (previously absent). Ignores:
-  - `target/` (Maven output)
-  - `*.log` (runtime logs; the game currently writes `error.log` to the process CWD,
-    which lands inside the repo during dev runs — the fix to route it under the user
-    folder is tracked separately)
-  - `src/data/graphics/` + `audio/` + `fonts/` + `fontMetamorphous.fnt` (runtime
-    binary assets from the commercial build, not part of the open-source repo)
-  - An explicit list of development-notes `*.md` files (session logs, analysis, plans,
-    todo). Only `README.md`, `CHANGELOG.md`, and `changelist.md` are tracked markdown.
-- **Rewrote `README.md`** for the fork: describes the build process, what's different
-  from upstream, and the project layout. Upstream author credited.
