@@ -130,6 +130,22 @@ optimization genuinely requires it.
   and FPS-counter blocks) to reduce reading noise. No behavior change to any
   live code path.
 
+- **`World.nextTurn` eliminates per-tick `Integer[]` allocation.** The items and
+  livings iteration loops used `map.keySet().toArray(new Integer[0])` every
+  tick to get a snapshot that was safe against `Item.delete()` /
+  `LivingEntity.delete()` mutating the map during iteration. The snapshot is
+  load-bearing but the per-tick array allocation was not. Extracted the
+  pattern to a package-private static helper
+  `World.forEachSnapshotReversed(Map<Integer,V>, Integer[], BiConsumer<Integer,V>)`
+  that takes a reusable buffer. Two instance fields
+  (`itemsIterationBuffer`, `livingsIterationBuffer`) hold the buffers across
+  ticks; `Collection.toArray(T[])` grows them only when needed, so after the
+  initial grow-to-peak there's zero allocation. Covered by 7 parameterized
+  unit tests in `test/xaos/main/WorldTest.java` (population, key/value
+  pairing, empty map, action removing current/other entries, entries added
+  during iteration not visited, buffer growth). Snapshot semantics preserved
+  exactly — no behavior change to live code paths.
+
 - **`World.java` minor cleanups.** Replaced five `new Integer(...)` constructor
   calls in hot paths (`modifyHappiness`, `checkEvents`-adjacent allocation,
   `onLeavingHero`, and the kill-count map) with `Integer.valueOf(...)` so the
