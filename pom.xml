@@ -22,6 +22,7 @@
 
         <!-- Sources live directly in src/, not the Maven-standard src/main/java -->
         <sourceDirectory>${project.basedir}/src</sourceDirectory>
+        <testSourceDirectory>test</testSourceDirectory>
 
         <!-- Include .properties files from the source tree on the classpath
              (needed for ResourceBundle-based i18n in xaos.utils.Messages) -->
@@ -146,6 +147,12 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.5.2</version>
+            </plugin>
         </plugins>
     </build>
 
@@ -230,6 +237,14 @@
         <!-- LWJGL 3 — STB (image loading) -->
         <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-stb</artifactId><version>${lwjgl.version}</version></dependency>
         <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-stb</artifactId><version>${lwjgl.version}</version><classifier>natives-windows</classifier></dependency>
+
+        <!-- JUnit 5 — test framework (test scope only, never shaded into the jar) -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.11.3</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 </project>
