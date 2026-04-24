@@ -135,6 +135,19 @@ characterized this way (pathfinding, races, simulation tick logic), a
 save-state-driven integration harness is planned but deferred until the first
 optimization genuinely requires it.
 
+- **`Game.collectTextureFileNames` extraction.** Replaced the O(n^2) dedup in
+  `loadAllIniTextures` (`ArrayList<String>` with `contains()` per texture) with
+  an O(n) pass using a `LinkedHashSet<String>`. The dedup + filter logic is
+  extracted to a package-private static helper `collectTextureFileNames
+  (Properties) : Set<String>`, tested in `test/xaos/main/GameTest.java` with
+  six cases (null input, empty properties, single texture, duplicate values,
+  non-TEXTURE_FILE keys excluded, tile-prefixed keys like
+  `[grass]TEXTURE_FILE` included). Load order is preserved via
+  `LinkedHashSet` so downstream `UtilsGL.loadTexture` calls run in the same
+  order as before. Also switches from the unchecked-cast
+  `(Enumeration<String>) properties.propertyNames()` pattern to the
+  type-safe `properties.stringPropertyNames()`.
+
 ## Static analysis (documented, not yet fixed)
 
 Twelve of the largest source files have been analyzed for bugs, allocation hotspots,
