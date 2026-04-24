@@ -95,22 +95,22 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 
 
 	/**
-	 * Número de livings por tipo (discovered)
+	 * Numero de livings por tipo (discovered)
 	 */
 	private static HashMap<String, Integer> mapLivingsDiscovered = new HashMap<String, Integer> ();
 
 	/**
-	 * Número de livings por tipo (UNdiscovered)
+	 * Numero de livings por tipo (UNdiscovered)
 	 */
 	private static HashMap<String, Integer> mapLivingsUndiscovered = new HashMap<String, Integer> ();
 
-	// Lista de puntos hasta destino (nunca será nulo)
+	// Lista de puntos hasta destino (nunca sera nulo)
 	private ArrayList<Point3DShort> path = new ArrayList<Point3DShort> ();
 
 	// Flags
-	private final static byte FLAG_WAITING_FOR_PATH = 1; // 00000001 (Indica si el ser viviente está esperando camino)
+	private final static byte FLAG_WAITING_FOR_PATH = 1; // 00000001 (Indica si el ser viviente esta esperando camino)
 	private final static byte FLAG_GROUPING = 2; // 00000010 (Indica si llama a sus amigos cuando le atacan)
-	private final static byte FLAG_FIGHTING = 4; // 00000100 (Indica si está luchando)
+	private final static byte FLAG_FIGHTING = 4; // 00000100 (Indica si esta luchando)
 
 	private byte flags;
 
@@ -132,17 +132,17 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 
 	// Age (Edad, para saber cuando muere)
 	private int age; // Edad actual del friendly
-	private int maxAge; // Edad máxima del friendly
+	private int maxAge; // Edad maxima del friendly
 
 	private byte facingDirection;
 
-	private FocusData focusData; // Guarda el ID + type de un entity al que está atacando
+	private FocusData focusData; // Guarda el ID + type de un entity al que esta atacando
 
 	private int attackSpeedCounter; // Cuando attackTurn > que el atackTurnCurrent es que ya puede atacar, sino suma 1 y espera
 	private int walkSpeedCounter; // Cuando walk > que el walkTurnCurrent es que ya puede caminar, sino suma 1 y espera
 
 	private Point2D.Float positionOffset = new Point2D.Float (0, 0); // Se usa en el dibujado, para ir moviendo poco a poco a la living (en vez de celda a celda)
-	private Point2D.Float positionOffsetConstants = new Point2D.Float (0, 0); // Se usa en el dibujado, es lo que hay que añadir al offset a cada frame
+	private Point2D.Float positionOffsetConstants = new Point2D.Float (0, 0); // Se usa en el dibujado, es lo que hay que anadir al offset a cada frame
 
 	private transient int checkLOSCounter;
 	private transient int skillAnimationCounter;
@@ -169,7 +169,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 		super (getAltGraphics (iniHeader));
 
 		// Alternative graphics
-		LivingEntityManagerItem lemi = LivingEntityManager.getItem (getIniHeader ()); // Ojo, aquí hay que usar el getIniHeader, pq puede estar cambiado
+		LivingEntityManagerItem lemi = LivingEntityManager.getItem (getIniHeader ()); // Ojo, aqui hay que usar el getIniHeader, pq puede estar cambiado
 
 		// Data (nombre, vida, ...)
 		setLivingEntityData (lemi.getRandom ());
@@ -216,7 +216,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 
 		if (lemi.getAltGraphics () != null && lemi.getAltGraphics ().size () > 0) {
 			int iRandom = Utils.getRandomBetween (0, lemi.getAltGraphics ().size ());
-			// Si el random == altGraphics.size() usamos el gráfico original (por lo tanto no hacemos nada)
+			// Si el random == altGraphics.size() usamos el grafico original (por lo tanto no hacemos nada)
 			if (iRandom < lemi.getAltGraphics ().size ()) {
 				return lemi.getAltGraphics ().get (iRandom);
 			}
@@ -319,11 +319,11 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 
 
 	/**
-	 * Añade el Living a la lista y suma 1 al número de los mismos
+	 * Anade el Living a la lista y suma 1 al numero de los mismos
 	 * 
 	 * @param itemIniHeader IniHeader del living
 	 * 
-	 * @return el número de livings que hay de ese tipo, incluyendo el acabado de añadir
+	 * @return el numero de livings que hay de ese tipo, incluyendo el acabado de anadir
 	 */
 	public static int addLiving (LivingEntity living, boolean bDiscovered) {
 		String sIniHeader = living.getIniHeader ();
@@ -361,11 +361,11 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 
 
 	/**
-	 * Devuelve el número de livings en el mundo del tipo pasado
+	 * Devuelve el numero de livings en el mundo del tipo pasado
 	 * 
 	 * @param sIniHeader IniHeader del living
 	 * 
-	 * @return el número de livings en el mundo del tipo pasado
+	 * @return el numero de livings en el mundo del tipo pasado
 	 */
 	public static int getNumLivings (String sIniHeader, boolean bDiscovered) {
 		Integer iNumber = getMapLivings (bDiscovered).get (sIniHeader);
@@ -379,7 +379,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 
 
 	/**
-	 * Setea el número de livings para un living dado
+	 * Setea el numero de livings para un living dado
 	 * 
 	 * @param sIniHeader IniHeader del living
 	 * @param iNumber Cantidad
@@ -415,7 +415,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 
 
 	/**
-	 * Analiza la cadena de offset (que es "x, y") y devuelve el valor numérico de una de las 2
+	 * Analiza la cadena de offset (que es "x, y") y devuelve el valor numerico de una de las 2
 	 * 
 	 * @param sValue Cadena de offset
 	 * @param firstValue Indica si hay que devolver el primer valor de la cadena o el segundo
@@ -461,7 +461,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 
 	public void setCoordinates (short iX, short iY, short iZ) {
 		int iIndex = -1;
-		if (getX () != -1) { // Con esto miro que no sea una living nueva (que no tendría celda source)
+		if (getX () != -1) { // Con esto miro que no sea una living nueva (que no tendria celda source)
 
 			if (getX () != iX || getY () != iY || getZ () != iZ) {
 				// Hay que moverlo de celda
@@ -478,7 +478,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 					}
 
 					if (iIndex != -1) {
-						// Debería pasar siempre
+						// Deberia pasar siempre
 						le = cellSrc.getLivings ().remove (iIndex);
 						World.getCell (iX, iY, iZ).addLiving (le);
 					}
@@ -545,7 +545,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 
 
 	/**
-	 * Setea la constante, también cambia el facing direction
+	 * Setea la constante, tambien cambia el facing direction
 	 */
 	protected void updatePathConstantOffsets () {
 		// Current offset
@@ -570,7 +570,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 
 			int speed = getLivingEntityData ().getWalkSpeedCurrent ();
 			if (LivingEntityManager.getItem (getIniHeader ()).getType () == TYPE_CITIZEN) {
-				// Miramos la reducción de velocidad debido a hambre y felicidad
+				// Miramos la reduccion de velocidad debido a hambre y felicidad
 				int iMalusPCT = ((Citizen) this).getMalusSpeedPCT ();
 				if (iMalusPCT > 0 && iMalusPCT != 100) {
 					speed = (speed * iMalusPCT) / 100;
@@ -581,7 +581,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 					speed = (speed * SoldierData.BOOST_PCT_BOSS_AROUND_WALK) / 100;
 				}
 
-				// Eventos globales, sólo a townies
+				// Eventos globales, solo a townies
 				if (Game.getWorld ().getGlobalEvents ().getWalkSpeedPCT () != 100) {
 					speed = (speed * Game.getWorld ().getGlobalEvents ().getWalkSpeedPCT ()) / 100;
 				}
@@ -613,13 +613,13 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 				turnsToCross = (walkNeeded / speed) + ((walkNeeded % speed == 0) ? 0 : 1);
 			}
 
-			// Calculamos las constants según hacia donde vaya
+			// Calculamos las constants segun hacia donde vaya
 			float totalFrames = World.FRAMES_PER_TURN * turnsToCross;
 			Point2D.Float pTMP2 = getPositionOffsetConstants ();
 			pTMP2.x = (((p3dDestino.x - getX ()) + (p3dDestino.y - getY ())) * (Tile.TERRAIN_ICON_WIDTH / 2)) / totalFrames;
 			pTMP2.y = (((p3dDestino.y - getY ()) - (p3dDestino.x - getX ())) * (Tile.TERRAIN_ICON_HEIGHT / 2)) / totalFrames;
 
-			// Si está cambiando de nivel hay que sumar, restar a la Y
+			// Si esta cambiando de nivel hay que sumar, restar a la Y
 			if (p3dDestino.z != getZ ()) {
 				pTMP2.y += ((p3dDestino.z - getZ ()) * (Tile.TERRAIN_ICON_HEIGHT / 2)) / totalFrames;
 			}
@@ -867,12 +867,12 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 	public void updateFacingDirection (int x1, int y1, int z1, int x2, int y2, int z2) {
 		byte facingReturn;
 		// if (z1 != z2) {
-		// // Sube/baja, no cambiamos la dirección
+		// // Sube/baja, no cambiamos la direccion
 		// facingReturn = getFacingDirection ();
 		// } else {
 		// Miramos las 8 direcciones
 		if (x1 == x2) {
-			// Sólo se ha movido en el plano Y
+			// Solo se ha movido en el plano Y
 			if (y1 < y2) {
 				facingReturn = FACING_DIRECTION_SOUTH;
 			} else if (y1 > y2) {
@@ -882,7 +882,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 			}
 		} else {
 			if (y1 == y2) {
-				// Sólo se ha movido en el plano X
+				// Solo se ha movido en el plano X
 				if (x1 < x2) {
 					facingReturn = FACING_DIRECTION_EAST;
 				} else if (x1 > x2) {
@@ -891,7 +891,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 					facingReturn = getFacingDirection ();
 				}
 			} else {
-				// Si llega aquí es que es una diagonal si o si
+				// Si llega aqui es que es una diagonal si o si
 				if (x1 < x2) {
 					if (y1 < y2) {
 						facingReturn = FACING_DIRECTION_SOUTH_EAST;
@@ -1093,9 +1093,9 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 
 
 	/**
-	 * Mueve a la living SI o SI (si puede, claro) Se usa cuando está encima de un muro (ocurre cuando se acaba de construir), encima de fluidos o en encima de un hole
+	 * Mueve a la living SI o SI (si puede, claro) Se usa cuando esta encima de un muro (ocurre cuando se acaba de construir), encima de fluidos o en encima de un hole
 	 * 
-	 * @return true si ha podido, false si no puede (en ese caso debería palmar o algo)
+	 * @return true si ha podido, false si no puede (en ese caso deberia palmar o algo)
 	 */
 	public boolean forceMove () {
 		short currentX = getX ();
@@ -1104,7 +1104,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 		HateData hateData = LivingEntityManager.getHateData (getIniHeader ());
 
 		// Miramos las casillas posibles a las que puede ir
-		// Hay que mirar que no haya un hated ahí
+		// Hay que mirar que no haya un hated ahi
 		ArrayList<Point3DShort> alPoints = new ArrayList<Point3DShort> ();
 		for (int i = -1; i <= 1; i++) {
 			nextcell: for (int j = -1; j <= 1; j++) {
@@ -1121,7 +1121,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 								for (int h = 0; h < alLivings.size (); h++) {
 									le = alLivings.get (h);
 									if (hateData.isHate (le)) {
-										continue nextcell; // Hay hate, la celda no está disponible para el move
+										continue nextcell; // Hay hate, la celda no esta disponible para el move
 									}
 								}
 							}
@@ -1141,10 +1141,10 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 			alPoints.add (Point3DShort.getPoolInstance (currentX, currentY, currentZ + 1));
 		}
 
-		// Si la casilla de arriba está minada, miramos las casillas diagonal/parriba
+		// Si la casilla de arriba esta minada, miramos las casillas diagonal/parriba
 		if (currentZ > 0 && World.getCell (currentX, currentY, currentZ - 1).isMined ()) {
 			// Miramos las casillas posibles a las que puede ir
-			// Hay que mirar que no haya un hated ahí
+			// Hay que mirar que no haya un hated ahi
 			for (int i = -1; i <= 1; i++) {
 				nextcell: for (int j = -1; j <= 1; j++) {
 					if (i != 0 || j != 0) {
@@ -1160,7 +1160,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 									for (int h = 0; h < alLivings.size (); h++) {
 										le = alLivings.get (h);
 										if (hateData.isHate (le)) {
-											continue nextcell; // Hay hate, la celda no está disponible para el move
+											continue nextcell; // Hay hate, la celda no esta disponible para el move
 										}
 									}
 								}
@@ -1175,7 +1175,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 		// Bajar colinillas?
 		if (currentZ < (World.MAP_DEPTH - 1)) {
 			// Miramos las casillas posibles a las que puede ir
-			// Hay que mirar que no haya un hated ahí
+			// Hay que mirar que no haya un hated ahi
 			for (int i = -1; i <= 1; i++) {
 				nextcell: for (int j = -1; j <= 1; j++) {
 					if (i != 0 || j != 0) {
@@ -1191,7 +1191,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 									for (int h = 0; h < alLivings.size (); h++) {
 										le = alLivings.get (h);
 										if (hateData.isHate (le)) {
-											continue nextcell; // Hay hate, la celda no está disponible para el move
+											continue nextcell; // Hay hate, la celda no esta disponible para el move
 										}
 									}
 								}
@@ -1261,8 +1261,8 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 			return true;
 		}
 
-		// Si llega aquí es que no hay ni un punto bueno
-		// En caso de hole (digged) caerá abajo, en otro caso palmará
+		// Si llega aqui es que no hay ni un punto bueno
+		// En caso de hole (digged) caera abajo, en otro caso palmara
 		if (World.getCell (currentX, currentY, currentZ).isDigged ()) {
 			// Hole, pabajo nos vamos
 			setCoordinates (Point3DShort.getPoolInstance (currentX, currentY, currentZ + 1));
@@ -1279,7 +1279,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 
 
 	/**
-	 * Pone en juego un item munición (ej: flecha, bola de fuego, ...) Tiene en cuenta las cargas del arma y controla si se acaban y se rompe
+	 * Pone en juego un item municion (ej: flecha, bola de fuego, ...) Tiene en cuenta las cargas del arma y controla si se acaban y se rompe
 	 * 
 	 * @param attacker
 	 * @param victim
@@ -1291,8 +1291,8 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 
 		// Cargas
 		MilitaryItem weapon = attacker.getEquippedData ().getWeapon ();
-		int damage = attacker.getLivingEntityData ().getDamageCurrent (); // Se pone aquí ppq más abajo el arma puede estar destruida
-		int maxDistance = attacker.getLivingEntityData ().getLOSCurrent (); // Se pone aquí pq más abajo el arma puede estar destruida
+		int damage = attacker.getLivingEntityData ().getDamageCurrent (); // Se pone aqui ppq mas abajo el arma puede estar destruida
+		int maxDistance = attacker.getLivingEntityData ().getLOSCurrent (); // Se pone aqui pq mas abajo el arma puede estar destruida
 		int attackerType = LivingEntityManager.getItem (attacker.getIniHeader ()).getType ();
 		ItemManagerItem imiWeapon = ItemManager.getItem (weapon.getIniHeader ());
 
@@ -1301,7 +1301,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 			attacker.unequip (MilitaryItem.LOCATION_WEAPON, attackerType);
 		}
 
-		// Si hay visión disparamos
+		// Si hay vision disparamos
 		if (attacker.getCoordinates ().z == victim.getCoordinates ().z) {
 			ArrayList<Point3DShort> path = Utils.bresenhamLine (attacker.getCoordinates (), victim.getCoordinates (), attacker.getZ ()); // , attackerType);
 			if (path != null) {
@@ -1316,13 +1316,13 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 				projectile.setCoordinates (attacker.getCoordinates ());
 				Game.getWorld ().getProjectiles ().add (projectile);
 			} else {
-				// No hay visión, pasando
+				// No hay vision, pasando
 				attacker.getFocusData ().setEntityID (-1);
 				attacker.getFocusData ().setEntityType (TYPE_UNKNOWN);
 				attacker.setFighting (false);
 			}
 		} else {
-			// No hay visión, pasando
+			// No hay vision, pasando
 			attacker.getFocusData ().setEntityID (-1);
 			attacker.getFocusData ().setEntityType (TYPE_UNKNOWN);
 			attacker.setFighting (false);
@@ -1331,7 +1331,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 
 
 	/**
-	 * Indica si el personaje está listo para caminar. Actualiza el contador de turnos
+	 * Indica si el personaje esta listo para caminar. Actualiza el contador de turnos
 	 * 
 	 * @param living
 	 * @return
@@ -1341,7 +1341,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 		int iCurrent = living.getLivingEntityData ().getWalkSpeedCurrent ();
 
 		if (livingType == TYPE_CITIZEN) {
-			// Miramos la reducción de velocidad debido a hambre y felicidad
+			// Miramos la reduccion de velocidad debido a hambre y felicidad
 			int iMalusPCT = ((Citizen) living).getMalusSpeedPCT ();
 			if (iMalusPCT > 0 && iMalusPCT != 100) {
 				iCurrent = (iCurrent * iMalusPCT) / 100;
@@ -1353,7 +1353,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 				iCurrent = (iCurrent * SoldierData.BOOST_PCT_BOSS_AROUND_WALK) / 100;
 			}
 
-			// Eventos globales, sólo a townies
+			// Eventos globales, solo a townies
 			if (Game.getWorld ().getGlobalEvents ().getWalkSpeedPCT () != 100) {
 				iCurrent = (iCurrent * Game.getWorld ().getGlobalEvents ().getWalkSpeedPCT ()) / 100;
 			}
@@ -1398,7 +1398,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 
 
 	/**
-	 * Indica si el personaje está listo para lanzar otro ataque. Actualiza el contador de turnos
+	 * Indica si el personaje esta listo para lanzar otro ataque. Actualiza el contador de turnos
 	 * 
 	 * @param attacker
 	 * @return
@@ -1436,11 +1436,11 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 
 
 	/**
-	 * Intenta dar un golpe de atacante a víctima. Si lo consigue resta puntos de vida a la víctima
+	 * Intenta dar un golpe de atacante a victima. Si lo consigue resta puntos de vida a la victima
 	 * 
 	 * @param attacker Atacante
-	 * @param victim Víctima
-	 * @return true si el golpe se da con éxito
+	 * @param victim Victima
+	 * @return true si el golpe se da con exito
 	 */
 	public static boolean doHit (LivingEntity attacker, LivingEntity victim, boolean bCheckAttackTurn) {
 		return doHit (attacker, victim, bCheckAttackTurn, null, 0, 0, false);
@@ -1448,16 +1448,16 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 
 
 	/**
-	 * Intenta dar un golpe de atacante a víctima. Si lo consigue resta puntos de vida a la víctima
+	 * Intenta dar un golpe de atacante a victima. Si lo consigue resta puntos de vida a la victima
 	 * 
 	 * @param attacker Atacante
-	 * @param victim Víctima
-	 * @param bCheckAttackTurn Indica si hay que comprobar si el atacante está listo para el siguiente ataque
-	 * @param rangedWeapon Indica si el ataque es ranged. En otro caso valdrá null. Se usa para obtener los verbos
-	 * @param iRangedDamage Daño fijo, se usa para los ataques ranged, ya que el daño se calcula en el momento de lanzar el proyectil. Aquí se aplicará el % en base a la distancia del enemigo
-	 * @param iRangedMaxDistance Distancia máxima en el momento del disparo.
+	 * @param victim Victima
+	 * @param bCheckAttackTurn Indica si hay que comprobar si el atacante esta listo para el siguiente ataque
+	 * @param rangedWeapon Indica si el ataque es ranged. En otro caso valdra null. Se usa para obtener los verbos
+	 * @param iRangedDamage Dano fijo, se usa para los ataques ranged, ya que el dano se calcula en el momento de lanzar el proyectil. Aqui se aplicara el % en base a la distancia del enemigo
+	 * @param iRangedMaxDistance Distancia maxima en el momento del disparo.
 	 * @param bRangedHit Indica si el ammo ha tocado al enemigo o no (no quiere decir que acierte)
-	 * @return true si el golpe se da con éxito
+	 * @return true si el golpe se da con exito
 	 */
 	public static boolean doHit (LivingEntity attacker, LivingEntity victim, boolean bCheckAttackTurn, ItemManagerItem rangedWeapon, int iRangedDamage, int iRangedMaxDistance, boolean bRangedHit) {
 		attacker.updatePathConstantOffsets ();
@@ -1478,8 +1478,8 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 			iMessageType = MessagesPanel.TYPE_COMBAT;
 		}
 
-		// Calculamos el porcentaje de ataque en base a la defensa de la víctima
-		// Hay un mínimo de 5% de atacar y un máximo de 95%
+		// Calculamos el porcentaje de ataque en base a la defensa de la victima
+		// Hay un minimo de 5% de atacar y un maximo de 95%
 		int iPCT;
 		if (rangedWeapon != null && !bRangedHit) {
 			iPCT = 0;
@@ -1510,10 +1510,10 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 
 		if (Utils.getRandomBetween (1, 100) <= iPCT) {
 			// Hit
-			// Si es ranged miramos la distáncia
+			// Si es ranged miramos la distancia
 			int iDanyo;
 			if (rangedWeapon != null) {
-				// Calculamos el % de daño que hará según la distancia (de 100% a 20%)
+				// Calculamos el % de dano que hara segun la distancia (de 100% a 20%)
 				int iDistancia = Math.max (Math.abs (attacker.getX () - victim.getX ()), Math.abs (attacker.getX () - victim.getX ()));
 				if (iRangedMaxDistance < 1) {
 					iRangedMaxDistance = 1;
@@ -1536,7 +1536,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 			if (iDanyo < 1) {
 				iDanyo = 1;
 			}
-			// Antes de restar el daño miramos que no estubiera ya muerto (para el medallero)
+			// Antes de restar el dano miramos que no estubiera ya muerto (para el medallero)
 			boolean bPreviousDead = victim.getLivingEntityData ().getHealthPoints () <= 0;
 			victim.getLivingEntityData ().setHealthPoints (victim.getLivingEntityData ().getHealthPoints () - iDanyo);
 
@@ -1553,11 +1553,11 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 
 			MessagesPanel.addMessage (iMessageType, attacker.getLivingEntityData ().getName () + " " + verb + Messages.getString ("LivingEntity.5") + victim.getLivingEntityData ().getName () + " (" + iDanyo + Messages.getString ("LivingEntity.11"), (lemiAttacker.getType () == TYPE_CITIZEN || lemiAttacker.getType () == TYPE_ALLY || (lemiAttacker.getType () == TYPE_HERO && lemiVictim.getType () != TYPE_CITIZEN)) ? ColorGL.GREEN : ColorGL.RED, attacker.getCoordinates (), attacker.getID ()); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 
-			// Notificamos a la víctima
+			// Notificamos a la victima
 			victim.hitted (attacker, true, iDanyo);
 
-			// Si el atacante es héroe o soldado le sumamos experiencia
-			// Si es héroe o citizen sumamos 1 a los enemigos de ese tipo matados
+			// Si el atacante es heroe o soldado le sumamos experiencia
+			// Si es heroe o citizen sumamos 1 a los enemigos de ese tipo matados
 			if (lemiAttacker.getType () == TYPE_HERO) {
 				int victimLevel = LivingEntityManager.getItem (victim.getIniHeader ()).getLevel ();
 				if (victimLevel == 0) {
@@ -1600,14 +1600,14 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 				}
 			}
 
-			// La víctima ha muerto de este golpe, sumamos 1 al medallero en caso de HERO o CITIZEN
+			// La victima ha muerto de este golpe, sumamos 1 al medallero en caso de HERO o CITIZEN
 			if (!bPreviousDead && victim.getLivingEntityData ().getHealthPoints () <= 0) {
 				if (lemiAttacker.getType () == TYPE_HERO || lemiAttacker.getType () == TYPE_CITIZEN) {
 					// +1 a los muertos
 					Game.getWorld ().addKilledEnemy (victim.getIniHeader ());
 				}
 			}
-			// Si el atacante tiene un effect con attackDOT, le metemos un efecto de DOT a la víctima
+			// Si el atacante tiene un effect con attackDOT, le metemos un efecto de DOT a la victima
 			ArrayList<EffectData> effects = attacker.getLivingEntityData ().getEffects ();
 			EffectData effectData;
 			EffectManagerItem emi;
@@ -1741,7 +1741,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 		Cell cell;
 
 		for (int radio = 1; radio <= getLivingEntityData ().getLOSCurrent (); radio++) {
-			// Miramos sólo los bordes
+			// Miramos solo los bordes
 			// Arriba
 			iTmp = y - radio;
 			if (iTmp >= 0) {
@@ -1826,7 +1826,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 		LivingEntityManagerItem lemi = LivingEntityManager.getItem (getIniHeader ());
 
 		for (int radio = 1; radio <= getLivingEntityData ().getLOSCurrent (); radio++) {
-			// Miramos sólo los bordes
+			// Miramos solo los bordes
 			// Arriba
 			iTmp = y - radio;
 			if (iTmp >= 0) {
@@ -1908,7 +1908,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 	public static void discoverInLOS (int iLivingSource, short x, short y, short z, int iRadius) {
 		int iTmp;
 		for (int radio = 1; radio <= iRadius; radio++) {
-			// Miramos sólo los bordes
+			// Miramos solo los bordes
 			// Arriba
 			iTmp = y - radio;
 			if (iTmp >= 0) {
@@ -1966,7 +1966,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 		// int iLivingType = LivingEntityManager.getItem (getIniHeader ()).getType ();
 
 		for (int radio = 1; radio <= iRadius; radio++) {
-			// Miramos sólo los bordes
+			// Miramos solo los bordes
 			// Arriba
 			iTmp = (short) (y - radio);
 			if (iTmp >= 0) {
@@ -2077,7 +2077,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 
 
 	/**
-	 * Indica si hay algún enemigo de la livingentity pasada en LOS del punto pasado, en ese caso devuelve el FocusData del mismo
+	 * Indica si hay algun enemigo de la livingentity pasada en LOS del punto pasado, en ese caso devuelve el FocusData del mismo
 	 * 
 	 * @return el FocusData de enemigo en LOS o null
 	 */
@@ -2087,7 +2087,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 
 
 	/**
-	 * Indica si hay algún enemigo de la livingentity pasada en LOS del punto pasado, en ese caso devuelve el FocusData del mismo
+	 * Indica si hay algun enemigo de la livingentity pasada en LOS del punto pasado, en ese caso devuelve el FocusData del mismo
 	 * 
 	 * @return el FocusData de enemigo en LOS o null
 	 */
@@ -2097,7 +2097,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 
 		// Buscamos enemy
 		for (short radio = 1; radio <= iRadius; radio++) {
-			// Miramos sólo los bordes
+			// Miramos solo los bordes
 			// Arriba
 			iTmp = (short) (y - radio);
 			if (iTmp >= 0) {
@@ -2157,7 +2157,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 
 
 	/**
-	 * Indica si hay algún enemigo en LOS de la livingentity pasada, en ese caso devuelve el FocusData del mismo
+	 * Indica si hay algun enemigo en LOS de la livingentity pasada, en ese caso devuelve el FocusData del mismo
 	 * 
 	 * @return el FocusData de enemgo en la celda o null si no hay ninguno
 	 */
@@ -2172,7 +2172,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 		if (World.getCell (sourceX, sourceY, sourceZ).getAstarZoneID () == World.getCell (pointX, pointY, sourceZ).getAstarZoneID ()) {
 			// Misma zona
 			// int sourceType = LivingEntityManager.getItem (sLivingSource).getType ();
-			// Miramos que haya vista "directa", teniendo en cuenta muros y demás panochadas
+			// Miramos que haya vista "directa", teniendo en cuenta muros y demas panochadas
 			// if (Utils.bresenhamLineExists (sourceX, sourceY, pointX, pointY, sourceZ, sourceType) || Utils.bresenhamLineExists (pointX, pointY, sourceX, sourceY, sourceZ, sourceType)) {
 			if (Utils.bresenhamLineExists (sourceX, sourceY, pointX, pointY, sourceZ) || Utils.bresenhamLineExists (pointX, pointY, sourceX, sourceY, sourceZ)) {
 				// Hay linea, pasamos el focusData
@@ -2186,7 +2186,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 
 
 	/**
-	 * Devuelve una lista de livings en uso por aldeanos que NO sea el aldeano pasado como parámetro
+	 * Devuelve una lista de livings en uso por aldeanos que NO sea el aldeano pasado como parametro
 	 * 
 	 * @param iCitID ID del aldeano a excluir o -1 en caso de no excluir a nadie
 	 * @return una lista de en uso por aldeanos que no es el pasado, o nulo si no hay ninguno
@@ -2253,14 +2253,14 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 	/**
 	 * Devuelve el punto de una lista de livings pasada (discovered)
 	 * 
-	 * @param p3dIni Punto inicial de búsqueda
+	 * @param p3dIni Punto inicial de busqueda
 	 * @param alHeaders Lista de numeric Iniheaders de los livings
-	 * @param near Indica si hay que buscar la más cercana o cualquiera
+	 * @param near Indica si hay que buscar la mas cercana o cualquiera
 	 * @param alLivingsToAvoid Lista de IDs de las livings a evitar
 	 * @return
 	 */
 	public static LivingEntity searchLiving (Point3DShort p3dIni, int[] alHeaders, boolean near, ArrayList<Integer> alLivingsToAvoid) {
-		// CUIDADO, MÉTODO DUPLICADO ABAJO, SI SE MODIFICA HAY QUE MODIFICAR EL OTRO
+		// CUIDADO, METODO DUPLICADO ABAJO, SI SE MODIFICA HAY QUE MODIFICAR EL OTRO
 
 		// Primero miramos si hay livings de esos
 		int iNum = 0;
@@ -2296,7 +2296,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 								p3dNearest = le.getCoordinates ();
 							}
 
-							// Usaremos el iNum (número de livings en el mundo) para saber si hemos acabado (performance trick)
+							// Usaremos el iNum (numero de livings en el mundo) para saber si hemos acabado (performance trick)
 							iNum--;
 							if (iNum == 0) {
 								break;
@@ -2318,15 +2318,15 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 	/**
 	 * Devuelve el punto de una lista de livings pasada (discovered)
 	 * 
-	 * @param p3dIni Punto inicial de búsqueda
+	 * @param p3dIni Punto inicial de busqueda
 	 * @param alHeaders Lista de numeric Iniheaders de los livings
-	 * @param near Indica si hay que buscar la más cercana o cualquiera
+	 * @param near Indica si hay que buscar la mas cercana o cualquiera
 	 * @param alLivingsToAvoid Lista de IDs de las livings a evitar
 	 * @param iASZID ASZID del origen
 	 * @return
 	 */
 	public static LivingEntity searchLivingForcedASZID (Point3DShort p3dIni, int[] alHeaders, boolean near, ArrayList<Integer> alLivingsToAvoid, int iASZID) {
-		// CUIDADO, MÉTODO DUPLICADO ARRIBA, SI SE MODIFICA HAY QUE MODIFICAR EL OTRO
+		// CUIDADO, METODO DUPLICADO ARRIBA, SI SE MODIFICA HAY QUE MODIFICAR EL OTRO
 
 		// Primero miramos si hay livings de esos
 		int iNum = 0;
@@ -2361,7 +2361,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 								p3dNearest = le.getCoordinates ();
 							}
 
-							// Usaremos el iNum (número de livings en el mundo) para saber si hemos acabado (performance trick)
+							// Usaremos el iNum (numero de livings en el mundo) para saber si hemos acabado (performance trick)
 							iNum--;
 							if (iNum == 0) {
 								break;
@@ -2415,7 +2415,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 		// Borramos el antiguo camino
 		clearPath ();
 
-		// Si el destino no es allowed lo sacamos de la tarea (si tiene) (sólo en caso de aldeanos)
+		// Si el destino no es allowed lo sacamos de la tarea (si tiene) (solo en caso de aldeanos)
 		int iLivingType = LivingEntityManager.getItem (getIniHeader ()).getType ();
 		if (!isCellAllowed (x, y, z)) {
 			if (iLivingType == TYPE_CITIZEN) {
@@ -2437,11 +2437,11 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 		}
 
 		// Buscamos camino
-		// Bresenham para empezar (linea recta) (si está en el mismo nivel)
+		// Bresenham para empezar (linea recta) (si esta en el mismo nivel)
 		// if (getZ () == z) {
 		// setPath (Utils.bresenhamLine (getX (), getY (), x, y, z, livingType));
 		// }
-		// Camino vacío, eso es que en linea recta topa con algo (o está en distintos niveles), usamos A* para buscar la ruta
+		// Camino vacio, eso es que en linea recta topa con algo (o esta en distintos niveles), usamos A* para buscar la ruta
 		// if (getPath ().isEmpty ()) {
 		boolean bSiege = false;
 		if (iLivingType == TYPE_ENEMY) {
@@ -2508,7 +2508,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 		super.deleteLiving ();
 
 		boolean bDiscovered = World.getCell (getCoordinates ()).isDiscovered ();
-		removeLiving (this, bDiscovered); // Restamos 1 al número de livings de ese tipo
+		removeLiving (this, bDiscovered); // Restamos 1 al numero de livings de ese tipo
 
 		// Lo sacamos de la lista de Livings
 		World.getLivings (bDiscovered).remove (Integer.valueOf (getID ()));
@@ -2518,7 +2518,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 		boolean bHeroLeaved = false;
 		if (dead) {
 			if (lemi.getType () == TYPE_HERO) {
-				// Caso héroes, si se han pirado del mapa no hay que sacar drop
+				// Caso heroes, si se han pirado del mapa no hay que sacar drop
 				Hero hero = (Hero) this;
 				if (hero.getLivingEntityData ().getHealthPoints () > 0) {
 					dead = false;
@@ -2539,7 +2539,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 				// Tiene!! Lanzamos los PCT a ver si sacamos algo
 				for (int i = 0; i < alDrops.size (); i++) {
 					if (Utils.getRandomBetween (1, 100) <= Utils.launchDice (alDrops.get (i).getPCT ())) {
-						// Ta-dá !!!
+						// Ta-da !!!
 						// Miramos si es item random
 						String sItemID = null;
 						if (alDrops.get (i).getItem () != null && !alDrops.get (i).getItem ().equalsIgnoreCase (DropData.ITEM_RANDOM)) {
@@ -2603,7 +2603,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 
 				if (alItems.size () > 0) {
 					// Hay cosas para dropear
-					// Sólo soltaremos el 60% de las cosas
+					// Solo soltaremos el 60% de las cosas
 					int iIndex = alItems.size () - 1;
 					while (iIndex >= 0) {
 						if (Utils.getRandomBetween (1, 10) > 6) {
@@ -2613,7 +2613,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 					}
 
 					if (alItems.size () > 0) {
-						// Aún hay cosas para soltar, miramos si cabe en las casillas vecinas
+						// Aun hay cosas para soltar, miramos si cabe en las casillas vecinas
 						ItemManagerItem imi;
 						for (int i = 0; i < alItems.size (); i++) {
 							imi = ItemManager.getItem (alItems.get (i).getIniHeader ());
@@ -2667,7 +2667,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 							itemCarrying.setLocked (false);
 							World.getCell (p3dDrop).setEntity (itemCarrying);
 						} else {
-							// Si no puede soltarlo nos lo trincamos, sólo hay que mirar containers para que se limpien bien las listas
+							// Si no puede soltarlo nos lo trincamos, solo hay que mirar containers para que se limpien bien las listas
 							if (imi.isContainer ()) {
 								Game.getWorld ().deleteContainer (itemCarrying.getID ());
 							}
@@ -2695,8 +2695,8 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 				Game.updateTutorialFlow (TutorialTrigger.TYPE_INT_POPULATION, (World.getNumCitizens () + World.getNumSoldiers ()), null);
 			}
 		} else {
-			// No lo matamos, eso es que lo ha pillado algún aldeano, le ponemos la direction pertinente para que quede bien
-			// También podría ser un hero que se pira (o un enemy robbery, en los 2 casos borramos containers si llevaban alguno)
+			// No lo matamos, eso es que lo ha pillado algun aldeano, le ponemos la direction pertinente para que quede bien
+			// Tambien podria ser un hero que se pira (o un enemy robbery, en los 2 casos borramos containers si llevaban alguno)
 			setFacingDirection (FACING_DIRECTION_NORTH_WEST);
 			refreshFacingDirection (FACING_DIRECTION_NORTH_WEST);
 
@@ -2766,7 +2766,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 			// Reducimos happiness
 			Game.getWorld ().updateHappiness (80);
 		} else if (lemi.getType () == TYPE_HERO) {
-			// Stuff de héroes
+			// Stuff de heroes
 			// Lo eliminamos de la lista de Heroes
 			int iIndex = -1;
 			int heroID;
@@ -2779,7 +2779,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 			}
 
 			if (iIndex != -1) {
-				// Lo sacamos de la lista de héroes
+				// Lo sacamos de la lista de heroes
 				World.getHeroIDs ().remove (iIndex);
 
 				// Liberamos la zona
@@ -2787,10 +2787,10 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 			}
 
 			if (bHeroLeaved) {
-				// Lo metemos también en la lista de héroes que se han pirado (para que quizá vuelvan en el futuro)
+				// Lo metemos tambien en la lista de heroes que se han pirado (para que quiza vuelvan en el futuro)
 				Game.getWorld ().getOldHeroes ().add (this);
 			} else {
-				// Héroe muerto, si tiene nombre especial (caso Sips, punchwood, ...) lo metemos en la lista de muertos para que no aparezca de nuevo
+				// Heroe muerto, si tiene nombre especial (caso Sips, punchwood, ...) lo metemos en la lista de muertos para que no aparezca de nuevo
 				if (lemi.getNamePoolTag () == null) {
 					Game.getWorld ().getOldHeroesDied ().add (getIniHeader ());
 				}
@@ -2803,11 +2803,11 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 			ArrayList<Integer> alHeros = World.getHeroIDs ();
 			Hero heroAux;
 			for (int h = 0; h < alHeros.size (); h++) {
-				// Si está en la lista de amigos de otros, lo borramos
+				// Si esta en la lista de amigos de otros, lo borramos
 				heroAux = (Hero) World.getLivingEntityByID (alHeros.get (h));
 				if (heroAux != null) {
 					while (heroAux.getHeroData ().getFriendships ().remove (Integer.valueOf (getID ()))) {
-						// Vamos borrando (aunque no debería haber más de 1)
+						// Vamos borrando (aunque no deberia haber mas de 1)
 					}
 				}
 			}
@@ -2989,7 +2989,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 				// Celda transitable, puede pasar siempre
 				return true;
 			} else {
-				// Celda NO principal, sólo se puede pasar si el edificio no está aún operativo
+				// Celda NO principal, solo se puede pasar si el edificio no esta aun operativo
 				return !(building.isOperative ());
 			}
 		} else {
@@ -3011,7 +3011,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 
 
 	/**
-	 * Fills a contextual menú refering a living entity of a cell
+	 * Fills a contextual menu refering a living entity of a cell
 	 * 
 	 * @param cell
 	 * @param sm
@@ -3153,7 +3153,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 
 
 	/**
-	 * Devuelve una living entity hate de la celda y living pasada Se le pasa un focus, si tiene alguien ahí, eso tiene preferencia
+	 * Devuelve una living entity hate de la celda y living pasada Se le pasa un focus, si tiene alguien ahi, eso tiene preferencia
 	 * 
 	 * @param sIniHeader
 	 * @param p3d
@@ -3208,7 +3208,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 
 
 	protected void doFocus (LivingEntityManagerItem lemi) {
-		// Si el "enemigo" (<hate>) aún existe vamos hacia él
+		// Si el "enemigo" (<hate>) aun existe vamos hacia el
 		LivingEntity leHate = World.getLivingEntityByID (getFocusData ().getEntityID ());
 
 		if (leHate != null) {
@@ -3217,11 +3217,11 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 			boolean bRanged = getEquippedData ().getWeapon () != null && ItemManager.getItem (getEquippedData ().getWeapon ().getIniHeader ()).isRanged ();
 			if (bRanged) {
 				if (Math.abs (leHate.getCoordinates ().x - getX ()) <= getLivingEntityData ().getLOSCurrent () && Math.abs (leHate.getCoordinates ().y - getY ()) <= getLivingEntityData ().getLOSCurrent ()) {
-					// Está a rango, disparamos
+					// Esta a rango, disparamos
 					doRangeAttack (this, leHate, true);
 					setPath (null); // Importante
 				} else {
-					// No está a rango, nos olvidamos, pero nos acercamos si podemos
+					// No esta a rango, nos olvidamos, pero nos acercamos si podemos
 					if (World.getCell (leHate.getCoordinates ()).getAstarZoneID () == World.getCell (getCoordinates ()).getAstarZoneID ()) {
 						// Misma zona
 						int iCellsToRemove = getLivingEntityData ().getLOSCurrent () - 1;
@@ -3246,7 +3246,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 			}
 
 			if (lemi.getType () == TYPE_CITIZEN) {
-				// Citizen, le quitamos el sueño en caso de lucha
+				// Citizen, le quitamos el sueno en caso de lucha
 				if (((Citizen) this).getCitizenData ().getSleepSleeping () <= 0) {
 					((Citizen) this).getCitizenData ().setSleepSleeping (1);
 				}
@@ -3491,7 +3491,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 				if (emi.getLasts () != null) { // Tiene lasts, pues puede acabar
 					removeEffect (emi.getId (), lemi.getType (), true);
 				} else {
-					// No tiene lasts, reseteo para que no se pase de rango (aunque podrían pasar años reales para que esto pase, creo)
+					// No tiene lasts, reseteo para que no se pase de rango (aunque podrian pasar anos reales para que esto pase, creo)
 					effectData.setLasts (100000);
 				}
 			}
@@ -3517,11 +3517,11 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 			return true;
 		}
 
-		// Food needed (nunca valdrá 0, si vale 0 es que el bicho no necesita comer)
+		// Food needed (nunca valdra 0, si vale 0 es que el bicho no necesita comer)
 		if (getFoodNeededTurns () != 0) {
 			setFoodNeededTurns (getFoodNeededTurns () - 1);
 			if (getFoodNeededTurns () == 0) {
-				// Ha LLEGADO a 0, creamos la tarea de comer, y lo ponemos a -1 (ya que nunca vale 0, sólo cuando el living no come)
+				// Ha LLEGADO a 0, creamos la tarea de comer, y lo ponemos a -1 (ya que nunca vale 0, solo cuando el living no come)
 				setFoodNeededTurns (-1);
 
 				Task taskFood = new Task (Task.TASK_FOOD_NEEDED);
@@ -3531,7 +3531,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 				taskFood.setZoneHotPoints ();
 				Game.getWorld ().getTaskManager ().addTask (taskFood);
 			} else if (getFoodNeededTurns () < 0) {
-				// Está en negativo, miramos si ya toca palmar
+				// Esta en negativo, miramos si ya toca palmar
 				if (Math.abs (getFoodNeededTurns ()) >= lemi.getFoodNeededDieTurns ()) {
 					// BAM, muere de hambre
 					MessagesPanel.addMessage (MessagesPanel.TYPE_ANNOUNCEMENT, lemi.getName () + Messages.getString ("Citizen.8"), new ColorGL (Color.ORANGE), getCoordinates ()); //$NON-NLS-1$
@@ -3551,7 +3551,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 		boolean bWallFluidsHole = false;
 		if (!isCellAllowed (x, y, z)) {
 			boolean palma = true;
-			// En caso de muro (o puerta bloqueada) o agua o hole no palma, son así de guais
+			// En caso de muro (o puerta bloqueada) o agua o hole no palma, son asi de guais
 			Cell cell = World.getCell (x, y, z);
 			if (cell.getTerrain ().hasFluids ()) {
 				palma = false;
@@ -3568,7 +3568,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 				}
 			}
 
-			if (cell.isDigged ()) { // Cuidado con el órden, la comprobación de digged debe ir aquí ya que sabemos que no hay item en la celda
+			if (cell.isDigged ()) { // Cuidado con el orden, la comprobacion de digged debe ir aqui ya que sabemos que no hay item en la celda
 				palma = false;
 				bWallFluidsHole = true;
 			}
@@ -3627,7 +3627,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 					// Not working
 					if (cd.getHappinessIdleCounter () <= 0) {
 						if (Game.getWorld ().getTurn () % (World.TIME_MODIFIER_HOUR / 2) == 0) {
-							// Sólo restamos happiness si realmente está idle, no cuando come o duerme
+							// Solo restamos happiness si realmente esta idle, no cuando come o duerme
 							if (cit.getCurrentTask () == null || cit.getCurrentTask ().getTask () == Task.TASK_NO_TASK) {
 								cd.setHappiness (cd.getHappiness () - 1);
 							}
@@ -3643,11 +3643,11 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 				}
 			}
 		} else if (lemi.getType () == TYPE_HERO) {
-			// Eat sleep + turnos mínimos de stay (HEROS)
+			// Eat sleep + turnos minimos de stay (HEROS)
 			((Hero) this).updateCounters ();
 		}
 
-		// Si está en un muro o fluidos lo movemos si o si
+		// Si esta en un muro o fluidos lo movemos si o si
 		if (bWallFluidsHole) {
 			if (!forceMove ()) {
 				if (lemi.getType () == TYPE_CITIZEN || lemi.getType () == TYPE_HERO) {
@@ -3695,9 +3695,9 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 
 		// Discover in LOS
 		if (lemi.getType () == TYPE_CITIZEN || lemi.getType () == TYPE_HERO) {
-			// Ésto es para que descubran celdas NO discovered
+			// Esto es para que descubran celdas NO discovered
 			if (getCheckLOSCounter () == 0) {
-				if (getCoordinates ().z > 0) { // Las celdas de arriba están todas discovered
+				if (getCoordinates ().z > 0) { // Las celdas de arriba estan todas discovered
 					discoverInLOS (lemi.getType (), getCoordinates (), getLivingEntityData ().getLOSCurrent ());
 				}
 			}
@@ -3727,7 +3727,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 					doFocus (lemi);
 					return false;
 				} else {
-					// No ve a nadie en LOS, miramos si hay algún item para pillar (caso heroes)
+					// No ve a nadie en LOS, miramos si hay algun item para pillar (caso heroes)
 					if (lemi.getType () == TYPE_HERO && getCheckLOSCounter () == 0) { // Cuidado con esto, se resetea a cero arriba
 						Hero hero = (Hero) this;
 						if (hero.canChangeTask (true, true) && hero.getHeroData ().getHeroTask ().getTaskID () != HeroTask.TASK_EQUIPING) {
@@ -3753,14 +3753,14 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 				// Tiene focus
 				doFocus (lemi);
 			} else {
-				// No hay nadie en linea de visión
+				// No hay nadie en linea de vision
 				// Primero miramos si tiene un follow
 				if (lemi.getFollowEntity () != null && lemi.getFollowEntity ().length > 0) {
 					getLivingEntityData ().setFollowTurnsCounter (getLivingEntityData ().getFollowTurnsCounter () - 1);
 					if (getLivingEntityData ().getFollowTurnsCounter () <= 0) {
 						// Toca seguir al "amo"
 						getLivingEntityData ().setFollowTurnsCounter (Utils.launchDice (lemi.getFollowTurns ()));
-						// Buscamos una living de estas (normalmente sólo habrá 1 en el mundo, caso Sips) y le hacemos un setdestination
+						// Buscamos una living de estas (normalmente solo habra 1 en el mundo, caso Sips) y le hacemos un setdestination
 						int[] alLivings = new int [1];
 						// Obtenemos una living al azar
 						alLivings[0] = lemi.getFollowEntity ()[Utils.getRandomBetween (0, (lemi.getFollowEntity ().length - 1))];
@@ -3780,7 +3780,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 						}
 
 						if (iTrys > 0) {
-							// Para hacer que vaya a items a random, pillaré unas coordenadas a random y buscaremos la living más cercana
+							// Para hacer que vaya a items a random, pillare unas coordenadas a random y buscaremos la living mas cercana
 							Point3DShort p3dRandom = Point3DShort.getPoolInstance (Utils.getRandomBetween (0, World.MAP_WIDTH - 1), Utils.getRandomBetween (0, World.MAP_HEIGHT - 1), Utils.getRandomBetween (0, World.MAP_DEPTH - 1));
 							LivingEntity le = searchLivingForcedASZID (p3dRandom, alLivings, true, null, World.getCell (getCoordinates ()).getAstarZoneID ());
 							if (le != null) {
@@ -3804,7 +3804,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 					}
 				} else {
 					if (lemi.getCaravan () != null && Game.getWorld ().getCurrentCaravanData () != null) {
-						// Caravana sin path, si aún tiene el estado de coming hay que updatearlo
+						// Caravana sin path, si aun tiene el estado de coming hay que updatearlo
 						if (Game.getWorld ().getCurrentCaravanData ().updateCaravanStatus ()) {
 							return true;
 						}
@@ -3817,11 +3817,11 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 			Game.iError = 983;
 
 			// Tiene path, lo seguimos
-			// Obtenemos el primer punto, NO se elimina aún del path
+			// Obtenemos el primer punto, NO se elimina aun del path
 			Point3DShort point = getPath ().get (0);
 
 			if (point == null || (point.x == x && point.y == y && point.z == z)) {
-				// Hemos llegado al final del camino, path vacío
+				// Hemos llegado al final del camino, path vacio
 				clearPath ();
 			} else {
 				updateFacingDirection (getX (), getY (), getZ (), point.x, point.y, point.z);
@@ -3842,8 +3842,8 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 					}
 				} else {
 					// No hay hater, intentamos movernos
-					// Miramos que no haya un wallConector (puerta), en ese caso le metemos hostias hasta que pete (sólo si no está abierta y es enemy)
-					// En caso de friendly no puede pasar si está cerrada o locked (excepto caravanas)
+					// Miramos que no haya un wallConector (puerta), en ese caso le metemos hostias hasta que pete (solo si no esta abierta y es enemy)
+					// En caso de friendly no puede pasar si esta cerrada o locked (excepto caravanas)
 					boolean bWallConector = false;
 					if (lemi.getType () != TYPE_CITIZEN && lemi.getType () != TYPE_HERO && lemi.getType () != TYPE_ALLY && lemi.getCaravan () == null) {
 						Cell cell = World.getCell (point);
@@ -3901,14 +3901,14 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 								bCamina = true;
 							}
 						} else {
-							// Citizen heleandose (curándose, si)
+							// Citizen heleandose (curandose, si)
 							bCamina = true;
 						}
 
 						// Seguimos el camino
 						if (bCamina) {
 							if (canWalkNext (this, lemi.getType ())) {
-								point = getPath ().remove (0); // En principio no haría falta igualar otra vez el point a esto
+								point = getPath ().remove (0); // En principio no haria falta igualar otra vez el point a esto
 								if (isCellAllowed (point.x, point.y, point.z)) {
 									boolean bPuede = true;
 									if (point.z != getZ ()) {
@@ -3930,7 +3930,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 									if (bPuede) {
 										setCoordinates (point);
 
-										// Se acaba de mover, si es un citizen con tarea de drop y puede soltar el item, lo soltamos aquí mismo
+										// Se acaba de mover, si es un citizen con tarea de drop y puede soltar el item, lo soltamos aqui mismo
 										if (lemi.getType () == TYPE_CITIZEN) {
 											Citizen cit = (Citizen) this;
 											if (cit.getCurrentTask () != null && cit.getCurrentTask ().getTask () == Task.TASK_DROP) {
@@ -3982,7 +3982,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 	/**
 	 * Mueve un living a random, comprueba que no caiga en una casilla con gente de su tipo
 	 * 
-	 * @param iPCT Porcentaje de moverse (suele ser menor que el parámetro, ya que intentará ir a un sitio y si no es allowed no se moverá)
+	 * @param iPCT Porcentaje de moverse (suele ser menor que el parametro, ya que intentara ir a un sitio y si no es allowed no se movera)
 	 * 
 	 * @return Punto donde puede ir o null si no se ha podido mover a random
 	 */
@@ -4298,7 +4298,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 										Point3DShort p3d2 = Point3DShort.getPoolInstance (iAuxX, iAuxY, iAuxZ);
 										getPath ().add (p3d2);
 
-										// Un 10% más de moverse otra casilla
+										// Un 10% mas de moverse otra casilla
 										if (Utils.getRandomBetween (1, 10) == 1) {
 											switch (iDirection) {
 												case 0:
@@ -4376,10 +4376,10 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 
 
 	/**
-	 * Este método es para notificar a una living entity que ha sido golpeado, se le pasa el atacante
+	 * Este metodo es para notificar a una living entity que ha sido golpeado, se le pasa el atacante
 	 * 
 	 * @param le El atacante
-	 * @param bHitted Indica si le ha pegado o sólo lo ha intentado
+	 * @param bHitted Indica si le ha pegado o solo lo ha intentado
 	 */
 	public void hitted (LivingEntity le, boolean bHitted, int iDamage) {
 		// Alguien le ha pegado, seteamos el focus ID
@@ -4389,7 +4389,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
             setFighting (true);
 		}
 
-		// Animación de hit
+		// Animacion de hit
 		if (bHitted && iDamage > 0) {
 			setDamageAnimationCounter (DAMAGE_ANIMATION_FPS);
 			setDamageAnimationText (Integer.toString (iDamage * -1));
@@ -4405,7 +4405,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 
 
 	/**
-	 * Añade un efecto a la living, si ya lo tiene reseteamos el contador (lasts)
+	 * Anade un efecto a la living, si ya lo tiene reseteamos el contador (lasts)
 	 * 
 	 * @param edi
 	 */
@@ -4415,7 +4415,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 
 
 	/**
-	 * Añade un efecto a la living, si ya lo tiene reseteamos el contador (lasts)
+	 * Anade un efecto a la living, si ya lo tiene reseteamos el contador (lasts)
 	 * 
 	 * @param edi
 	 */
@@ -4462,9 +4462,9 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 			}
 		}
 
-		// Si llega aquí es que no es immune al efecto por via efectos
+		// Si llega aqui es que no es immune al efecto por via efectos
 		if (iIndexSameEffect == -1) {
-			// Efecto nuevo, miramos immunidades (sólo falta mirar immunidades por living)
+			// Efecto nuevo, miramos immunidades (solo falta mirar immunidades por living)
 			boolean bImmune = false;
 
 			// Immunity por living
@@ -4492,7 +4492,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 				}
 			}
 		} else {
-			// Ya lo tenía
+			// Ya lo tenia
 			getLivingEntityData ().getEffects ().get (iIndexSameEffect).setLasts (Utils.launchDice (emi.getLasts ()));
 		}
 
@@ -4543,7 +4543,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 					}
 				}
 
-				// Si era un effect de atacar aliados, borramos el target para que no siga atacándolos
+				// Si era un effect de atacar aliados, borramos el target para que no siga atacandolos
 				if (effectData.isAttackAllies ()) {
 					getFocusData ().setEntityID (-1);
 					getFocusData ().setEntityType (TYPE_UNKNOWN);

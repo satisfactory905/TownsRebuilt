@@ -133,10 +133,10 @@ public class ObjectiveData {
     }
 
     /**
-     * Indica si el objetivo pasado está conseguido
+     * Indica si el objetivo pasado esta conseguido
      *
      * @param alData
-     * @return true si el objetivo pasado está conseguido
+     * @return true si el objetivo pasado esta conseguido
      */
     public static boolean checkCompleted(ObjectiveData data) {
         if (data == null) {
@@ -144,7 +144,7 @@ public class ObjectiveData {
         }
 
         if (data.getType().equals(TYPE_COLLECT)) {
-            // Collect, contamos el número de items
+            // Collect, contamos el numero de items
             return Item.getNumItemsTotal(data.getParam1(), World.MAP_DEPTH - 1) >= data.getParam2();
         } else if (data.getType().equals(TYPE_BUILD)) {
 			// Construir edificio
@@ -186,10 +186,10 @@ public class ObjectiveData {
     }
 
     /**
-     * Indica si la lista de objetivos pasada está conseguida
+     * Indica si la lista de objetivos pasada esta conseguida
      *
      * @param alData
-     * @return true si la lista de objetivos pasada está conseguida
+     * @return true si la lista de objetivos pasada esta conseguida
      */
     public static boolean checkCompleted(ArrayList<ObjectiveData> alData) {
         if (alData == null || alData.size() == 0) {

@@ -69,7 +69,7 @@ public class ContextMenu {
             if (iHeight >= (MainPanel.renderHeight - 4 * UtilFont.MAX_HEIGHT)) {
                 // Demasiado grande, lo dividimos
                 int iParts = 1 + (iHeight / (MainPanel.renderHeight - 4 * UtilFont.MAX_HEIGHT));
-                // Hay que añadir 2 items por cada menu (blanco y forward), así que lo tenemos en cuenta
+                // Hay que anadir 2 items por cada menu (blanco y forward), asi que lo tenemos en cuenta
                 if (iParts > 1) {
                     int newItemsSize = (iParts - 1) * (3 * UtilFont.MAX_HEIGHT);
                     iParts = 1 + ((iHeight + newItemsSize) / (MainPanel.renderHeight - 4 * UtilFont.MAX_HEIGHT));

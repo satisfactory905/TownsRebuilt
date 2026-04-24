@@ -73,7 +73,7 @@ public abstract class Entity extends Tile implements Externalizable {
     }
 
     /**
-     * Borra una living de la celda eb la que está
+     * Borra una living de la celda eb la que esta
      */
     public void deleteLiving() {
         ArrayList<LivingEntity> livings = World.getCell(getCoordinates()).getLivings();
@@ -92,7 +92,7 @@ public abstract class Entity extends Tile implements Externalizable {
     public abstract String getTileName();
 
     /**
-     * Fills a contextual menú refering an entity of a cell
+     * Fills a contextual menu refering an entity of a cell
      *
      * @param cell
      * @param sm

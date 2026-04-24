@@ -19,7 +19,7 @@ public class ItemGenerator extends Generator {
      * Lee del gen_items.xml y genera los items
      */
     public static void generateItems(Cell[][][] cells, String sCampaignID, String sMissionID) {
-        // Leemos el gen_items.xml (si está en una misión se carga de otro sitio)
+        // Leemos el gen_items.xml (si esta en una mision se carga de otro sitio)
         Generator generator = new Generator();
         ArrayList<String> alPaths = Utils.getPathToFile(XML_FILE, sCampaignID, sMissionID);
 

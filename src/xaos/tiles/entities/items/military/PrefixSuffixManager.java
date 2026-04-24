@@ -50,7 +50,7 @@ public class PrefixSuffixManager {
             Document doc = UtilsXML.loadXMLFile(sXMLPath); //$NON-NLS-1$ //$NON-NLS-2$
 
 			// Tenemos el documento XML parseado
-            // Lo recorremos entero y vamos añadiendo los prefijos/sufijos en el array que toque
+            // Lo recorremos entero y vamos anadiendo los prefijos/sufijos en el array que toque
             NodeList nodeList = doc.getDocumentElement().getChildNodes();
             Node node;
             for (int i = 0; i < nodeList.getLength(); i++) {
@@ -96,7 +96,7 @@ public class PrefixSuffixManager {
                     psmi.setMovePCT(UtilsXML.getChildValue(node.getChildNodes(), "movePCT")); //$NON-NLS-1$
                     psmi.setWalkSpeed(UtilsXML.getChildValue(node.getChildNodes(), "walkSpeed")); //$NON-NLS-1$
 
-                    // Lo añadimos donde toque
+                    // Lo anadimos donde toque
                     if (psmi.getType().equalsIgnoreCase(PrefixSuffixData.TYPE_PREFIX)) {
                         alPrefixes.add(psmi);
                     } else {

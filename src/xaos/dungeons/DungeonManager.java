@@ -33,7 +33,7 @@ public class DungeonManager {
 
                 if (doc != null) {
 					// Tenemos el documento XML parseado
-                    // Lo recorremos entero y vamos añadiendo los datos al array
+                    // Lo recorremos entero y vamos anadiendo los datos al array
                     NodeList nodeList = doc.getDocumentElement().getChildNodes();
                     Node node;
                     for (int i = 0; i < nodeList.getLength(); i++) {
@@ -84,7 +84,7 @@ public class DungeonManager {
                                 // Monsters
                                 dungeonData.setMonsters(loadMonsters(node.getChildNodes()));
 
-                                // Lo añadimos al array
+                                // Lo anadimos al array
                                 if (iIndexExists != -1) {
                                     alDungeons.add(iIndexExists, dungeonData);
                                 } else {

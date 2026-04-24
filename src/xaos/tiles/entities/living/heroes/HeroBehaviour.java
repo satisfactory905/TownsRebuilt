@@ -53,7 +53,7 @@ public class HeroBehaviour implements Externalizable {
      * Devuelve el siguiente behaviour ID
      *
      * @param iBehaviorID ID actual
-     * @param behaviour Behacviour data del héroe, para buscar el siguiente con
+     * @param behaviour Behacviour data del heroe, para buscar el siguiente con
      * PCT > 0
      * @return el siguiente behaviour ID
      */
@@ -82,15 +82,15 @@ public class HeroBehaviour implements Externalizable {
             }
         }
 
-        return BEHAVIOUR_ID_NONE; // No debería llegar nunca
+        return BEHAVIOUR_ID_NONE; // No deberia llegar nunca
     }
 
     /**
-     * Returna el número de turnos a pasar en éste behaviour
+     * Returna el numero de turnos a pasar en este behaviour
      *
      * @param iBehaviourID ID del behaviour a mirar
      * @param behaviour Datos de behaviour
-     * @return el número de turnos a pasar en éste behaviour
+     * @return el numero de turnos a pasar en este behaviour
      */
     public static int getTurns(int iBehaviourID, HeroBehaviour behaviour) {
         int iMaxTurns = World.TIME_MODIFIER_DAY;

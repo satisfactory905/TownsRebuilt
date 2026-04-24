@@ -86,9 +86,9 @@ public class Enemy extends LivingEntity implements Externalizable {
             return false;
         }
 
-        // Primero de todo miramos si está pirando o si tiene que pirar
+        // Primero de todo miramos si esta pirando o si tiene que pirar
         if (getSiegeData().getStatus() == SiegeData.STATUS_LEAVING) {
-            // Miramos que no esté en el starting point
+            // Miramos que no este en el starting point
             if (getCoordinates().equals(getSiegeData().getStartingPoint())) {
                 // Bye bye
                 return true;
@@ -102,7 +102,7 @@ public class Enemy extends LivingEntity implements Externalizable {
                     // No puede ir, buscamos un punto a random
                     Point3DShort p3d = World.getRandomBorderPoint(iASZID);
                     if (p3d != null) {
-                        // Bingo, vamos para ahí
+                        // Bingo, vamos para ahi
                         getSiegeData().setStartingPoint(p3d);
                         setDestination(p3d);
                     } else {
@@ -114,9 +114,9 @@ public class Enemy extends LivingEntity implements Externalizable {
             }
         }
 
-        // Si llega aquí es que no está pirando
+        // Si llega aqui es que no esta pirando
         if (getSiegeData().getCount() > 0) {
-            // Estamos en siege, decrementamos el siegecount, cuando valga 0 hará lo que toque
+            // Estamos en siege, decrementamos el siegecount, cuando valga 0 hara lo que toque
             getSiegeData().setCount(getSiegeData().getCount() - 1);
             moveAtRandom(getLivingEntityData().getMovePCTCurrent(), TYPE_ENEMY);
         } else {
@@ -135,7 +135,7 @@ public class Enemy extends LivingEntity implements Externalizable {
 
     private void doSiegeStandard() {
         if ((World.getNumCitizens() + World.getNumSoldiers()) > 0) {
-            // En caso de siege y con aldeanos en el mundo le metemos un focus a alguien en el ASZI (el citizen más cercano)
+            // En caso de siege y con aldeanos en el mundo le metemos un focus a alguien en el ASZI (el citizen mas cercano)
             int iASZI = World.getCell(getCoordinates()).getAstarZoneID();
             Citizen citizen;
             ArrayList<Integer> alCitsInArea = new ArrayList<Integer>();
@@ -233,7 +233,7 @@ public class Enemy extends LivingEntity implements Externalizable {
             }
         }
 
-        // Si llega aquí es que no hay items to steal, buscamos containers
+        // Si llega aqui es que no hay items to steal, buscamos containers
         if (Game.getWorld().getContainers().size() > 0) {
             int iASZI = World.getCell(getCoordinates()).getAstarZoneID();
             ArrayList<Container> alContainers = Game.getWorld().getContainers();
@@ -251,12 +251,12 @@ public class Enemy extends LivingEntity implements Externalizable {
             }
 
             if (alContainersInArea.size() > 0) {
-                // Hay containers en el área, pillamos uno a random y vamos a por él
+                // Hay containers en el area, pillamos uno a random y vamos a por el
                 int iItemID = alContainersInArea.get(Utils.getRandomBetween(0, alContainersInArea.size() - 1));
                 itemContainer = Item.getItemByID(iItemID); // No puede dar null, lo tenemos controlado arriba
                 setDestination(itemContainer.getCoordinates());
             } else {
-                // Hay containers pero no en el área, seteamos el contador
+                // Hay containers pero no en el area, seteamos el contador
                 getSiegeData().setCount(World.TIME_MODIFIER_HOUR * LivingEntityManager.getItem(getIniHeader()).getLevel());
                 if (getSiegeData().getCount() <= 0) {
                     getSiegeData().setCount(World.TIME_MODIFIER_HOUR);
@@ -270,7 +270,7 @@ public class Enemy extends LivingEntity implements Externalizable {
     }
 
     /**
-     * Fills a contextual menú refering an enemy of a cell
+     * Fills a contextual menu refering an enemy of a cell
      *
      * @param cell
      * @param sm

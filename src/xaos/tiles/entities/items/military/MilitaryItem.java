@@ -286,7 +286,7 @@ public class MilitaryItem extends Item implements Externalizable {
 
         if (itemWeared != null) {
 			// Lleva algo, los comparamos
-            // Sólo miramos el level del item
+            // Solo miramos el level del item
             return ItemManager.getItem(itemWeared.getIniHeader()).getLevel() < imi.getLevel();
         }
 

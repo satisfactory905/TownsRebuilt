@@ -96,7 +96,7 @@ public class Hero extends LivingEntity implements Externalizable {
     }
 
     /**
-     * Resta los contadores de stay, comida y sueño, suma el contador de puntos
+     * Resta los contadores de stay, comida y sueno, suma el contador de puntos
      * de vida
      *
      * @return
@@ -109,13 +109,13 @@ public class Hero extends LivingEntity implements Externalizable {
 
             if (getHeroData().getHeroTask().getTaskID() != HeroTask.TASK_EATING && getHeroData().getHeroTask().getTaskID() != HeroTask.TASK_SLEEPING && getHeroData().getHeroTask().getTaskID() != HeroTask.TASK_LEAVING) {
                 // Buscamos comida
-                Point3DShort p3d = Item.searchFood(getCoordinates(), getID()); // Héroes no le quitan la comida a los aldeanos, pero sí al revés
+                Point3DShort p3d = Item.searchFood(getCoordinates(), getID()); // Heroes no le quitan la comida a los aldeanos, pero si al reves
                 if (p3d == null) {
                     // No hay comida
                     getCitizenData().setHungryEating(getCitizenData().getHungryEating() - 1);
 
                     if (getCitizenData().getHungryEating() < -(2 * World.TIME_MODIFIER_HOUR)) { // 2 horas sin comida en el mundo, se pira
-                        if (canChangeTask(false, false)) { // Falses pq comida y sleep ya están mirados arriba
+                        if (canChangeTask(false, false)) { // Falses pq comida y sleep ya estan mirados arriba
                             getHeroData().getHeroTask().setTaskID(HeroTask.TASK_LEAVING);
                             MessagesPanel.addMessage(MessagesPanel.TYPE_HEROES, getCitizenData().getFullName() + Messages.getString("Hero.1"), ColorGL.ORANGE, getCoordinates(), getID()); //$NON-NLS-1$
                         }
@@ -216,7 +216,7 @@ public class Hero extends LivingEntity implements Externalizable {
             // Turnos
             getHeroData().setTurnsToNextBehaviour(HeroBehaviour.getTurns(getHeroData().getCurrentBehaviourID(), getHeroData().getHeroBehaviour()));
 
-            // Reset task si no está durmiendo/comiendo o tratando de irse/en furia
+            // Reset task si no esta durmiendo/comiendo o tratando de irse/en furia
             if (canChangeTask(true, true)) {
                 getHeroData().getHeroTask().setTaskID(HeroTask.TASK_NO_TASK);
             }
@@ -227,7 +227,7 @@ public class Hero extends LivingEntity implements Externalizable {
             // Tiene task
             if (getHeroData().getHeroTask().getTaskID() == HeroTask.TASK_LEAVING) {
                 if (getHeroData().getStartingPoint().equals(getCoordinates())) {
-                    // Se acabó, nos piramos
+                    // Se acabo, nos piramos
                     return true;
                 } else {
                     startLeaving();
@@ -262,7 +262,7 @@ public class Hero extends LivingEntity implements Externalizable {
                     getHeroData().setExploringCounter(0);
                     break;
                 default:
-                    // System.err.println ("Esto no debería pasar nunca");
+                    // System.err.println ("Esto no deberia pasar nunca");
                     moveAtRandom(getLivingEntityData().getMovePCTCurrent(), TYPE_HERO);
             }
         }
@@ -316,7 +316,7 @@ public class Hero extends LivingEntity implements Externalizable {
                             // Lo equipamos
                             equip((MilitaryItem) item);
 
-                            // Dejamos en la celda el antiguo item (si tenía)
+                            // Dejamos en la celda el antiguo item (si tenia)
                             if (oldItem != null) {
                                 oldItem.init(getX(), getY(), getZ());
                                 ItemManagerItem oldImi = ItemManager.getItem(oldItem.getIniHeader());
@@ -331,7 +331,7 @@ public class Hero extends LivingEntity implements Externalizable {
         }
 
         if (!bEquipped) {
-            // Aquí no hay item, miramos si hay alguno en LOS
+            // Aqui no hay item, miramos si hay alguno en LOS
             MilitaryItem mi = hasBetterItemInLOS(entityTypeInLOS(TYPE_HERO, TYPE_CITIZEN));
             if (mi != null) {
                 setDestination(mi.getCoordinates());
@@ -348,7 +348,7 @@ public class Hero extends LivingEntity implements Externalizable {
      */
     private void doIdle() {
         if (getHeroData().getIdleCounter() == 0) {
-            // Empieza el idle, escogemos qué hacer
+            // Empieza el idle, escogemos que hacer
             getHeroData().setIdleTask(HeroData.IDLE_SOCIAL);
             getHeroData().setIdleCounter(World.TIME_MODIFIER_HOUR * 4); // 4 horitas
         } else {
@@ -371,7 +371,7 @@ public class Hero extends LivingEntity implements Externalizable {
                         Zone zone = Zone.getZone(cell.getZoneID());
                         if (zone != null) {
                             if (ZoneManager.getItem(zone.getIniHeader()).getType() == ZoneManagerItem.TYPE_SOCIAL) {
-                                // Está en zona social, INTENTAMOS movernos a random sólo 1 de cada 20
+                                // Esta en zona social, INTENTAMOS movernos a random solo 1 de cada 20
                                 bEnZona = true;
                                 if (Utils.getRandomBetween(1, 20) == 1) {
                                     moveAtRandom(getLivingEntityData().getMovePCTCurrent(), TYPE_HERO);
@@ -381,7 +381,7 @@ public class Hero extends LivingEntity implements Externalizable {
                     }
 
                     if (!bEnZona) {
-                        // Si no está en zona buscamos una
+                        // Si no esta en zona buscamos una
                         Zone zone;
                         ArrayList<Zone> alZones = Game.getWorld().getZones();
                         Point3DShort p3dZoneNear = null;
@@ -448,8 +448,8 @@ public class Hero extends LivingEntity implements Externalizable {
                                     getCitizenData().setHungryEating(0);
                                 }
                             } else {
-								// Algo ha pasado, en la casilla no hay nada que nos sirva (no debería pasar, quizá están moviendo un container)
-                                // De momento pasamos y cuando vuelva a entrar buscará comida otra vez
+								// Algo ha pasado, en la casilla no hay nada que nos sirva (no deberia pasar, quiza estan moviendo un container)
+                                // De momento pasamos y cuando vuelva a entrar buscara comida otra vez
                             }
                         } else {
                             getCitizenData().getCarryingData().setCarrying((Item) cell.getEntity());
@@ -457,11 +457,11 @@ public class Hero extends LivingEntity implements Externalizable {
                             getCitizenData().setHungryEating(0);
                         }
                     } else {
-						// Algo ha pasado, en la casilla no hay nada que nos sirva (no debería pasar, quizá están moviendo un container)
-                        // De momento pasamos y cuando vuelva a entrar buscará comida otra vez
+						// Algo ha pasado, en la casilla no hay nada que nos sirva (no deberia pasar, quiza estan moviendo un container)
+                        // De momento pasamos y cuando vuelva a entrar buscara comida otra vez
                     }
                 } else {
-                    // Por ahí
+                    // Por ahi
                     setDestination(p3dItem);
                 }
             }
@@ -492,7 +492,7 @@ public class Hero extends LivingEntity implements Externalizable {
                     }
 
                     if (!bEstamosEnComedor) {
-                        // No estamos en comedor, buscamos uno y vamos hacia allí, si lo encontramos
+                        // No estamos en comedor, buscamos uno y vamos hacia alli, si lo encontramos
                         Point3DShort p3d = null;
                         Point3DShort p3dMinDistance = null;
                         int iMinDistance = Utils.MAX_DISTANCE;
@@ -572,14 +572,14 @@ public class Hero extends LivingEntity implements Externalizable {
                     getCitizenData().setHungry((getCitizenData().getMaxHungry() * iFillPCT) / 100);
                     getCitizenData().getCarryingData().setCarrying(null);
 
-                    // Effects después de comer
+                    // Effects despues de comer
                     if (imi.getFoodEffects() != null) {
                         for (int i = 0; i < imi.getFoodEffects().size(); i++) {
                             addEffect(EffectManager.getItem(imi.getFoodEffects().get(i)), true);
                         }
                     }
 
-                    // Eventos después de comer
+                    // Eventos despues de comer
                     for (int i = 0; i < Game.getWorld().getEvents().size(); i++) {
                         EventData ed = Game.getWorld().getEvents().get(i);
                         EventManagerItem emi = EventManager.getItem(ed.getEventID());
@@ -589,7 +589,7 @@ public class Hero extends LivingEntity implements Externalizable {
                     }
                 }
             } else {
-                // No es comida, petamos el item (son así de bestias)
+                // No es comida, petamos el item (son asi de bestias)
                 getCitizenData().getCarryingData().setCarrying(null);
                 MessagesPanel.addMessage(MessagesPanel.TYPE_HEROES, getCitizenData().getFullName() + Messages.getString("Hero.3") + imiCarrying.getName(), ColorGL.ORANGE, getCoordinates(), getID()); //$NON-NLS-1$
             }
@@ -601,7 +601,7 @@ public class Hero extends LivingEntity implements Externalizable {
      */
     private void doSleeping() {
 		// Si tiene zona personal vamos a ella
-        // Antes de mirar nada miraremos si está en una cama, en ese caso no lo movemos pq ya está durmiendo
+        // Antes de mirar nada miraremos si esta en una cama, en ese caso no lo movemos pq ya esta durmiendo
         boolean bEstaEnCama = false;
         Cell cell = World.getCell(getCoordinates());
         if (cell.hasItem()) {
@@ -625,7 +625,7 @@ public class Hero extends LivingEntity implements Externalizable {
                 if (zone != null) {
                     // Tenemos su zona, miramos si estamos en ella
                     if (cell.hasZone() && zone.isOperative() && cell.getZoneID() == zone.getID()) {
-                        // Está en ella
+                        // Esta en ella
                     } else {
                         // No estamos en su zona personal, vamos a ella
                         Point3DShort p3d = Zone.getFreeSleepItemAtRandom(zone, cell.getAstarZoneID());
@@ -637,7 +637,7 @@ public class Hero extends LivingEntity implements Externalizable {
                             setDestination(p3d);
                             return;
                         } else {
-                            // Zona personal no accesible, no hacemos nada y que duerma allí donde esté
+                            // Zona personal no accesible, no hacemos nada y que duerma alli donde este
                         }
                     }
                 } else {
@@ -648,7 +648,7 @@ public class Hero extends LivingEntity implements Externalizable {
             }
         }
 
-        // Si llega aquí es que ya tenemos que dormir
+        // Si llega aqui es que ya tenemos que dormir
         getCitizenData().setSleepSleeping(getCitizenData().getSleepSleeping() + 1);
         if (getCitizenData().getSleepSleeping() >= (6 * World.TIME_MODIFIER_HOUR)) {
             // Ya ha dormido
@@ -657,7 +657,7 @@ public class Hero extends LivingEntity implements Externalizable {
 
             getHeroData().getHeroTask().setTaskID(HeroTask.TASK_NO_TASK);
 
-            // Events después de dormir
+            // Events despues de dormir
             for (int i = 0; i < Game.getWorld().getEvents().size(); i++) {
                 EventData ed = Game.getWorld().getEvents().get(i);
                 EventManagerItem emi = EventManager.getItem(ed.getEventID());
@@ -669,20 +669,20 @@ public class Hero extends LivingEntity implements Externalizable {
     }
 
     /**
-     * Explora por ahí
+     * Explora por ahi
      */
     private void doExploring() {
         if (getHeroData().getExploringCounter() == 0) {
             // Toca ir a explorar, esperamos 1 hora antes de volver a buscar
             getHeroData().setExploringCounter(HeroData.TURNS_BETWEEN_EXPLORE);
 
-            // Miramos si hay algún hotpoint para explorar
+            // Miramos si hay algun hotpoint para explorar
             Point3DShort p3dExploringHP = Game.getWorld().getRandomExploringHotpoint(World.getCell(getCoordinates()).getAstarZoneID());
 
             if (p3dExploringHP == null) {
-                // Y lo movemos a random a algún punto de por ahí
+                // Y lo movemos a random a algun punto de por ahi
                 int iMaxLevelDiscovered = Game.getWorld().getNumFloorsDiscovered() - 1;
-                if (iMaxLevelDiscovered >= World.MAP_DEPTH) { // No debería
+                if (iMaxLevelDiscovered >= World.MAP_DEPTH) { // No deberia
                     iMaxLevelDiscovered = World.MAP_DEPTH - 1;
                 }
 
@@ -756,12 +756,12 @@ public class Hero extends LivingEntity implements Externalizable {
             for (int h = 0; h < World.getHeroIDs().size(); h++) {
                 hero = (Hero) World.getLivingEntityByID(World.getHeroIDs().get(h));
                 if (hero != null && hero.getID() != getID() && hero.getHeroData().getHeroTask().getTaskID() == HeroTask.TASK_EXPLORING) {
-					// Amigo encontrado que también está explorando
-                    // Miramoas que no esté luchando
+					// Amigo encontrado que tambien esta explorando
+                    // Miramoas que no este luchando
                     if (hero.getFocusData() == null || hero.getFocusData().getEntityID() == -1) {
-                        // Miramos que no esté muriendo (v13a)
+                        // Miramos que no este muriendo (v13a)
                         if ((hero.getLivingEntityData().getHealthPointsMAXCurrent() / 3) <= hero.getLivingEntityData().getHealthPoints()) {
-                            // Lo más importante, que el heroe sea un amigo (v13a)
+                            // Lo mas importante, que el heroe sea un amigo (v13a)
                             if (getHeroData().getFriendships().contains(Integer.valueOf(hero.getID()))) {
                                 // Perfecto, que se venga
                                 hero.setDestination(p3ds);
@@ -785,7 +785,7 @@ public class Hero extends LivingEntity implements Externalizable {
             for (int i = 0; i < alSkillEffects.size(); i++) {
                 sei = alSkillEffects.get(i);
                 if (sei.getTarget() != SkillEffectItem.TARGET_INT_NONE) {
-                    // Tiene target, hay que añadir el effect al target
+                    // Tiene target, hay que anadir el effect al target
                     ArrayList<LivingEntity> alTargets = null;
                     if (sei.getTarget() == SkillEffectItem.TARGET_INT_SELF) {
                         // SELF
@@ -814,7 +814,7 @@ public class Hero extends LivingEntity implements Externalizable {
         }
 
 		// Ahora los efectos que no aplican a targets
-        // Vamos a ver qué hay que hacer
+        // Vamos a ver que hay que hacer
         if (smi.isTaunt()) {
 			// TAUNT
             // Obtenemos hateds para cambiarles el target
@@ -989,7 +989,7 @@ public class Hero extends LivingEntity implements Externalizable {
      * "DESTROY_BLOCKING_ITEMS" mode
      */
     private void doRage() {
-        // Si tiene algún aldeano en la zona se lo pone de focus
+        // Si tiene algun aldeano en la zona se lo pone de focus
         int iASZID = World.getCell(getCoordinates()).getAstarZoneID();
 
         // Buscamos aldeanos en la zona
@@ -1033,14 +1033,14 @@ public class Hero extends LivingEntity implements Externalizable {
      * Hace lo necesario para empezar a irse
      */
     public void startLeaving() {
-        // Miramos si tiene camino al punto por donde llegó
+        // Miramos si tiene camino al punto por donde llego
         int iASZID = World.getCell(getCoordinates()).getAstarZoneID();
         if (getHeroData().getStartingPoint() != null && World.getCell(getHeroData().getStartingPoint()).getAstarZoneID() == iASZID) {
             // Hay camino, lo movemos
             getHeroData().getHeroTask().setTaskID(HeroTask.TASK_LEAVING);
             setDestination(getHeroData().getStartingPoint());
         } else {
-            // No hay salida por donde llegó, buscamos un punto
+            // No hay salida por donde llego, buscamos un punto
             Point3DShort p3dLeave = World.getRandomBorderPoint(iASZID);
             if (p3dLeave != null) {
                 // Encontrado, se lo metemos
@@ -1057,7 +1057,7 @@ public class Hero extends LivingEntity implements Externalizable {
     }
 
     /**
-     * Fills a contextual menú refering heros of a cell
+     * Fills a contextual menu refering heros of a cell
      *
      * @param cell
      * @param sm
@@ -1081,7 +1081,7 @@ public class Hero extends LivingEntity implements Externalizable {
                             sm.addItem(new SmartMenu(SmartMenu.TYPE_TEXT, "Exploring counter: " + hero.getHeroData().getExploringCounter(), null, null, null, null, p3d.toPoint3D())); //$NON-NLS-1$
                         }
 
-                        // Información del héroe
+                        // Informacion del heroe
                         sm.addItem(new SmartMenu(SmartMenu.TYPE_TEXT, hero.getCitizenData().getFullName(), null, null, null, null, null, Color.YELLOW));
                         sm.addItem(new SmartMenu(SmartMenu.TYPE_TEXT, Messages.getString("Hero.4") + hero.getHeroData().getLevel() + " (" + hero.getHeroData().getXp() + Messages.getString("Hero.5") + hero.getHeroData().getXpPCT() + "%)", null, null, null)); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
                         sm.addItem(new SmartMenu(SmartMenu.TYPE_TEXT, hero.getLivingEntityData().toString(), null, null, null));
@@ -1138,17 +1138,17 @@ public class Hero extends LivingEntity implements Externalizable {
     }
 
     /**
-     * Este método es para notificar a una living entity que ha sido golpeado,
+     * Este metodo es para notificar a una living entity que ha sido golpeado,
      * se le pasa el atacante
      *
      * @param le El atacante
-     * @param bHitted Indica si le ha pegado o sólo lo ha intentado
+     * @param bHitted Indica si le ha pegado o solo lo ha intentado
      */
     public void hitted(LivingEntity le, boolean bHitted, int iDamage) {
         // super.hitted (le, bHitted); // El comentario es para que no responda a las hostias, ya se hace abajo si hace falta
 
         if (bHitted) {
-            // Si tiene los puntos de vida bajos se va a la habitación personal (o taberna si no tiene) a descansar
+            // Si tiene los puntos de vida bajos se va a la habitacion personal (o taberna si no tiene) a descansar
             boolean bADescansar = false;
             boolean bYaEstabaDescansando = false;
             if ((getLivingEntityData().getHealthPointsMAXCurrent() / 3) > getLivingEntityData().getHealthPoints()) {
@@ -1158,7 +1158,7 @@ public class Hero extends LivingEntity implements Externalizable {
                 // Puntos de vida bajos y no hay enemigo a la vista, buscamos un sitio donde descansar
                 if (getCitizenData().getZoneID() > 0) {
                     if (cell.getZoneID() != getCitizenData().getZoneID()) {
-                        // Tiene zona y no está en ella, vamos a buscar un punto de guays
+                        // Tiene zona y no esta en ella, vamos a buscar un punto de guays
                         Zone zone = Zone.getZone(getCitizenData().getZoneID());
                         if (zone != null) {
                             Point3DShort p3d = Zone.getFreeSleepItemAtRandom(zone, iCurrentASZID);
@@ -1178,23 +1178,23 @@ public class Hero extends LivingEntity implements Externalizable {
                             getCitizenData().setZoneID(0);
                         }
                     } else {
-                        // Ya está en la zona, no hacemos nada, esperamos a que se recupere
+                        // Ya esta en la zona, no hacemos nada, esperamos a que se recupere
                         bYaEstabaDescansando = true;
                     }
                 }
 
                 if (!bADescansar && !bYaEstabaDescansando) {
-                    // Miramos que no esté en una DINING
+                    // Miramos que no este en una DINING
                     if (cell.getZoneID() > 0) {
                         Zone zone = Zone.getZone(cell.getZoneID());
                         if (zone != null && ZoneManager.getItem(zone.getIniHeader()).getType() == ZoneManagerItem.TYPE_DINING) {
-                            // Está en una dining, pacasa
+                            // Esta en una dining, pacasa
                             bYaEstabaDescansando = true;
                         }
                     }
 
                     if (!bADescansar && !bYaEstabaDescansando) {
-                        // No tiene zona ni está en una DINING, buscamos la DINING zone más cercana
+                        // No tiene zona ni esta en una DINING, buscamos la DINING zone mas cercana
                         ArrayList<Zone> zones = Game.getWorld().getZones();
                         Zone zone;
                         int iMaxDistance = Utils.MAX_DISTANCE;
@@ -1258,7 +1258,7 @@ public class Hero extends LivingEntity implements Externalizable {
         // Y llamamos a los amigos
         moveFriendsTo(getCoordinates());
 
-        // Si está al borde de la muerte (10% HP) miramemos también si puede usar skills de tipo NEAR_DEATH
+        // Si esta al borde de la muerte (10% HP) miramemos tambien si puede usar skills de tipo NEAR_DEATH
         if ((getLivingEntityData().getHealthPointsMAXCurrent() / 3) >= getLivingEntityData().getHealthPoints()) {
             checkAndUseSkills(SkillManagerItem.USE_NEAR_DEATH);
         }

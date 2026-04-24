@@ -29,9 +29,9 @@ public class SoldierData implements Externalizable {
 
     // BOSS AROUND
     public static final int COUNTER_MAX_BOSS_AROUND = 64;
-    public static final int BOOST_TURNS_BOSS_AROUND = 64; // Turnos que el aldeano correrá/currará más
-    public static final int BOOST_PCT_BOSS_AROUND_WALK = 150; // A mayor % más correrán
-    public static final int BOOST_PCT_BOSS_AROUND_WORK = 65; // A MENOR % menos turnos tardarán en hacer las tareas
+    public static final int BOOST_TURNS_BOSS_AROUND = 64; // Turnos que el aldeano correra/currara mas
+    public static final int BOOST_PCT_BOSS_AROUND_WALK = 150; // A mayor % mas correran
+    public static final int BOOST_PCT_BOSS_AROUND_WORK = 65; // A MENOR % menos turnos tardaran en hacer las tareas
 
     private int state;
     private int counter;
@@ -95,14 +95,14 @@ public class SoldierData implements Externalizable {
 					// De CIVIL a SOLDADO
                     // Buscamos al civil
                     int iCivIndex = World.getCitizenIDs().indexOf(livingID);
-                    if (iCivIndex != -1) { // Debería pasar SIEMPRE
+                    if (iCivIndex != -1) { // Deberia pasar SIEMPRE
                         World.getSoldierIDs().add(World.getCitizenIDs().remove(iCivIndex));
                     }
                 } else {
 					// De SOLDADO a CIVIL
                     // Buscamos al soldado
                     int iSoldierIndex = World.getSoldierIDs().indexOf(livingID);
-                    if (iSoldierIndex != -1) { // Debería pasar SIEMPRE
+                    if (iSoldierIndex != -1) { // Deberia pasar SIEMPRE
                         World.getCitizenIDs().add(World.getSoldierIDs().remove(iSoldierIndex));
                     }
                 }
@@ -148,18 +148,18 @@ public class SoldierData implements Externalizable {
             boolean bDifferentGroups = this.group != group;
 
             if (bDifferentGroups) {
-                // Lo eliminamos de la lista de groups en la que esté (si es que está)
+                // Lo eliminamos de la lista de groups en la que este (si es que esta)
                 Game.getWorld().getSoldierGroups().removeSoldierFromGroup(livingID, this.group);
 
                 this.group = group;
 
-                // Lo añadimos a la lista que toque
+                // Lo anadimos a la lista que toque
                 if (getState() != STATE_NOT_A_SOLDIER && bDifferentGroups) {
                     Game.getWorld().getSoldierGroups().addSoldierToGroup(livingID, this.group);
                 }
             } else {
 				// Mismo grupo, no hay que hacer nada
-                // Si pasa de aldeano a soldado podría ser que sea el mismo grupo (-1), así que miramos eso y lo añadimos a la lista de soldados sin grupo
+                // Si pasa de aldeano a soldado podria ser que sea el mismo grupo (-1), asi que miramos eso y lo anadimos a la lista de soldados sin grupo
                 if (!Game.getWorld().getSoldierGroups().getSoldiersWithoutGroup().contains(Integer.valueOf(livingID))) {
                     Game.getWorld().getSoldierGroups().addSoldierToGroup(livingID, this.group);
                 }

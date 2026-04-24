@@ -17,7 +17,7 @@ import xaos.utils.UtilsXML;
 
 /**
  * 
- * Carga los datos de campañas y tiene un array de campañas
+ * Carga los datos de campanas y tiene un array de campanas
  * 
  */
 public class CampaignManager {
@@ -55,7 +55,7 @@ public class CampaignManager {
 			Document doc = UtilsXML.loadXMLFile (sXMLPath);
 
 			// Tenemos el documento XML parseado
-			// Lo recorremos entero y vamos añadiendo los datos al array
+			// Lo recorremos entero y vamos anadiendo los datos al array
 			NodeList nodeList = doc.getDocumentElement ().getChildNodes ();
 			Node node;
 			String sID;
@@ -63,7 +63,7 @@ public class CampaignManager {
 				node = nodeList.item (i);
 				if (node.getNodeType () == Node.ELEMENT_NODE) {
 					// Campaign
-					// Obtenemos el ID, name y las campañas
+					// Obtenemos el ID, name y las campanas
 					sID = UtilsXML.getChildValue (node.getChildNodes (), "id"); //$NON-NLS-1$
 
 					int iIndex = -1;
@@ -98,7 +98,7 @@ public class CampaignManager {
 					// Missions
 					campaignData.setMissions (loadMissions (node.getChildNodes (), campaignData, bLoadingMain));
 
-					// Lo añadimos al array
+					// Lo anadimos al array
 					if (iIndex != -1 && !bLoadingMain) {
 						alCampaigns.set (iIndex, campaignData);
 					} else {
@@ -237,7 +237,7 @@ public class CampaignManager {
 							flow.setOrderedTriggers (UtilsXML.getChildValue (nodeFlow.getChildNodes (), "orderedTriggers")); //$NON-NLS-1$
 							flow.setTriggers (loadTutorialTriggers (nodeFlow.getChildNodes ()));
 
-							// Añadimos el flow
+							// Anadimos el flow
 							alFlows.add (flow);
 						}
 					}
@@ -275,7 +275,7 @@ public class CampaignManager {
 		ArrayList<String> alBlinks = Utils.getArray (UtilsXML.getChildValue (nodelist, "blinkProduction")); //$NON-NLS-1$
 
 		if (alBlinks != null) {
-//			// Pillamos los parámetros
+//			// Pillamos los parametros
 //			Node node = UtilsXML.getChild (nodelist, "blinkProduction"); //$NON-NLS-1$
 //			boolean bRegPlus = false;
 //			boolean bRegMinus = false;

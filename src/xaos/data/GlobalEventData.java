@@ -21,8 +21,8 @@ public class GlobalEventData implements Externalizable {
     private float red;
     private float green;
     private float blue;
-    private int waitPCT; // Suma (multiplicación) de todos los PCT activos
-    private int walkSpeedPCT; // Suma (multiplicación) de todos los PCT activos
+    private int waitPCT; // Suma (multiplicacion) de todos los PCT activos
+    private int walkSpeedPCT; // Suma (multiplicacion) de todos los PCT activos
     private static Tile icon; // Toma el valor del icono del primer evento (o "icon_events", "icon_eventsON");
 
     public GlobalEventData() {
@@ -117,7 +117,7 @@ public class GlobalEventData implements Externalizable {
             }
         }
 
-        // Si llega aquí es que aún no está inicializado o no hay eventos, metemos el default
+        // Si llega aqui es que aun no esta inicializado o no hay eventos, metemos el default
         icon = TILE_EVENT;
     }
 

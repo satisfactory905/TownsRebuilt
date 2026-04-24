@@ -36,22 +36,22 @@ public class Building extends Entity implements Externalizable {
     public static char GROUND_NON_BUILDING = 'X'; //$NON-NLS-1$
 
     /**
-     * Indica si ya está operativo
+     * Indica si ya esta operativo
      */
     private boolean operative;
 
     /**
      * Son los prerequisitos para construirse, a medida que los aldeanos los
-     * traigan irá desapareciendo Cuando lleguen a 0 el edificio pasa a estar
+     * traigan ira desapareciendo Cuando lleguen a 0 el edificio pasa a estar
      * operativo
      */
     private ArrayList<int[]> prerequisites;
     private ArrayList<int[]> prerequisitesLiving;
 
-    private boolean nonStop; // Indica si siempre está produciendo items o se hace manual
+    private boolean nonStop; // Indica si siempre esta produciendo items o se hace manual
     private ArrayList<Item> itemQueue; // Es la lista de items en cola para producirse
-    private String lastItem; // Indica el último item producido, es útil cuando esté en modo non-stop
-    private int counter; // Se usa para contar el tiempo de los items automáticos
+    private String lastItem; // Indica el ultimo item producido, es util cuando este en modo non-stop
+    private int counter; // Se usa para contar el tiempo de los items automaticos
 
     public Building() {
         super();
@@ -129,7 +129,7 @@ public class Building extends Entity implements Externalizable {
             return false;
         }
 
-        // No vacía o con zona
+        // No vacia o con zona
         if (!cell.isEmpty() || cell.hasZone()) {
             return false;
         }
@@ -164,7 +164,7 @@ public class Building extends Entity implements Externalizable {
     /**
      * Crea un objeto edificio
      *
-     * @param item Objeto con las características del edificio
+     * @param item Objeto con las caracteristicas del edificio
      *
      * @return un objeto edificio
      */
@@ -338,7 +338,7 @@ public class Building extends Entity implements Externalizable {
             building = World.getBuildings().remove(iIndex);
 
             BuildingManagerItem bmi = BuildingManager.getItem(getIniHeader());
-            // Quitamos también las marcas de la/s celda/s (de edificio y de A*ZoneID)
+            // Quitamos tambien las marcas de la/s celda/s (de edificio y de A*ZoneID)
             for (int x = building.getX(); x < (building.getX() + bmi.getWidth()); x++) {
                 for (int y = building.getY(); y < (building.getY() + bmi.getHeight()); y++) {
                     char groundDataChar = bmi.getGroundData().charAt((y - building.getY()) * bmi.getWidth() + (x - building.getX()));
@@ -376,7 +376,7 @@ public class Building extends Entity implements Externalizable {
     }
 
     /**
-     * Fills a contextual menú refering buildings of a cell
+     * Fills a contextual menu refering buildings of a cell
      *
      * @param cell
      * @param sm
@@ -386,7 +386,7 @@ public class Building extends Entity implements Externalizable {
             Building building = Building.getBuilding(cell.getBuildingCoordinates());
             if (building != null) {
                 if (!building.isOperative() && (building.getPrerequisites().size() > 0 || building.getPrerequisitesLiving().size() > 0)) {
-                    // Mostramos los prerequisitos si aún no se ha construido
+                    // Mostramos los prerequisitos si aun no se ha construido
                     sm.addItem(new SmartMenu(SmartMenu.TYPE_TEXT, Messages.getString("Building.0"), null, null, null)); //$NON-NLS-1$
                     if (building.getPrerequisites() != null) {
                         for (int i = 0; i < building.getPrerequisites().size(); i++) {
@@ -453,7 +453,7 @@ public class Building extends Entity implements Externalizable {
                     // Obtenemos todo lo que puede crear
                     ArrayList<ItemManagerItem> alIMI = ItemManager.getItemsByBuilding(building.getIniHeader());
                     if (alIMI.size() > 0) {
-                        // Añadir objetos para crear
+                        // Anadir objetos para crear
                         SmartMenu smBuildingAdd = new SmartMenu(SmartMenu.TYPE_MENU, Messages.getString("Building.2"), sm, null, null); //$NON-NLS-1$
 
                         String sName;
@@ -470,7 +470,7 @@ public class Building extends Entity implements Externalizable {
                         sm.addItem(smBuildingAdd);
                     }
 
-                    // Si tiene cosas en cola añadimos el menú de quitarlas
+                    // Si tiene cosas en cola anadimos el menu de quitarlas
                     if (building.hasItemsInQueue()) {
                         // Remove tasks
                         SmartMenu smBuildingRemove = new SmartMenu(SmartMenu.TYPE_MENU, Messages.getString("Building.5"), sm, null, null); //$NON-NLS-1$
@@ -512,11 +512,11 @@ public class Building extends Entity implements Externalizable {
         }
 
         // Operativo, con non-stop y sin items en cola
-        if (getLastItem() == null) { // En caso de edificio automático el primer item se pone al crearlo (Task.java)
+        if (getLastItem() == null) { // En caso de edificio automatico el primer item se pone al crearlo (Task.java)
             return false;
         }
 
-        // Tenemos last item, y está en non-stop, le metemos otro
+        // Tenemos last item, y esta en non-stop, le metemos otro
         BuildingManagerItem bmi = BuildingManager.getItem(getIniHeader());
         // Miramos primero si el edificio saca items o livingentities
         Point3DShort p3dEntrance = bmi.getEntranceBaseCoordinates().merge(getCoordinates());

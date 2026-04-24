@@ -146,14 +146,14 @@ public final class AStarQueueItem {
     }
 
     /**
-     * Continua (o empieza) la búsqueda A* hasta un máximo de "iMaxIterations"
+     * Continua (o empieza) la busqueda A* hasta un maximo de "iMaxIterations"
      * iteraciones.
      *
      * @param iMaxIterations
-     * @return el número de iteraciones efectuadas
+     * @return el numero de iteraciones efectuadas
      */
     public int search(int iMaxIterations) {
-        // Miramos si las 2 celdas aún están en la misma zona (por si acaso alguien ha digado o hecho algo mientras buscaba)
+        // Miramos si las 2 celdas aun estan en la misma zona (por si acaso alguien ha digado o hecho algo mientras buscaba)
         if (World.getCell(startPoint).getAstarZoneID() != World.getCell(endPoint).getAstarZoneID()) {
 			// Cagada, ASZI distinto, finished task!
             //setClosedList (null);
@@ -161,14 +161,14 @@ public final class AStarQueueItem {
             return 0;
         }
 
-		// Miramos si es una continuación
+		// Miramos si es una continuacion
         //boolean bContinue = getClosedList () != null;
         AStarNodo nodo = null;
         if (isNewItem()) {
             setNewItem(false);
-			// Miramos las casillas cercanas al punto final y origen, empezaremos la búsqueda por el que tenga más
-            // restricciones, o sea, el que tenga más cells-NO-Allowed
-            // Segun que ruta podemos mejorar la velocidad de búsqueda en un grado 10.000 a 1 (aprox.)
+			// Miramos las casillas cercanas al punto final y origen, empezaremos la busqueda por el que tenga mas
+            // restricciones, o sea, el que tenga mas cells-NO-Allowed
+            // Segun que ruta podemos mejorar la velocidad de busqueda en un grado 10.000 a 1 (aprox.)
 
             // Miramos en un cuadro de 7x7 y contamos las NO allowed para cada punto
             int iNOAllowedInicial = 0;
@@ -223,7 +223,7 @@ public final class AStarQueueItem {
                 }
             }
 
-            // Añadimos el primer nodo en la lista abierta
+            // Anadimos el primer nodo en la lista abierta
             nodo = AStarNodo.getPoolInstance(startPoint.x, startPoint.y, startPoint.z, null, endPoint.x, endPoint.y, endPoint.z);
             openList = new AStarBinaryHeap();
             openList.add(nodo);
@@ -234,7 +234,7 @@ public final class AStarQueueItem {
         int iIterations = 0;
         while (iIterations < iMaxIterations && !openList.isEmpty()) {
             iIterations++;
-            nodo = openList.remove(0); // Pillamos el 1er nodo (la lista ya estará ordenada)
+            nodo = openList.remove(0); // Pillamos el 1er nodo (la lista ya estara ordenada)
             if (nodo.x == endPoint.x && nodo.y == endPoint.y && nodo.z == endPoint.z) { // Hemos encontrado el destino
                 bEncontrado = true;
                 break;
@@ -256,10 +256,10 @@ public final class AStarQueueItem {
                 checkNewNode(nodo, openList, nodo.x + 1, nodo.y, nodo.z);
 
 				// Diagonales
-                // Es más rápido (casi el doble) si no las miramos, aunque el camino puede quedar ortopédico
-                // Aunque eso se soluciona con la optimización de caminos que hacemos una vez encontrado el mismo
+                // Es mas rapido (casi el doble) si no las miramos, aunque el camino puede quedar ortopedico
+                // Aunque eso se soluciona con la optimizacion de caminos que hacemos una vez encontrado el mismo
                 // El problema es que a veces no encuentra camino debido a que llega a un final de caminillo donde no hay diagonales posibles
-                // pero por la mitad de ese camino si que había.
+                // pero por la mitad de ese camino si que habia.
                 // De momento las miramos siempre
                 checkNewNode(nodo, openList, nodo.x - 1, nodo.y - 1, nodo.z);
                 checkNewNode(nodo, openList, nodo.x - 1, nodo.y + 1, nodo.z);
@@ -320,7 +320,7 @@ public final class AStarQueueItem {
             }
 
 			//setClosedList (null);
-			// Tenemos 1 camino posible a destino, optimizamos la ruta para que no sea ortopédica
+			// Tenemos 1 camino posible a destino, optimizamos la ruta para que no sea ortopedica
             //preSmoothPath (alReturn, getLivingEntityType ());
             preSmoothPath(alReturn);
             setPath(alReturn);
@@ -331,7 +331,7 @@ public final class AStarQueueItem {
                 //setClosedList (null);
                 setFinished(true);
 //			} else {
-                // Aún no ha acabado
+                // Aun no ha acabado
             }
         }
 
@@ -339,10 +339,10 @@ public final class AStarQueueItem {
     }
 
     /**
-     * Método interno del A*
+     * Metodo interno del A*
      */
     private boolean checkNewNode(AStarNodo currentNode, AStarBinaryHeap alListaAbierta, int x, int y, int z) {
-        // Miro la closedList[0][0].length, no fuera que el levels discovered creciera mientras busca un camino y decidiera buscar por ahí
+        // Miro la closedList[0][0].length, no fuera que el levels discovered creciera mientras busca un camino y decidiera buscar por ahi
         if (z >= getClosedList()[0][0].length) {
             return false;
         }
@@ -372,7 +372,7 @@ public final class AStarQueueItem {
     }
 
     private boolean checkNewNodeDown(AStarNodo currentNode, AStarBinaryHeap alListaAbierta, int x, int y, int z) {
-        // Miro la closedList[0][0].length, no fuera que el levels discovered creciera mientras busca un camino y decidiera buscar por ahí
+        // Miro la closedList[0][0].length, no fuera que el levels discovered creciera mientras busca un camino y decidiera buscar por ahi
         if (z >= getClosedList()[0][0].length) {
             return false;
         }
@@ -401,7 +401,7 @@ public final class AStarQueueItem {
     }
 
     /**
-     * Método interno del A*
+     * Metodo interno del A*
      */
     private boolean isAllowed(int x, int y, int z) {
         if (x < 0 || x >= World.MAP_WIDTH || y < 0 || y >= World.MAP_HEIGHT || z < 0 || z > Game.getWorld().getNumFloorsDiscovered()) {
@@ -414,8 +414,8 @@ public final class AStarQueueItem {
 
     /**
      * Busca bresenham lines en el camino y reemplaza (y elminina) los puntos
-     * que toque con la misma Esto evita diagonales raras al andar El método
-     * tiene que ser rápido para no perder performance
+     * que toque con la misma Esto evita diagonales raras al andar El metodo
+     * tiene que ser rapido para no perder performance
      *
      * @param alPath
      */
@@ -425,7 +425,7 @@ public final class AStarQueueItem {
         }
 
 		// Empieza la fiesta
-        // Miramos la primera Z, porque éste método no funciona para Z distintas
+        // Miramos la primera Z, porque este metodo no funciona para Z distintas
         int startIndex = 0;
         short z = alPath.get(0).z;
 
@@ -438,7 +438,7 @@ public final class AStarQueueItem {
                 if ((startIndex + 3) < iIndex) {
                     iIndex = smoothPath(alPath, startIndex, (iIndex - 1), z); //, livingType);
 //				} else {
-                    // Path demasiado corto, no hay que tocar el índice
+                    // Path demasiado corto, no hay que tocar el indice
                 }
 
                 // Obtenemos la nueva Z
@@ -450,14 +450,14 @@ public final class AStarQueueItem {
             }
         }
 
-        // Al salir de aquí smootheamos el último tramo
+        // Al salir de aqui smootheamos el ultimo tramo
         smoothPath(alPath, startIndex, alPath.size() - 1, z); //, livingType);
     }
 
     /**
      * Busca bresenham lines en el camino y reemplaza (y elminina) los puntos
-     * que toque con la misma Esto evita diagonales raras al andar El método
-     * tiene que ser rápido para no perder performance
+     * que toque con la misma Esto evita diagonales raras al andar El metodo
+     * tiene que ser rapido para no perder performance
      *
      * @param alPath Camino
      * @param startIndex Inicio
@@ -482,17 +482,17 @@ public final class AStarQueueItem {
             if (alBresenham != null && alBresenham.size() > 2 && countWalk(alPath, iIndexStart, alBresenham.size()) >= countWalk(alBresenham, 0, alBresenham.size())) {
 //			if (alBresenham != null && alBresenham.size () > 2) {
                 // Linea recta, sustituimos
-                // Miramos el tamaño de lo que tenemos en el path
+                // Miramos el tamano de lo que tenemos en el path
                 int subPathSize = (iIndexEnd - iIndexStart);
                 if (alBresenham.size() <= (subPathSize + 1)) {
-                    // Linea del mismo tamaño o más corta, primero sustituimos el path
+                    // Linea del mismo tamano o mas corta, primero sustituimos el path
 
                     for (int j = 0; j < alBresenham.size(); j++) {
                         alPath.get(iIndexStart + j).setPoint(alBresenham.get(j).x, alBresenham.get(j).y, alBresenham.get(j).z);
                     }
 
                     if (alBresenham.size() < subPathSize) {
-                        // Linea más corta, hay que borrar lo sobrante del path
+                        // Linea mas corta, hay que borrar lo sobrante del path
                         while (subPathSize > alBresenham.size()) {
                             alPath.remove(iIndexStart + alBresenham.size());
                             returnNewIndex--;
@@ -500,13 +500,13 @@ public final class AStarQueueItem {
                         }
                     }
 
-                    // Cambiamos el índex al final de lo copiado
+                    // Cambiamos el index al final de lo copiado
                     iIndexStart = iIndexStart + alBresenham.size();
 
                     // Reseteamos el end index
                     iIndexEnd = returnNewIndex;
                 } else {
-                    // Lo encontrado es más largo.... ¿?¿? raro
+                    // Lo encontrado es mas largo.... ?? raro
                     iIndexEnd -= stepSize;
                     if (iIndexEnd <= iIndexStart) {
                         iIndexEnd = returnNewIndex;

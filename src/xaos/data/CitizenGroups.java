@@ -63,7 +63,7 @@ public class CitizenGroups implements Externalizable {
     }
 
     /**
-     * Esto comprueba que no haya algún ciudadano inexistente en los grupos
+     * Esto comprueba que no haya algun ciudadano inexistente en los grupos
      */
     public void purgeNonExistentCitizens() {
         // Sin grupo

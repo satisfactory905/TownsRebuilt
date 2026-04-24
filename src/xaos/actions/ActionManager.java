@@ -78,7 +78,7 @@ public class ActionManager {
             Document doc = UtilsXML.loadXMLFile(sPath);
 
 			// Tenemos el documento XML parseado
-            // Lo recorremos entero y vamos añadiendo a la hash
+            // Lo recorremos entero y vamos anadiendo a la hash
             NodeList nodeList = doc.getDocumentElement().getChildNodes();
             Node node;
             ActionManagerItem item;
@@ -195,7 +195,7 @@ public class ActionManager {
                         item.setQueue(readQueue(node.getChildNodes()));
                     }
 
-                    // Lo añadimos a la hash
+                    // Lo anadimos a la hash
                     itemList.put(sID, item);
                 }
             }

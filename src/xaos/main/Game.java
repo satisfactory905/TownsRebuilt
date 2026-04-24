@@ -13,13 +13,11 @@ import java.util.StringTokenizer;
 import javax.imageio.ImageIO;
 
 import org.lwjgl.BufferUtils;
-import org.lwjgl.LWJGLException;
-import org.lwjgl.Sys;
-import org.lwjgl.input.Keyboard;
-import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.Display;
-import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GL11;
+import static org.lwjgl.glfw.GLFW.*;
+import xaos.utils.DisplayManager;
+import xaos.utils.InputState;
+import xaos.utils.KeyMapper;
 
 import xaos.Towns;
 import xaos.TownsProperties;
@@ -196,7 +194,7 @@ public final class Game {
 		}
 		userFolder = fUserFolder.getAbsolutePath ();
 
-		// Música?
+		// Musica?
 		musicON = Boolean.parseBoolean (Towns.getPropertiesString ("MUSIC")); //$NON-NLS-1$
 		FXON = Boolean.parseBoolean (Towns.getPropertiesString ("FX")); //$NON-NLS-1$
 
@@ -230,18 +228,19 @@ public final class Game {
 		FPS_INGAME = Towns.getPropertiesInt ("FPS_INGAME", FPS_INGAME); //$NON-NLS-1$
 
 		// window size
-		int desktopWidth = Display.getDesktopDisplayMode ().getWidth ();
-		int desktopHeight = Display.getDesktopDisplayMode ().getHeight ();
+		int desktopWidth = DisplayManager.getDesktopWidth ();
+		int desktopHeight = DisplayManager.getDesktopHeight ();
 
 		final int configuredWidth = Towns.getProperty (MainProperties.WINDOW_WIDTH, (desktopWidth * 2) / 3);
 		final int configuredHeight = Towns.getProperty (MainProperties.WINDOW_HEIGHT, (desktopHeight * 2) / 3);
 		final boolean fullscreen = Towns.getProperty (MainProperties.FULLSCREEN, false);
 
 		int width = Math.max (MIN_DISPLAY_WIDTH, Math.min (desktopWidth, configuredWidth));
-		int height = Math.max (MIN_DISPLAY_HEIGHT, Math.min (desktopWidth, configuredHeight));
+		int height = Math.max (MIN_DISPLAY_HEIGHT, Math.min (desktopHeight, configuredHeight));
 
 		// Inicializamos OpenGL
 		UtilsGL.initGL (width, height, fullscreen);
+		InputState.installCallbacks (DisplayManager.getWindowHandle ());
 		UtilsAL.initAL (Game.getVolumeMusic (), Game.getVolumeFX ());
 
 		// OpenGL 1.3 or better
@@ -291,7 +290,7 @@ public final class Game {
 		// Cargamos las texturas
 		loadAllIniTextures ();
 
-		// Esto aquí, después de cargar las texturas, que si no empieza el contador del SMP logo a bajar antes de tiempo
+		// Esto aqui, despues de cargar las texturas, que si no empieza el contador del SMP logo a bajar antes de tiempo
 		panelMainMenu = new MainMenuPanel (0, 0, UtilsGL.getWidth (), UtilsGL.getHeight ());
 		panelMainMenu.setActive (true);
 
@@ -412,8 +411,8 @@ public final class Game {
 	/**
 	 * Empieza una partida desde 0
 	 * 
-	 * @param campaignID ID de la campaña, null en caso de partida normal
-	 * @param missionID ID de la misión, null en caso de partida normal
+	 * @param campaignID ID de la campana, null en caso de partida normal
+	 * @param missionID ID de la mision, null en caso de partida normal
 	 */
 	public static void startGame (String campaignID, String missionID) {
 		File fMapa;
@@ -445,7 +444,7 @@ public final class Game {
 		long lTime;
 		String sLog = null;
 
-		// Aquí mismo borro los alphas
+		// Aqui mismo borro los alphas
 		UtilsGL.clearCachedAlphas ();
 
 		// Menus
@@ -575,7 +574,7 @@ public final class Game {
 		}
 		citizenGroups.setCitizensWithoutGroup (alCitsSinGrupo);
 
-		// Esto es un parche para solventar un bug. Antes no se borraban los ciudadanos de los job grupos al morir, y podría estar corrupto
+		// Esto es un parche para solventar un bug. Antes no se borraban los ciudadanos de los job grupos al morir, y podria estar corrupto
 		citizenGroups.purgeNonExistentCitizens ();
 
 		// Bury
@@ -606,7 +605,7 @@ public final class Game {
 		Thread t = new Thread (new AStarQueue ());
 		t.start ();
 
-		// Paramos la música del main menú y arrancamos la música in-game
+		// Paramos la musica del main menu y arrancamos la musica in-game
 		UtilsAL.stop (UtilsAL.SOURCE_MUSIC_MAINMENU);
 		UtilsAL.play (UtilsAL.SOURCE_MUSIC_INGAME);
 
@@ -626,7 +625,7 @@ public final class Game {
 						Log.log (Log.LEVEL_ERROR, Messages.getString ("Game.14") + " [" + sCampaignID + "][" + sMissionID + "]", "Game"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
 						Game.exit ();
 						// } else {
-						// // Cargando una partida y no encuentra la campaña, ponemos todo vacío y pacasa
+						// // Cargando una partida y no encuentra la campana, ponemos todo vacio y pacasa
 						//                    MissionData md = new MissionData(""); //$NON-NLS-1$
 						// missionPanel.setMissionData(md);
 					}
@@ -692,7 +691,7 @@ public final class Game {
 		Point3DShort p3ds;
 		int iBuryStartingZ = World.MAP_NUM_LEVELS_OUTSIDE + 2;
 		boolean bContinue = iBuryStartingZ < (World.MAP_DEPTH - 1);
-		while (bContinue) { // Nada de burying en el último nivel
+		while (bContinue) { // Nada de burying en el ultimo nivel
 			// Obtenemos un bury al azar y cargamos los datos
 			BuryData bd = Utils.getRandomBuryData (sServerName);
 
@@ -773,7 +772,7 @@ public final class Game {
 					} else if (iYRandom > iMinY) {
 						iYMove = (iYRandom - iMinY);
 					}
-					// Comprobación pq no estoy seguro que se pueda salir de rango
+					// Comprobacion pq no estoy seguro que se pueda salir de rango
 					if ((iMinX + iXMove) < 0 || (iMaxX + iXMove) >= World.MAP_WIDTH) {
 						iXMove = 0;
 					}
@@ -797,7 +796,7 @@ public final class Game {
 
 						if (!DungeonGenerator.hasFluidsAround (cells, p3dsAux.x, p3dsAux.y, p3dsAux.z)) {
 							if (!cells[p3dsAux.x][p3dsAux.y][p3dsAux.z].isMined ()) {
-								// Si no está minada la minamos
+								// Si no esta minada la minamos
 								DungeonGenerator.removeBlock (cells, p3dsAux.x, p3dsAux.y, p3dsAux.z);
 							}
 							cells[p3dsAux.x][p3dsAux.y][p3dsAux.z].setBury (true);
@@ -808,7 +807,7 @@ public final class Game {
 						}
 					}
 
-					// Añadimos los datos
+					// Anadimos los datos
 					int iHeight = (iMaxZ - iMinZ) + 1;
 					newBuryData.setHeight (iHeight);
 					newBuryData.setHash (hashPoints);
@@ -1051,17 +1050,15 @@ public final class Game {
 
 
 	/**
-	 * Obtiene eventos del mouse y llama al "panel" correspondiente según donde sea el click
+	 * Obtiene eventos del mouse y llama al "panel" correspondiente segun donde sea el click
 	 */
 	private void checkMouseEvents () {
-		int mouseX = Mouse.getEventX ();
-		int mouseY = UtilsGL.getHeight () - Mouse.getEventY () - 1;
-		int mouseButton;
+		while (InputState.nextMouseEvent ()) {
+			int mouseX = InputState.getEventX ();
+			int mouseY = InputState.getEventY (); // GLFW: 0=top, ya en coordenadas top-down, no hace falta flip
+			int mouseButton = InputState.getEventButton ();
 
-		while (Mouse.next ()) {
-			mouseButton = Mouse.getEventButton ();
-
-			if (Mouse.getEventButtonState ()) {
+			if (mouseButton >= 0 && InputState.getEventButtonState ()) {
 				// Main menu
 				if (getPanelMainMenu ().isActive ()) {
 					getPanelMainMenu ().mousePressed (mouseX, mouseY, mouseButton);
@@ -1078,14 +1075,14 @@ public final class Game {
 				// }
 
 				if (mouseButton == 0) {
-					// Botón izquierdo pulsado, miramos a qué panel pertenece y llamamos a su función mousePressed (x, y) (con x e y relativas al panel)
+					// Boton izquierdo pulsado, miramos a que panel pertenece y llamamos a su funcion mousePressed (x, y) (con x e y relativas al panel)
 					// Primero miramos que no haya un contextmenu
 					if (getCurrentState () == STATE_SHOWING_CONTEXT_MENU) {
-						// Context menú, miramos donde clica
+						// Context menu, miramos donde clica
 						if (mouseX >= getCurrentContextMenu ().getX () && mouseX < (getCurrentContextMenu ().getX () + getCurrentContextMenu ().getWidth ()) && mouseY >= getCurrentContextMenu ().getY () && mouseY < (getCurrentContextMenu ().getY () + getCurrentContextMenu ().getHeight ())) {
 							getCurrentContextMenu ().mousePressed (mouseX - getCurrentContextMenu ().getX (), mouseY - getCurrentContextMenu ().getY ());
 						} else {
-							// Cierra el menú
+							// Cierra el menu
 							deleteCurrentContextMenu ();
 						}
 					} else {
@@ -1101,7 +1098,7 @@ public final class Game {
 							getPanelUI ().mousePressed (mouseX, mouseY, mouseButton);
 						}
 					} else {
-						// Botón derecho pulsado, cancelamos tarea (si hay)
+						// Boton derecho pulsado, cancelamos tarea (si hay)
 						// y miramos que contextMenu cargar
 						if (getCurrentState () == STATE_CREATING_TASK) {
 							deleteCurrentTask ();
@@ -1127,61 +1124,64 @@ public final class Game {
 			}
 
 			// Wheel
-			if (Mouse.getEventDWheel () > 0) {
+			int dwheel = InputState.getEventDWheel ();
+			if (dwheel > 0) {
 				if (getPanelMainMenu ().isActive ()) {
 					continue;
 				}
-				world.keyPressed (Keyboard.KEY_NONE, UtilsKeyboard.FN_LEVEL_UP);
-			} else if (Mouse.getEventDWheel () < 0) {
+				world.keyPressed (KeyMapper.KEY_NONE, UtilsKeyboard.FN_LEVEL_UP);
+			} else if (dwheel < 0) {
 				if (getPanelMainMenu ().isActive ()) {
 					continue;
 				}
-				world.keyPressed (Keyboard.KEY_NONE, UtilsKeyboard.FN_LEVEL_DOWN);
+				world.keyPressed (KeyMapper.KEY_NONE, UtilsKeyboard.FN_LEVEL_DOWN);
 			}
 		}
 
 		// Bordes (scroll de mouse)
-		if (isMouseScrollON () && Mouse.isInsideWindow ()) {
+		if (isMouseScrollON () && InputState.isInsideWindow ()) {
 			if (!getPanelMainMenu ().isActive ()) {
-				final int BORDE = UIPanel.PIXELS_TO_BORDER; // Si se acerca X pixels al borde moveremos la cámara
+				int mouseX = InputState.getMouseX ();
+				int mouseY = InputState.getMouseY (); // GLFW: 0=top
+				final int BORDE = UIPanel.PIXELS_TO_BORDER; // Si se acerca X pixels al borde moveremos la camara
 				if (mouseX < BORDE) {
 					if (Game.isMouseScrollEarsON () || !UIPanel.isMouseCloseToOpenCloseProductionIcon (mouseX, mouseY)) {
 						if (getCurrentState () == STATE_SHOWING_CONTEXT_MENU) {
 							if (!(mouseX >= getCurrentContextMenu ().getX () && mouseX < (getCurrentContextMenu ().getX () + getCurrentContextMenu ().getWidth ()) && mouseY >= getCurrentContextMenu ().getY () && mouseY < (getCurrentContextMenu ().getY () + getCurrentContextMenu ().getHeight ()))) {
-								world.keyPressed (Keyboard.KEY_NONE, UtilsKeyboard.FN_LEFT);
+								world.keyPressed (KeyMapper.KEY_NONE, UtilsKeyboard.FN_LEFT);
 							}
 						} else {
-							world.keyPressed (Keyboard.KEY_NONE, UtilsKeyboard.FN_LEFT);
+							world.keyPressed (KeyMapper.KEY_NONE, UtilsKeyboard.FN_LEFT);
 						}
 					}
 				} else if (mouseX > (UtilsGL.getWidth () - BORDE - 1)) {
-					// Miramos que no esté cerca del botón de abrir/cerrar el menu
+					// Miramos que no este cerca del boton de abrir/cerrar el menu
 					if (Game.isMouseScrollEarsON () || !UIPanel.isMouseCloseToOpenCloseMenuIcon (mouseX, mouseY)) {
 						if (getCurrentState () == STATE_SHOWING_CONTEXT_MENU) {
 							if (!(mouseX >= getCurrentContextMenu ().getX () && mouseX < (getCurrentContextMenu ().getX () + getCurrentContextMenu ().getWidth ()) && mouseY >= getCurrentContextMenu ().getY () && mouseY < (getCurrentContextMenu ().getY () + getCurrentContextMenu ().getHeight ()))) {
-								world.keyPressed (Keyboard.KEY_NONE, UtilsKeyboard.FN_RIGHT);
+								world.keyPressed (KeyMapper.KEY_NONE, UtilsKeyboard.FN_RIGHT);
 							}
 						} else {
-							world.keyPressed (Keyboard.KEY_NONE, UtilsKeyboard.FN_RIGHT);
+							world.keyPressed (KeyMapper.KEY_NONE, UtilsKeyboard.FN_RIGHT);
 						}
 					}
 				}
 				if (mouseY < BORDE) {
 					if (getCurrentState () == STATE_SHOWING_CONTEXT_MENU) {
 						if (!(mouseX >= getCurrentContextMenu ().getX () && mouseX < (getCurrentContextMenu ().getX () + getCurrentContextMenu ().getWidth ()) && mouseY >= getCurrentContextMenu ().getY () && mouseY < (getCurrentContextMenu ().getY () + getCurrentContextMenu ().getHeight ()))) {
-							world.keyPressed (Keyboard.KEY_NONE, UtilsKeyboard.FN_UP);
+							world.keyPressed (KeyMapper.KEY_NONE, UtilsKeyboard.FN_UP);
 						}
 					} else {
-						world.keyPressed (Keyboard.KEY_NONE, UtilsKeyboard.FN_UP);
+						world.keyPressed (KeyMapper.KEY_NONE, UtilsKeyboard.FN_UP);
 					}
 				} else if (mouseY > (UtilsGL.getHeight () - BORDE - 1)) {
 					if (Game.isMouseScrollEarsON () || !UIPanel.isMouseCloseToOpenCloseBottomIcon (mouseX, mouseY)) {
 						if (getCurrentState () == STATE_SHOWING_CONTEXT_MENU) {
 							if (!(mouseX >= getCurrentContextMenu ().getX () && mouseX < (getCurrentContextMenu ().getX () + getCurrentContextMenu ().getWidth ()) && mouseY >= getCurrentContextMenu ().getY () && mouseY < (getCurrentContextMenu ().getY () + getCurrentContextMenu ().getHeight ()))) {
-								world.keyPressed (Keyboard.KEY_NONE, UtilsKeyboard.FN_DOWN);
+								world.keyPressed (KeyMapper.KEY_NONE, UtilsKeyboard.FN_DOWN);
 							}
 						} else {
-							world.keyPressed (Keyboard.KEY_NONE, UtilsKeyboard.FN_DOWN);
+							world.keyPressed (KeyMapper.KEY_NONE, UtilsKeyboard.FN_DOWN);
 						}
 					}
 				}
@@ -1194,19 +1194,19 @@ public final class Game {
 	 * Obtiene los eventos de teclado y llama al World.keyPressed (int tecla)
 	 */
 	private void checkKeyboardEvents () {
-		while (Keyboard.next ()) {
-			if (Keyboard.getEventKeyState ()) {
+		while (InputState.nextKeyEvent ()) {
+			if (InputState.getEventKeyState ()) {
 				// Tecla pulsada
-				int iKEY = Keyboard.getEventKey ();
+				int iKEY = InputState.getEventKey (); // GLFW key code
 
 				// Main menu
 				if (getPanelMainMenu ().isActive ()) {
-					// Función
+					// Funcion
 					int iFN = UtilsKeyboard.getFN (iKEY);
 					if (iFN == UtilsKeyboard.FN_TOGGLE_FULLSCREEN) {
 						UtilsGL.toggleFullScreen ();
 					} else {
-						// Ha tecleado algo en el main menu, quizá seteando el nombre del savegame
+						// Ha tecleado algo en el main menu, quiza seteando el nombre del savegame
 						getPanelMainMenu ().keyPressed (iKEY);
 					}
 					continue;
@@ -1218,7 +1218,7 @@ public final class Game {
 						UIPanel.closeTypingPanel ();
 					}
 				} else {
-					if (iKEY == Keyboard.KEY_ESCAPE && getCurrentState () == STATE_SHOWING_CONTEXT_MENU) {
+					if (iKEY == GLFW_KEY_ESCAPE && getCurrentState () == STATE_SHOWING_CONTEXT_MENU) {
 						// Back al contextMenu
 						if (currentContextMenu.getSmartMenu ().getParent () == null) {
 							// No hay back posible, lo borramos
@@ -1228,10 +1228,10 @@ public final class Game {
 							// Back
 							currentContextMenu.setSmartMenu (currentContextMenu.getSmartMenu ().getParent ());
 						}
-						// } else if (iKEY == Keyboard.KEY_ESCAPE && getCurrentState() == STATE_SHOWING_INFO_PANEL) {
+						// } else if (iKEY == GLFW_KEY_ESCAPE && getCurrentState() == STATE_SHOWING_INFO_PANEL) {
 						// closeInfoPanel();
 					} else {
-						// Función
+						// Funcion
 						int iFN = UtilsKeyboard.getFN (iKEY);
 
 						if (iFN == UtilsKeyboard.FN_SHOW_MISSION) {
@@ -1243,7 +1243,7 @@ public final class Game {
 							// continue;
 							// }
 							// if (getCurrentState() != STATE_SHOWING_INFO_PANEL) {
-							// // Panel de misión
+							// // Panel de mision
 							// MissionPanel panel = new MissionPanel(getWorld().getCampaignID(), getWorld().getMissionID());
 							// if (getCurrentMissionData () != null && getCurrentMissionData ().getText() != null && getCurrentMissionData ().getObjectives() != null && getCurrentMissionData ().getObjectives().size() > 0) {
 							// showInfoPanel(panel);
@@ -1262,9 +1262,9 @@ public final class Game {
 							UIPanel.setPrioritiesPanelActive (!UIPanel.isPrioritiesPanelActive ());
 						} else if (iFN == UtilsKeyboard.FN_SHOW_TRADE) {
 							UIPanel.setTradePanelActive (!UIPanel.isTradePanelActive ());
-							// } else if (iKEY == Keyboard.KEY_F5) {
+							// } else if (iKEY == GLFW_KEY_F5) {
 							// UIPanel.setMenuPanelActive (!UIPanel.isMenuPanelActive ());
-							// } else if (iKEY == Keyboard.KEY_F6) {
+							// } else if (iKEY == GLFW_KEY_F6) {
 							// UIPanel.setBottomMenuPanelActive (!UIPanel.isBottomMenuPanelActive ());
 						} else if (iFN == UtilsKeyboard.FN_TOGGLE_FULLSCREEN) {
 							UtilsGL.toggleFullScreen ();
@@ -1300,6 +1300,13 @@ public final class Game {
 				}
 			}
 		}
+		// Char events para el typing panel. Both the in-game typing panel (tracked via UIPanel.typingPanel)
+		// and the main-menu text dialogs (savegame name, new server) need to receive printable text.
+		if (UIPanel.typingPanel != null || getPanelMainMenu ().isTypingTextActive ()) {
+			while (InputState.nextCharEvent ()) {
+				TypingPanel.charInput (InputState.getEventChar ());
+			}
+		}
 	}
 
 
@@ -1310,13 +1317,13 @@ public final class Game {
 		// long fps = 0;
 		// long lastFPS = (Sys.getTime () * 1000) / Sys.getTimerResolution ();
 
-		// Hacemos sonar la música del main menú
+		// Hacemos sonar la musica del main menu
 		UtilsAL.play (UtilsAL.SOURCE_MUSIC_MAINMENU);
-//		int checkTrigger = (4 * FPS_INGAME); // Para que lo mire nada más empezar, en el primer ciclo
+//		int checkTrigger = (4 * FPS_INGAME); // Para que lo mire nada mas empezar, en el primer ciclo
 //		boolean bVictory = false;
 
 //		int iMissionCompletedWidth = (UtilFont.getWidth (Messages.getString ("Game.2"))) / 2; //$NON-NLS-1$
-		while (!Display.isCloseRequested ()) {
+		while (!DisplayManager.isCloseRequested ()) {
 			handleResize ();
 
 			// Tratamos los eventos del mouse
@@ -1380,14 +1387,12 @@ public final class Game {
 			// lastFPS += 1000;
 			// }
 			// fps++;
-			// Pongo este método pq dice la doc de LWJGL que actualiza los timers y tiene que llamarse lo más posible
-			Sys.getTimerResolution ();
 
 			// Render
 			// if (getPanelMainMenu ().isActive () || (world != null && World.getCitizenIDs ().size () == 0)) {
 			render ();
 
-			// Misión completada?
+			// Mision completada?
 /*
 			if (bVictory) {
 				GL11.glBindTexture (GL11.GL_TEXTURE_2D, Game.TEXTURE_FONT_ID);
@@ -1404,16 +1409,16 @@ public final class Game {
 */
 
 			// Updateamos la pantalla / ventana
-			Display.update ();
+			DisplayManager.swapAndPoll ();
 
 			if (takeScreenshot) {
 				takeScreenshot ();
 			}
 
 			if (getPanelMainMenu ().isActive ()) {
-				Display.sync (FPS_MAINMENU); // Para "capear" a 30 fps
+				DisplayManager.sync (FPS_MAINMENU); // Para "capear" a 30 fps
 			} else {
-				Display.sync (FPS_INGAME); // Para "capear" a 30 fps
+				DisplayManager.sync (FPS_INGAME); // Para "capear" a 30 fps
 			}
 
 			// Borramos buffers
@@ -1717,28 +1722,12 @@ public final class Game {
 	 * handles a possible resize of the display
 	 */
 	private void handleResize () {
-		if (Display.wasResized () || Display.isFullscreen () != displayFullscreen) {
-			int iWidth = Display.getWidth ();
-			int iHeight = Display.getHeight ();
-
-			boolean resetDisplayMode = false;
-			if (iWidth < MIN_DISPLAY_WIDTH) {
-				iWidth = MIN_DISPLAY_WIDTH;
-				resetDisplayMode = true;
-			}
-			if (iHeight < MIN_DISPLAY_HEIGHT) {
-				iHeight = MIN_DISPLAY_HEIGHT;
-				resetDisplayMode = true;
-			}
-
-			if (resetDisplayMode) {
-				try {
-					Display.setDisplayMode (new DisplayMode (iWidth, iHeight));
-				}
-				catch (LWJGLException ex) {
-					Log.log (Log.LEVEL_ERROR, "Problem encountered when setting the display mode: " + ex, "Game");
-				}
-			}
+		if (DisplayManager.wasResized () || DisplayManager.isFullscreen () != displayFullscreen) {
+			// GLFW enforces the minimum via glfwSetWindowSizeLimits (installed in DisplayManager.init),
+			// so the window can never arrive here smaller than MIN_DISPLAY_WIDTH/HEIGHT. No re-init needed.
+			int iWidth = DisplayManager.getWidth ();
+			int iHeight = DisplayManager.getHeight ();
+			Log.log (Log.LEVEL_DEBUG, "handleResize(): " + iWidth + "x" + iHeight + " fullscreen=" + DisplayManager.isFullscreen (), "Game");
 
 			MainPanel.resize (iWidth, iHeight);
 			if (Game.getWorld () == null) {
@@ -1751,10 +1740,10 @@ public final class Game {
 			Game.getPanelMainMenu ().resize (0, 0, iWidth, iHeight);
 
 			UtilsGL.initGLModes ();
-			UtilsGL.onResize (iWidth, iHeight, Display.isFullscreen ());
+			UtilsGL.onResize (iWidth, iHeight, DisplayManager.isFullscreen ());
 			Utils.saveOptions ();
 
-			displayFullscreen = Display.isFullscreen ();
+			displayFullscreen = DisplayManager.isFullscreen ();
 		}
 	}
 
@@ -1781,7 +1770,7 @@ public final class Game {
 	private static void takeScreenshot () {
 		takeScreenshot = false;
 
-		// Buscamos un nombre válido
+		// Buscamos un nombre valido
 		File file = null;
 		boolean bNameFound = false;
 		int iNumber = 1;

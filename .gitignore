@@ -1,0 +1,26 @@
+# Maven build output
+target/
+
+# Runtime logs. The game currently writes error.log in the process CWD
+# (src/error.log under `mvn exec:exec`). See Log.java:33 — that path should
+# move under the user folder; until then, keep any *.log out of the repo.
+*.log
+
+# Runtime assets from the commercial/prod build — not part of the open-source repo.
+src/data/graphics/
+src/data/audio/
+src/data/fonts/
+src/data/fontMetamorphous.fnt
+
+# Development notes — explicitly ignored from commits.
+# Only README.md and CHANGELOG.md are meant to be tracked markdown files.
+# If you add a new *.md (session notes, analysis, plan, etc.), add its
+# filename to this list. See CLAUDE.md for the rationale.
+CLAUDE.md
+asset_list.md
+code-optimizations.md
+optimize.md
+session-one.md
+session-two.md
+summary-phase-1.md
+todo.md

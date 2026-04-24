@@ -12,8 +12,8 @@ import java.util.Locale;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
+import xaos.utils.InputState;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -53,6 +53,11 @@ public class SmartMenu implements Externalizable {
 
     private static Tile RED_TILE = new Tile("ui_red"); //$NON-NLS-1$
 
+    // DEBUG: Last logged mouse position for the Exit-game highlight trace.
+    // Used to rate-limit the log so it fires only when the mouse actually moves.
+    private static int lastExitDebugMouseX = Integer.MIN_VALUE;
+    private static int lastExitDebugMouseY = Integer.MIN_VALUE;
+
     public final static int TYPE_NO_TYPE = -1;
     public final static int TYPE_TEXT = 0;
     public final static int TYPE_MENU = 1;
@@ -65,18 +70,18 @@ public class SmartMenu implements Externalizable {
     public final static ColorGL COLORGL_SUBMENU = new ColorGL(COLOR_SUBMENU);
 
     private int type;
-    private String id; // Se usa en los menuXXX.xml , así los mods pueden referirse a un item para borrarlo
+    private String id; // Se usa en los menuXXX.xml , asi los mods pueden referirse a un item para borrarlo
     private String name;
     private SmartMenu parent;
     private ArrayList<SmartMenu> items;
-    private String command; // Acción que lanza este item
-    private String parameter; // Parámetro del comando
-    private String parameter2; // Parámetro 2 del comando
+    private String command; // Accion que lanza este item
+    private String parameter; // Parametro del comando
+    private String parameter2; // Parametro 2 del comando
     private Point3D directCoordinates; // Se usa en los menus contextuales, ya que lanzan un comando en casillas concretas
     private ColorGL color;
-    private boolean trasparency; // Si es transparente no se dibuja el rectángulo negro abajo
+    private boolean trasparency; // Si es transparente no se dibuja el rectangulo negro abajo
     private boolean dynamic; // Para sustituir cadenas de texto de los menues
-    private boolean maintainOpen; // Para saber si hay que cerrar el menú al clicar en una opción
+    private boolean maintainOpen; // Para saber si hay que cerrar el menu al clicar en una opcion
     private ColorGL borderColor; // Si es distinto de null pinta un borde a los textos del color indicado
     private Tile icon; // Icono a usar en los menus
     private int iconType; // Tipo de icono (ui, items, ...)
@@ -297,10 +302,21 @@ public class SmartMenu implements Externalizable {
             UtilsGL.glEnd();
         }
 
-        // Rectángulito rojo en el item marcado (excepto TYPE_TEXT)
+        // Rectangulito rojo en el item marcado (excepto TYPE_TEXT)
         int iY;
-        int mouseX = Mouse.getX();
-        int mouseY = UtilsGL.getHeight() - Mouse.getY() - 1;
+        int mouseX = InputState.getMouseX();
+        int mouseY = InputState.getMouseY();
+
+        // DEBUG: Query actual cursor position from GLFW to see if callback is correct
+        int nativeMouseX = -1, nativeMouseY = -1;
+        try (org.lwjgl.system.MemoryStack stack = org.lwjgl.system.MemoryStack.stackPush()) {
+            java.nio.DoubleBuffer px = stack.mallocDouble(1);
+            java.nio.DoubleBuffer py = stack.mallocDouble(1);
+            org.lwjgl.glfw.GLFW.glfwGetCursorPos(xaos.utils.DisplayManager.getWindowHandle(), px, py);
+            nativeMouseX = (int) px.get(0);
+            nativeMouseY = (int) py.get(0);
+        }
+
         int itemIndex = -1;
         if (isContext) {
             if (mouseX >= x && mouseX < (x + width) && mouseY >= y && mouseY < (y + getItems().size() * UtilFont.MAX_HEIGHT)) {
@@ -312,6 +328,36 @@ public class SmartMenu implements Externalizable {
                     UtilsGL.glBegin(GL11.GL_QUADS);
                     UtilsGL.drawTexture(x, iY, x + width, iY + UtilFont.MAX_HEIGHT, RED_TILE.getTileSetTexX0(), RED_TILE.getTileSetTexY0(), RED_TILE.getTileSetTexX1(), RED_TILE.getTileSetTexY1());
                     UtilsGL.glEnd();
+
+                    // DEBUG: Log rendered rect, stored mouse, and native GLFW cursor pos
+                    if (getItems().get(itemIndex).getCommand() != null && CommandPanel.COMMAND_EXIT_GAME.equals(getItems().get(itemIndex).getCommand())) {
+                        Log.log(Log.LEVEL_ERROR, "[DIAG] Exit-game RENDERED rect: (" + x + "," + iY + ")-(" + (x+width) + "," + (iY+UtilFont.MAX_HEIGHT) + ") | stored mouse: (" + mouseX + "," + mouseY + ") | native GLFW cursor: (" + nativeMouseX + "," + nativeMouseY + ")", "SmartMenu");
+                    }
+
+                    // DEBUG: log the Exit-game hit rect and mouse pos whenever the mouse
+                    // moves over/within that rect. This isolates any mouse/render drift:
+                    // the hit rect and the painted red rectangle use the exact same
+                    // coordinates, so if the user can see the red highlight but the mouse
+                    // coords reported here don't fall inside that rect, the cursor and
+                    // render-space have diverged.
+                    SmartMenu hoveredItem = getItems().get(itemIndex);
+                    if (hoveredItem.getCommand() != null
+                            && CommandPanel.COMMAND_EXIT_GAME.equals(hoveredItem.getCommand())
+                            && (mouseX != lastExitDebugMouseX || mouseY != lastExitDebugMouseY)) {
+                        int rectX0 = x;
+                        int rectY0 = iY;
+                        int rectX1 = x + width;
+                        int rectY1 = iY + UtilFont.MAX_HEIGHT;
+                        // Escalated to LEVEL_ERROR so it actually writes to error.log
+                        // (the jpackage launcher has no stdout to receive LEVEL_DEBUG).
+                        Log.log(Log.LEVEL_ERROR,
+                                "[DIAG] Exit-game highlight"
+                                + " | rect: (" + rectX0 + "," + rectY0 + ")-(" + rectX1 + "," + rectY1 + ")"
+                                + " | mouse: (" + mouseX + "," + mouseY + ")",
+                                "SmartMenu");
+                        lastExitDebugMouseX = mouseX;
+                        lastExitDebugMouseY = mouseY;
+                    }
                 }
             }
         }
@@ -319,7 +365,7 @@ public class SmartMenu implements Externalizable {
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, Game.TEXTURE_FONT_ID);
         GL11.glTexEnvf(GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_MODE, GL11.GL_MODULATE);
 
-        // Menú
+        // Menu
         UtilsGL.glBegin(GL11.GL_QUADS);
         String sTexto;
         SmartMenu item;
@@ -368,9 +414,9 @@ public class SmartMenu implements Externalizable {
     }
 
     /**
-     * Carga los menús del .xml y lo mapea todo a clases SmartMenu
+     * Carga los menus del .xml y lo mapea todo a clases SmartMenu
      *
-     * @return el padre de todos los menús
+     * @return el padre de todos los menus
      */
     public static void readXMLMenu(SmartMenu menuInicial, String sFilename, String sCampaignID, String sMissionID) {
         //SmartMenu menuInicial = new SmartMenu ();
@@ -400,7 +446,7 @@ public class SmartMenu implements Externalizable {
 
             String sLocale = Locale.getDefault().getLanguage() + Locale.getDefault().getCountry();
             if (node.getNodeType() == Node.ELEMENT_NODE) {
-                // Si el elemento se llama "item" es que es un item, en otro caso es un submenú
+                // Si el elemento se llama "item" es que es un item, en otro caso es un submenu
 
                 NamedNodeMap map = node.getAttributes();
                 if (node.getNodeName().equalsIgnoreCase("ITEM")) { //$NON-NLS-1$
@@ -452,7 +498,7 @@ public class SmartMenu implements Externalizable {
                             }
                         }
                         if (sName == null || sName.length() == 0) {
-                            // No encuentra name, miramos si es una tarea de CREATE, CREATEANDPLACE, CREATEANDPLACEROW o BUILD para obtener la cadena de la definición del item/edificio
+                            // No encuentra name, miramos si es una tarea de CREATE, CREATEANDPLACE, CREATEANDPLACEROW o BUILD para obtener la cadena de la definicion del item/edificio
                             if (parameter != null
                                     && parameter.getNodeValue() != null
                                     && parameter.getNodeValue().length() > 0
@@ -525,7 +571,7 @@ public class SmartMenu implements Externalizable {
                             if (code != null && code.getNodeValue() != null && parameter != null && parameter.getNodeValue() != null) {
                                 String sCode = code.getNodeValue();
                                 String sParameter = parameter.getNodeValue();
-                                // Miramos si es un código de crear objeto, en ese caso el icono se pilla según el mismo
+                                // Miramos si es un codigo de crear objeto, en ese caso el icono se pilla segun el mismo
                                 if (sCode.equals(CommandPanel.COMMAND_QUEUE) || sCode.equals(CommandPanel.COMMAND_QUEUE_AND_PLACE) || sCode.equals(CommandPanel.COMMAND_QUEUE_AND_PLACE_ROW) || sCode.equals(CommandPanel.COMMAND_QUEUE_AND_PLACE_AREA)) {
                                     ActionManagerItem ami = ActionManager.getItem(sParameter);
 
@@ -543,15 +589,15 @@ public class SmartMenu implements Externalizable {
                         // Prerequisitos
                         setPrerequisites(item, code, parameter);
 
-                        // Si es un back lo añadimos tal cual, en otro caso miramos que no haya un back, para añadirlo justo antes
+                        // Si es un back lo anadimos tal cual, en otro caso miramos que no haya un back, para anadirlo justo antes
                         if (item.getCommand() != null && item.getCommand().equalsIgnoreCase(CommandPanel.COMMAND_BACK)) {
                             smartMenu.addItem(item);
                         } else {
-                            // Miramos que el último no sea un back
+                            // Miramos que el ultimo no sea un back
                             if (smartMenu.getItems().size() > 0) {
                                 SmartMenu smLast = smartMenu.getItems().get(smartMenu.getItems().size() - 1);
                                 if (smLast.getCommand() != null && smLast.getCommand().equals(CommandPanel.COMMAND_BACK)) {
-                                    // Hay un back, añadimos el item justo antes
+                                    // Hay un back, anadimos el item justo antes
                                     smLast = smartMenu.getItems().remove(smartMenu.getItems().size() - 1);
                                     smartMenu.addItem(item);
                                     smartMenu.addItem(smLast);
@@ -642,7 +688,7 @@ public class SmartMenu implements Externalizable {
         if (code != null && code.getNodeValue() != null && parameter != null && parameter.getNodeValue() != null) {
             String sCode = code.getNodeValue();
             String sParameter = parameter.getNodeValue();
-            // Miramos si es un código de crear objeto, en ese caso el icono se pilla según el mismo
+            // Miramos si es un codigo de crear objeto, en ese caso el icono se pilla segun el mismo
             ItemManagerItem imi = null;
             LivingEntityManagerItem lemi = null;
             ArrayList<String> alMessages = new ArrayList<String>();
@@ -882,7 +928,7 @@ public class SmartMenu implements Externalizable {
                 alMessages.add(0, item.getName());
                 alColor.add(0, new ColorGL(null));
 
-                // Añadimos zonas
+                // Anadimos zonas
                 boolean bBlankLineAdded = false;
                 if (imi != null && imi.getZones() != null && imi.getZones().size() > 0) {
                     // Linea en blanco
@@ -919,16 +965,16 @@ public class SmartMenu implements Externalizable {
 
     /**
      * Comprueba si se ha clicado en un submenu o en un item En el primer caso
-     * devuelve dicho submenú En el segundo caso ejecuta la acción
-     * correspondiente y se devuelve él mismo
+     * devuelve dicho submenu En el segundo caso ejecuta la accion
+     * correspondiente y se devuelve el mismo
      *
-     * @param x X Relativa al menú
-     * @param y Y relativa al menú
+     * @param x X Relativa al menu
+     * @param y Y relativa al menu
      * @return
      */
     public SmartMenu mousePressed(int x, int y) {
         // Miramos donde ha clicado
-        int iMenuIndex = y / UtilFont.MAX_HEIGHT; // Posición donde ha clicado
+        int iMenuIndex = y / UtilFont.MAX_HEIGHT; // Posicion donde ha clicado
 
         if (iMenuIndex >= getItems().size() || y < 0) {
             return this;
@@ -963,7 +1009,7 @@ public class SmartMenu implements Externalizable {
     }
 
     /**
-     * Divide el menú en varias pantallas en el caso de que sea demasiado ganso
+     * Divide el menu en varias pantallas en el caso de que sea demasiado ganso
      *
      * @param menu
      */
@@ -995,7 +1041,7 @@ public class SmartMenu implements Externalizable {
             alParts.add(sm);
         }
 
-        // Añadimos los forwards
+        // Anadimos los forwards
         for (int i = 0; i < alParts.size(); i++) {
             if (i < (alParts.size() - 1)) {
                 alParts.get(i).addItem(new SmartMenu(TYPE_TEXT, null, null, null, null));

@@ -29,11 +29,11 @@ public class Projectile extends Tile implements Externalizable {
     private int damage;
     private int maxDistance;
     private LivingEntity attacker;
-    private String attackerWeapon; // Para obtener los verbos después
+    private String attackerWeapon; // Para obtener los verbos despues
     private LivingEntity victim;
     private ArrayList<Point3DShort> path;
     private int direction; // Binaria
-    private boolean delete; // Se guarda para que se dibuje un turno más
+    private boolean delete; // Se guarda para que se dibuje un turno mas
 
     public Projectile() {
         super();
@@ -53,7 +53,7 @@ public class Projectile extends Tile implements Externalizable {
 
     public void setCoordinates(Point3DShort point) {
         if (locations != null) {
-            if (getX() != -1) { // Con esto sabemos si es un nuevo proyectil que aún no tiene coordenadas
+            if (getX() != -1) { // Con esto sabemos si es un nuevo proyectil que aun no tiene coordenadas
                 locations[getX()][getY()][getZ()]--;
             }
             locations[point.x][point.y][point.z]++;
@@ -128,13 +128,13 @@ public class Projectile extends Tile implements Externalizable {
     public void setPath(ArrayList<Point3DShort> path) {
         this.path = path;
 
-		// Miramos la dirección en la que hay que dibujar el ammo
-        // Obtenemos el 1er y último puntos del recorrido para ello
+		// Miramos la direccion en la que hay que dibujar el ammo
+        // Obtenemos el 1er y ultimo puntos del recorrido para ello
         if (path != null && path.size() > 1) {
             Point3DShort p3dIni = path.get(0);
             Point3DShort p3dFin = path.get(path.size() - 1);
 
-            // Miramos qué parte es más corta (servirá para girarlo bien en modo isométrico) (difícil de entender)
+            // Miramos que parte es mas corta (servira para girarlo bien en modo isometrico) (dificil de entender)
             boolean bParteCortaHorizontal = Math.abs(p3dIni.x - p3dFin.x) < Math.abs(p3dIni.y - p3dFin.y);
 
             if (bParteCortaHorizontal) {

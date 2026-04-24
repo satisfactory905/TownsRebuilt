@@ -18,7 +18,7 @@ public final class AStarNodo extends Point3DShort implements Comparable<AStarNod
 
     private int f; // Suma de g y h
     private int g; // Coste hasta llegar a este nodo
-//	private int h; // Heurística (o cuanto nos falta para llegar)
+//	private int h; // Heuristica (o cuanto nos falta para llegar)
 
     public AStarNodo() {
     }
@@ -36,21 +36,21 @@ public final class AStarNodo extends Point3DShort implements Comparable<AStarNod
         if (z >= (World.MAP_NUM_LEVELS_OUTSIDE - 1)) {
             if (zDest >= (World.MAP_NUM_LEVELS_OUTSIDE - 1)) {
                 // Los 2 puntos son underground
-                h += ((32) * Math.abs(zDest - z)); // Método Manhattan, funciona mejor incluso permitiendo movimiento diagonal que la "Distancia Chebyshev" (20% mejor)
+                h += ((32) * Math.abs(zDest - z)); // Metodo Manhattan, funciona mejor incluso permitiendo movimiento diagonal que la "Distancia Chebyshev" (20% mejor)
             } else {
                 // El origen es underground pero el destino no
-                h += ((32) * Math.abs(z - (World.MAP_NUM_LEVELS_OUTSIDE - 1)) + 2 * (World.MAP_NUM_LEVELS_OUTSIDE - 1 - zDest)); // Método Manhattan, funciona mejor incluso permitiendo movimiento diagonal que la "Distancia Chebyshev" (20% mejor)
+                h += ((32) * Math.abs(z - (World.MAP_NUM_LEVELS_OUTSIDE - 1)) + 2 * (World.MAP_NUM_LEVELS_OUTSIDE - 1 - zDest)); // Metodo Manhattan, funciona mejor incluso permitiendo movimiento diagonal que la "Distancia Chebyshev" (20% mejor)
             }
         } else {
             // El origen es outside
             if (zDest >= (World.MAP_NUM_LEVELS_OUTSIDE - 1)) {
                 // El destino es underground (y origen outside)
-                h += ((32) * Math.abs(zDest - (World.MAP_NUM_LEVELS_OUTSIDE - 1)) + 2 * (World.MAP_NUM_LEVELS_OUTSIDE - 1 - z)); // Método Manhattan, funciona mejor incluso permitiendo movimiento diagonal que la "Distancia Chebyshev" (20% mejor)
+                h += ((32) * Math.abs(zDest - (World.MAP_NUM_LEVELS_OUTSIDE - 1)) + 2 * (World.MAP_NUM_LEVELS_OUTSIDE - 1 - z)); // Metodo Manhattan, funciona mejor incluso permitiendo movimiento diagonal que la "Distancia Chebyshev" (20% mejor)
             } else {
                 // El destino es outside, como el origen
-                h += (2 * Math.abs(zDest - z)); // Método Manhattan, funciona mejor incluso permitiendo movimiento diagonal que la "Distancia Chebyshev" (20% mejor)
-//				h += (8 * Math.abs (zDest - z)); // Método Manhattan, funciona mejor incluso permitiendo movimiento diagonal que la "Distancia Chebyshev" (20% mejor)
-//				h += (4 * Math.abs (zDest - z)); // Método Manhattan, funciona mejor incluso permitiendo movimiento diagonal que la "Distancia Chebyshev" (20% mejor)
+                h += (2 * Math.abs(zDest - z)); // Metodo Manhattan, funciona mejor incluso permitiendo movimiento diagonal que la "Distancia Chebyshev" (20% mejor)
+//				h += (8 * Math.abs (zDest - z)); // Metodo Manhattan, funciona mejor incluso permitiendo movimiento diagonal que la "Distancia Chebyshev" (20% mejor)
+//				h += (4 * Math.abs (zDest - z)); // Metodo Manhattan, funciona mejor incluso permitiendo movimiento diagonal que la "Distancia Chebyshev" (20% mejor)
             }
         }
 

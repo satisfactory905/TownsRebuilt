@@ -37,15 +37,15 @@ public class ItemManagerItem {
     private int floorWalkSpeed;
 
     // Habitat
-    private ArrayList<Integer> habitat; // Lista de terrenos donde puede crecer (o aparecer), se usa en los child (ver más abajo). (Ej: grass, sand, ...)
-    private ArrayList<String> habitatString; // Lista de terrenos donde puede crecer (o aparecer), se usa en los child (ver más abajo). (Ej: grass, sand, ...)
+    private ArrayList<Integer> habitat; // Lista de terrenos donde puede crecer (o aparecer), se usa en los child (ver mas abajo). (Ej: grass, sand, ...)
+    private ArrayList<String> habitatString; // Lista de terrenos donde puede crecer (o aparecer), se usa en los child (ver mas abajo). (Ej: grass, sand, ...)
     private String habitatGroup;
     private int habitatHeightMin;
     private int habitatHeightMax;
 
     // Age
-    private String maxAge; // Edad máxima del item
-    private String maxAgeItem; // Item que suelta al morir (Ej: los arbustos al morir se convierten en árbol)
+    private String maxAge; // Edad maxima del item
+    private String maxAgeItem; // Item que suelta al morir (Ej: los arbustos al morir se convierten en arbol)
     private String maxAgeTerrain; // When the item dies it will generate a real terrain
     private boolean maxAgeNeedsWater;
     private int maxAgeNeedsWaterRadius;
@@ -57,7 +57,7 @@ public class ItemManagerItem {
 
     // Spawn
     private String spawn; // Objeto o living hijo (ej: arbusto)
-    private int spawnMaxItems; // Máximo de hijos alrrededor. Sólo aplica con items. (ej: Si ya tiene 3 arbustos alrededor no "suelta" otro)
+    private int spawnMaxItems; // Maximo de hijos alrrededor. Solo aplica con items. (ej: Si ya tiene 3 arbustos alrededor no "suelta" otro)
     private String spawnTurns; // Dice que se lanza cada turno para ver si toca soltar un hijo
 
     // Wall
@@ -67,7 +67,7 @@ public class ItemManagerItem {
     private boolean wallConnector; // Indica si es un conector con muros (ej: puertas, ventanas)
 
     // Doors
-    private boolean door; // Indica si es una puerta (para sacar el menú de open/close/lock)
+    private boolean door; // Indica si es una puerta (para sacar el menu de open/close/lock)
 
     // Food
     private boolean canBeEaten; // Indica si se puede comer
@@ -77,13 +77,13 @@ public class ItemManagerItem {
     private ArrayList<String> foodEffects;
 
     // Happiness value
-    private int happiness; // Modificador de happiness si el objeto está en LOS de los aldeanos
+    private int happiness; // Modificador de happiness si el objeto esta en LOS de los aldeanos
 
     // Sleep (camas)
-    private boolean canBeUsedToSleep; // Indica si se puede dormir ahí
+    private boolean canBeUsedToSleep; // Indica si se puede dormir ahi
 
     // Sit (sillas)
-    private boolean canBeUsedToSit; // Indica si se puede sentar ahí
+    private boolean canBeUsedToSit; // Indica si se puede sentar ahi
 
     // Zone mergers (bridges, stairs, ...)
     private boolean zoneMergerUp;
@@ -120,7 +120,7 @@ public class ItemManagerItem {
     private int value;
 
     // AlwaysOperative
-    private boolean alwaysOperative; // Indica si cuando se construye ya está operativo o tienen que ponerse en algún sitio para que lo esté
+    private boolean alwaysOperative; // Indica si cuando se construye ya esta operativo o tienen que ponerse en algun sitio para que lo este
 
     // Container
     private boolean container;
@@ -139,7 +139,7 @@ public class ItemManagerItem {
     private String attackSpeedModifier; // Modificador de turnos entre ataque y ataque
     private String defenseModifier; // Modificador de defensa
     private String healthModifier; // Modificador de vida
-    private String damageModifier;// Modificador de daño
+    private String damageModifier;// Modificador de dano
     private String LOSModifier;// Modificador de LOS
     private String movePCTModifier;// Modificador de movePCT
     private String walkSpeedModifier; // Modificador de turnos entre paso y paso

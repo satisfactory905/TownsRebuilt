@@ -60,7 +60,7 @@ public class SkillManager {
             Document doc = UtilsXML.loadXMLFile(sXMLName); //$NON-NLS-1$
 
 			// Tenemos el documento XML parseado
-            // Lo recorremos entero y vamos añadiendo las skills (SkillManagerItem) a la hash
+            // Lo recorremos entero y vamos anadiendo las skills (SkillManagerItem) a la hash
             NodeList nodeList = doc.getDocumentElement().getChildNodes();
             Node node;
             SkillManagerItem item;
@@ -129,7 +129,7 @@ public class SkillManager {
                     // Effects
                     item.setEffects(loadEffectData(node.getChildNodes()));
 
-                    // Lo añadimos a la hash
+                    // Lo anadimos a la hash
                     skillList.put(sIniHeader, item);
                 }
             }

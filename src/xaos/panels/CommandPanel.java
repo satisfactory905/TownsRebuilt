@@ -5,8 +5,8 @@ import java.awt.Desktop;
 import java.io.File;
 import java.util.ArrayList;
 
-import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
+import xaos.utils.DisplayManager;
 
 import xaos.Towns;
 import xaos.TownsProperties;
@@ -815,8 +815,8 @@ public final class CommandPanel {
                 task.setPointIni(p3dDirect);
                 Game.getWorld().getTaskManager().addTask(task);
             } else if (sCommand.equals(COMMAND_CUSTOM_ACTION_DIRECT_LIVING)) {
-				// Como esto es en diferido, quizá el usuario hace botón derecho, deja pasar el tiempo y luego clica
-                // Así que buscamos las coordenadas actuales de la living
+				// Como esto es en diferido, quiza el usuario hace boton derecho, deja pasar el tiempo y luego clica
+                // Asi que buscamos las coordenadas actuales de la living
                 LivingEntity le = World.getLivingEntityByID(Integer.parseInt(sParameter2));
                 if (le != null) {
                     Game.createTask(Task.TASK_CUSTOM_ACTION);
@@ -827,8 +827,8 @@ public final class CommandPanel {
                     Game.getCurrentTask().setPoint(le.getCoordinates().toPoint3D());
                 }
             } else if (sCommand.equals(COMMAND_CUSTOM_ACTION_DIRECT_ITEM)) {
-				// Como esto es en diferido, quizá el usuario hace botón derecho, deja pasar el tiempo y luego clica
-                // Así que buscamos las coordenadas actuales de la living
+				// Como esto es en diferido, quiza el usuario hace boton derecho, deja pasar el tiempo y luego clica
+                // Asi que buscamos las coordenadas actuales de la living
                 Item it = Item.getItemByID(Integer.parseInt(sParameter2));
                 if (it != null) {
                     Game.createTask(Task.TASK_CUSTOM_ACTION);
@@ -1024,7 +1024,7 @@ public final class CommandPanel {
 //				Utils.saveOptions ();
             } else if (sCommand.equals(COMMAND_MM_NEWGAME_SET_SAVE_NAME)) {
                 MainMenuPanel.useBuryTemporary = true;
-                // Si tiene el parámetro del point, ahí indica el número de servidor a usar
+                // Si tiene el parametro del point, ahi indica el numero de servidor a usar
                 if (p3dDirect != null) {
                     Game.setServerToUse(p3dDirect.x);
                 } else {
@@ -1042,15 +1042,15 @@ public final class CommandPanel {
             	} else {
                     MainMenuPanel.loadingGame = true;
                     Game.getPanelMainMenu().render();
-                    Display.update();
-                    Display.sync(Game.FPS_MAINMENU); // Para "capear" a 30 fps
+                    DisplayManager.swapAndPoll();
+                    DisplayManager.sync(Game.FPS_MAINMENU); // Para "capear" a 30 fps
                     GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_ACCUM_BUFFER_BIT | GL11.GL_STENCIL_BUFFER_BIT);
                     Game.startGame(sParameter, sParameter2);
             	}
             } else if (sCommand.equals(COMMAND_MM_CONTINUEGAME)) {
                 MainMenuPanel.loadingGame = true;
                 Game.getPanelMainMenu().render();
-                Display.update();
+                DisplayManager.swapAndPoll();
                 if (sParameter2 != null) {
                     Game.continueGame(sParameter, sParameter2);
                 } else {
@@ -1279,7 +1279,7 @@ public final class CommandPanel {
 
     /**
      * Limpia todos los datos (se usa cuando se sale de la partida y se va al
-     * menú principal)
+     * menu principal)
      */
     public void clear() {
         currentMenu = null;

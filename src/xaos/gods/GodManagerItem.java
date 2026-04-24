@@ -9,7 +9,7 @@ import xaos.utils.Names;
 import xaos.utils.Utils;
 
 /**
- * Clase de tipo "managerItem", no es la que se añade a la lista de gods
+ * Clase de tipo "managerItem", no es la que se anade a la lista de gods
  */
 public class GodManagerItem {
 
@@ -103,12 +103,12 @@ public class GodManagerItem {
         if (itemsLikePCT == null) {
             setItemsLikePCTInteger(null);
 
-            // Si había items, BAM, error
+            // Si habia items, BAM, error
             if (getItemsLike() != null && getItemsLike().size() > 0) {
                 throw new Exception(Messages.getString("GodManagerItem.4")); //$NON-NLS-1$
             }
         } else {
-            // Si no hay items o el tamaño no es el mismo, BAM, error
+            // Si no hay items o el tamano no es el mismo, BAM, error
             if (getItemsLike() == null || getItemsLike().size() != itemsLikePCT.size()) {
                 throw new Exception(Messages.getString("GodManagerItem.4")); //$NON-NLS-1$
             }
@@ -144,12 +144,12 @@ public class GodManagerItem {
         if (itemsDislikePCT == null) {
             setItemsDislikePCTInteger(null);
 
-            // Si había items, BAM, error
+            // Si habia items, BAM, error
             if (getItemsDislike() != null && getItemsDislike().size() > 0) {
                 throw new Exception(Messages.getString("GodManagerItem.7")); //$NON-NLS-1$
             }
         } else {
-            // Si no hay items o el tamaño no es el mismo, BAM, error
+            // Si no hay items o el tamano no es el mismo, BAM, error
             if (getItemsDislike() == null || getItemsDislike().size() != itemsDislikePCT.size()) {
                 throw new Exception(Messages.getString("GodManagerItem.7")); //$NON-NLS-1$
             }

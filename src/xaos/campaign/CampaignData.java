@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 /**
  * 
- * Aquí se guardan los datos de una campaña. ID, Nombre, misiones que la componen, ...
+ * Aqui se guardan los datos de una campana. ID, Nombre, misiones que la componen, ...
  * 
  */
 public class CampaignData {

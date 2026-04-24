@@ -63,7 +63,7 @@ public class MatsPanelData {
             Document doc = UtilsXML.loadXMLFile(sXMLPath); //$NON-NLS-1$ //$NON-NLS-2$
 
 			// Tenemos el documento XML parseado
-            // Lo recorremos entero y vamos añadiendo los grupos
+            // Lo recorremos entero y vamos anadiendo los grupos
             NodeList nodeList = doc.getDocumentElement().getChildNodes();
             Node node;
             String sAux, sIniHeader;
@@ -162,7 +162,7 @@ public class MatsPanelData {
                             Log.log(Log.LEVEL_ERROR, Messages.getString("MatsPanelData.6"), "MatsPanelData"); //$NON-NLS-1$ //$NON-NLS-2$
                             Game.exit();
                         }
-                        // Ordenamos alfabéticamente
+                        // Ordenamos alfabeticamente
                         for (int t = 0; t < alItems.size(); t++) {
                             alItemNames.add(ItemManager.getItem(alItems.get(t)).getName());
                         }

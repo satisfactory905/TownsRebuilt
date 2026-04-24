@@ -5,9 +5,10 @@ import java.awt.Point;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.lwjgl.input.Keyboard;
-import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
+import static org.lwjgl.glfw.GLFW.*;
+
+import xaos.utils.InputState;
 
 import xaos.TownsProperties;
 import xaos.actions.ActionManager;
@@ -436,7 +437,7 @@ public final class UIPanel {
 	public static int renderHeight;
 
 	// BOTTOM panel
-	private static ArrayList<Point> bottomPanelItemsPosition; // Array de sólo BOTTOM_PANEL_NUM_ITEMS posiciones (9) con las coordenadas de los items que caben
+	private static ArrayList<Point> bottomPanelItemsPosition; // Array de solo BOTTOM_PANEL_NUM_ITEMS posiciones (9) con las coordenadas de los items que caben
 	private static int bottomPanelItemIndex;
 	private static int bottomPanelX;
 	private static int bottomPanelY;
@@ -657,7 +658,7 @@ public final class UIPanel {
 	private static Point livingsGroupPanelPoint = new Point (0, 0);
 	private static Point livingsSingleGroupPanelPoint = new Point (0, 0);
 	private static Point livingsGroupPanelFirstIconPoint = new Point (0, 0);
-	private static int livingsGroupPanelIconsSeparation = Tile.TERRAIN_ICON_WIDTH; // Esto se cambiará seguro, no tiene nada que ver, es por si acaso
+	private static int livingsGroupPanelIconsSeparation = Tile.TERRAIN_ICON_WIDTH; // Esto se cambiara seguro, no tiene nada que ver, es por si acaso
 	private static Tile tileLivingsGroup;
 	private static Tile tileLivingsGroupON;
 	private static Tile tileLivingsGroupGreen;
@@ -901,7 +902,7 @@ public final class UIPanel {
 		productionPanelMenu = new SmartMenu ();
 		SmartMenu.readXMLMenu (productionPanelMenu, "menu_production.xml", sCampaignID, sMissionID); //$NON-NLS-1$
 
-		// Vamos a setear los tamaños de los iconos de los menús para que sea proporcional al botón de menú
+		// Vamos a setear los tamanos de los iconos de los menus para que sea proporcional al boton de menu
 		resizeIcons (currentMenu, BOTTOM_ITEM_WIDTH, BOTTOM_ITEM_HEIGHT);
 		resizeIcons (menuPanelMenu, MENU_ITEM_WIDTH, MENU_ITEM_HEIGHT);
 		resizeIcons (productionPanelMenu, PRODUCTION_PANEL_ITEM_WIDTH, PRODUCTION_PANEL_ITEM_HEIGHT);
@@ -1333,7 +1334,7 @@ public final class UIPanel {
 		// Centramos el panel
 		bottomPanelX = renderWidth / 2 - BOTTOM_PANEL_WIDTH / 2;
 		bottomPanelY = renderHeight - BOTTOM_PANEL_HEIGHT - tileOpenBottomMenu.getTileHeight ();
-		// Calculamos la posición de los minipaneles de scroll
+		// Calculamos la posicion de los minipaneles de scroll
 		bottomPanelLeftScrollX = bottomPanelX - BOTTOM_PANEL_SCROLL_WIDTH;
 		bottomPanelRightScrollX = bottomPanelX + BOTTOM_PANEL_WIDTH;
 
@@ -1349,7 +1350,7 @@ public final class UIPanel {
 			bottomPanelItemsPosition.add (new Point (bottomPanelX + spaceBetweenItems + (i * (BOTTOM_ITEM_WIDTH + spaceBetweenItems)), bottomPanelY + (BOTTOM_PANEL_HEIGHT / 2) - (BOTTOM_ITEM_HEIGHT / 2)));
 		}
 
-		// Minibotón para abrir/cerrar el panel de abajo
+		// Miniboton para abrir/cerrar el panel de abajo
 		tileOpenCloseBottomMenuPoint.setLocation (renderWidth / 2 - tileOpenBottomMenu.getTileWidth () / 2, renderHeight - tileOpenBottomMenu.getTileHeight ());
 
 		/*
@@ -1398,7 +1399,7 @@ public final class UIPanel {
 
 		if (bLoadMenus) {
 			/*
-			 * Menu panel (menú de la derecha)
+			 * Menu panel (menu de la derecha)
 			 */
 			createMenuPanel (menuPanelMenu);
 
@@ -1504,8 +1505,8 @@ public final class UIPanel {
 			return;
 		}
 
-		int mouseX = Mouse.getX ();
-		int mouseY = renderHeight - Mouse.getY () - 1;
+		int mouseX = InputState.getMouseX ();
+		int mouseY = InputState.getMouseY ();
 		delayTime++;
 		blinkTurns++;
 		if (blinkTurns >= MAX_BLINK_TURNS) {
@@ -2520,7 +2521,7 @@ public final class UIPanel {
 		} else if (caravanData.getStatus () == CaravanData.STATUS_LEAVING) {
 			sText = Messages.getString ("UIPanel.21"); //$NON-NLS-1$
 		} else {
-			// Nunca debería llegar aquí
+			// Nunca deberia llegar aqui
 			Log.log (Log.LEVEL_ERROR, "Caravan status [" + caravanData.getStatus () + "]", "UIPanel"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			sText = null;
 		}
@@ -2535,7 +2536,7 @@ public final class UIPanel {
 			return;
 		}
 
-		// Si llega aquí es que la caravana está lista para tradear (o está tradeando)
+		// Si llega aqui es que la caravana esta lista para tradear (o esta tradeando)
 		// if (!bTrading && tradePanel == null) {
 		if (tradePanel == null) {
 			// Acaba de entrar por primera vez, generamos el panel
@@ -2724,7 +2725,7 @@ public final class UIPanel {
 		}
 		UtilsGL.glEnd ();
 
-		// Números
+		// Numeros
 		int iTextWidth;
 		GL11.glBindTexture (GL11.GL_TEXTURE_2D, Game.TEXTURE_FONT_ID);
 		GL11.glTexEnvf (GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_MODE, GL11.GL_MODULATE);
@@ -2874,7 +2875,7 @@ public final class UIPanel {
 			drawTile (tileScrollDownDisabled, messagePanelIconScrollDownPoint);
 		}
 
-		// Subpanel donde irá el texto
+		// Subpanel donde ira el texto
 		iCurrentTexture = UtilsGL.setTexture (tileMessagesPanelSubPanel[0], iCurrentTexture);
 		renderBackground (tileMessagesPanelSubPanel, messagesPanelSubPanelPoint, MESSAGES_PANEL_SUBPANEL_WIDTH, MESSAGES_PANEL_SUBPANEL_HEIGHT);
 
@@ -3141,7 +3142,7 @@ public final class UIPanel {
 			drawTile (tileButtonCloseDisabled, matsPanelClosePoint);
 		}
 
-		// Subpanel donde irán los items
+		// Subpanel donde iran los items
 		iCurrentTexture = UtilsGL.setTexture (tileMatsPanelSubPanel[0], iCurrentTexture);
 		renderBackground (tileMatsPanelSubPanel, matsPanelSubPanelPoint, MATS_PANEL_SUBPANEL_WIDTH, MATS_PANEL_SUBPANEL_HEIGHT);
 
@@ -3521,7 +3522,7 @@ public final class UIPanel {
 			return;
 		}
 
-		// Num livigs > 0, comprobamos índices
+		// Num livigs > 0, comprobamos indices
 		int iNumPages = (iNumLivings % LIVINGS_PANEL_MAX_ROWS == 0) ? iNumLivings / LIVINGS_PANEL_MAX_ROWS : (iNumLivings / LIVINGS_PANEL_MAX_ROWS) + 1;
 		int iIndexPage;
 		boolean bNoGroupsPanel = !checkGroupsPanelEnabled (getLivingsPanelActive ());
@@ -4983,10 +4984,10 @@ public final class UIPanel {
 					tooltip = Messages.getString ("UIPanel.83"); //$NON-NLS-1$
 					UtilsGL.drawTooltip (tooltip, iconEventsPoint.x + GlobalEventData.getIcon ().getTileWidth () / 2 - UtilFont.getWidth (tooltip) / 2, iconEventsPoint.y + GlobalEventData.getIcon ().getTileHeight (), renderWidth, renderHeight);
 				} else {
-					// Obtenemos el tamaño del tooltip
+					// Obtenemos el tamano del tooltip
 					tooltip = Messages.getString ("UIPanel.84"); //$NON-NLS-1$
 					int tooltipWidth = UtilFont.getWidth (tooltip);
-					int tooltipHeight = UtilFont.MAX_HEIGHT; // Título
+					int tooltipHeight = UtilFont.MAX_HEIGHT; // Titulo
 
 					EventData ed;
 					EventManagerItem emi;
@@ -5080,10 +5081,10 @@ public final class UIPanel {
 				//					tooltip = Messages.getString("UIPanel.77"); //$NON-NLS-1$
 				// UtilsGL.drawTooltip (tooltip, iconGodsPoint.x + tileIconGods.getTileWidth () / 2 - UtilFont.getWidth (tooltip) / 2, iconGodsPoint.y + tileIconGods.getTileHeight (), renderWidth, renderHeight);
 				// } else {
-				// // Obtenemos el tamaño del tooltip
+				// // Obtenemos el tamano del tooltip
 				//					tooltip = Messages.getString("UIPanel.78"); //$NON-NLS-1$
 				// int tooltipWidth = UtilFont.getWidth (tooltip);
-				// int tooltipHeight = UtilFont.MAX_HEIGHT; // Título
+				// int tooltipHeight = UtilFont.MAX_HEIGHT; // Titulo
 				//
 				// GodData gd;
 				// int iAux;
@@ -5190,7 +5191,7 @@ public final class UIPanel {
 
 
 	/**
-	 * Cierra los menús que no están locked indicados
+	 * Cierra los menus que no estan locked indicados
 	 * 
 	 * @param bottom
 	 * @param right
@@ -5215,16 +5216,16 @@ public final class UIPanel {
 
 
 	/**
-	 * Indica si el ratón está en algún panel. Retorna un código según el panel
+	 * Indica si el raton esta en algun panel. Retorna un codigo segun el panel
 	 * 
 	 * @param x
 	 * @param y
-	 * @param doEdgeMenusStuff. Setea el delay a 0 si el mouse está en uno de los paneles laterales, también abre/cierra menus y tal
+	 * @param doEdgeMenusStuff. Setea el delay a 0 si el mouse esta en uno de los paneles laterales, tambien abre/cierra menus y tal
 	 * @return
 	 */
 	public int isMouseOnAPanel (int x, int y, boolean doEdgeMenusStuff) {
 		/*
-		 * TYPING PANEL (Si está activo ya no miraremos nada más)
+		 * TYPING PANEL (Si esta activo ya no miraremos nada mas)
 		 */
 		if (typingPanel != null) {
 			if (isMouseOnTypingPanel (x, y)) {
@@ -5258,7 +5259,7 @@ public final class UIPanel {
 				return MOUSE_IMAGES_PANEL;
 			}
 
-			// Miramos también el botón (para hacer toggle)
+			// Miramos tambien el boton (para hacer toggle)
 //			if (isMouseOnAnIcon (x, y, iconTutorialPoint, tileBottomItem, tileBottomItemAlpha)) {
 //				return MOUSE_TUTORIAL_ICON;
 //			}
@@ -5272,7 +5273,7 @@ public final class UIPanel {
 		if (isProfessionsPanelActive ()) {
 			if (isMouseOnProfessionsPanel (x, y)) {
 				if (doEdgeMenusStuff) {
-					// Cerramos los menús no locked
+					// Cerramos los menus no locked
 					closeNonLockedMenus (true, true, true);
 				}
 
@@ -5291,7 +5292,7 @@ public final class UIPanel {
 		if (isPilePanelActive ()) {
 			if (isMouseOnPilePanel (x, y)) {
 				if (doEdgeMenusStuff) {
-					// Cerramos los menús no locked
+					// Cerramos los menus no locked
 					closeNonLockedMenus (true, true, true);
 				}
 
@@ -5310,7 +5311,7 @@ public final class UIPanel {
 		if (isMessagesPanelActive ()) {
 			if (isMouseOnMessagesPanel (x, y)) {
 				if (doEdgeMenusStuff) {
-					// Cerramos los menús no locked
+					// Cerramos los menus no locked
 					closeNonLockedMenus (true, true, true);
 				}
 
@@ -5329,7 +5330,7 @@ public final class UIPanel {
 		if (isMatsPanelActive ()) {
 			if (isMouseOnMatsPanel (x, y)) {
 				if (doEdgeMenusStuff) {
-					// Cerramos los menús no locked
+					// Cerramos los menus no locked
 					closeNonLockedMenus (true, true, true);
 				}
 
@@ -5348,7 +5349,7 @@ public final class UIPanel {
 		if (isLivingsPanelActive ()) {
 			if (isMouseOnLivingsPanel (x, y)) {
 				if (doEdgeMenusStuff) {
-					// Cerramos los menús no locked
+					// Cerramos los menus no locked
 					closeNonLockedMenus (true, true, true);
 				}
 
@@ -5367,7 +5368,7 @@ public final class UIPanel {
 		if (isTradePanelActive ()) {
 			if (isMouseOnTradePanel (x, y)) {
 				if (doEdgeMenusStuff) {
-					// Cerramos los menús no locked
+					// Cerramos los menus no locked
 					closeNonLockedMenus (true, true, true);
 				}
 
@@ -5386,7 +5387,7 @@ public final class UIPanel {
 		if (isPrioritiesPanelActive ()) {
 			if (isMouseOnPrioritiesPanel (x, y)) {
 				if (doEdgeMenusStuff) {
-					// Cerramos los menús no locked
+					// Cerramos los menus no locked
 					closeNonLockedMenus (true, true, true);
 				}
 
@@ -5404,7 +5405,7 @@ public final class UIPanel {
 		if (isProductionPanelActive ()) {
 			if (isMouseOnAnIcon (x, y, tileOpenCloseProductionPanelPoint, tileOpenProductionPanelON, tileOpenProductionPanelONAlpha)) {
 				if (doEdgeMenusStuff) {
-					// Cerramos los menús no locked
+					// Cerramos los menus no locked
 					closeNonLockedMenus (true, true, false);
 					delayTime = 0;
 				}
@@ -5412,7 +5413,7 @@ public final class UIPanel {
 			}
 			if (isMouseOnProductionPanel (x, y)) {
 				if (doEdgeMenusStuff) {
-					// Cerramos los menús no locked
+					// Cerramos los menus no locked
 					closeNonLockedMenus (true, true, false);
 					delayTime = 0;
 				}
@@ -5437,7 +5438,7 @@ public final class UIPanel {
 				if (isMouseOnAnIcon (x, y, tileOpenCloseProductionPanelPoint, tileOpenProductionPanel, tileOpenProductionPanelAlpha)) {
 					setProductionPanelActive (true);
 
-					// Cerramos los menús no locked
+					// Cerramos los menus no locked
 					closeNonLockedMenus (true, true, false);
 					delayTime = 0;
 					return MOUSE_PRODUCTION_OPENCLOSE;
@@ -5449,7 +5450,7 @@ public final class UIPanel {
 		if (isBottomMenuPanelActive ()) {
 			if (isMouseOnBottomLeftScroll (x, y)) {
 				if (doEdgeMenusStuff) {
-					// Cerramos los menús no locked
+					// Cerramos los menus no locked
 					closeNonLockedMenus (false, true, true);
 					delayTime = 0;
 				}
@@ -5457,7 +5458,7 @@ public final class UIPanel {
 			}
 			if (isMouseOnBottomRightScroll (x, y)) {
 				if (doEdgeMenusStuff) {
-					// Cerramos los menús no locked
+					// Cerramos los menus no locked
 					closeNonLockedMenus (false, true, true);
 					delayTime = 0;
 				}
@@ -5465,15 +5466,15 @@ public final class UIPanel {
 			}
 			if (isMouseOnBottomItems (x, y) != -1) {
 				if (doEdgeMenusStuff) {
-					// Cerramos los menús no locked
+					// Cerramos los menus no locked
 					closeNonLockedMenus (false, true, true);
 					delayTime = 0;
 				}
 				return MOUSE_BOTTOM_ITEMS;
 			}
-			if (isMouseOnBottomPanel (x, y)) { // Este check tiene que ir detrás de los items, ya que los items están encima
+			if (isMouseOnBottomPanel (x, y)) { // Este check tiene que ir detras de los items, ya que los items estan encima
 				if (doEdgeMenusStuff) {
-					// Cerramos los menús no locked
+					// Cerramos los menus no locked
 					closeNonLockedMenus (false, true, true);
 					delayTime = 0;
 				}
@@ -5481,7 +5482,7 @@ public final class UIPanel {
 			}
 			if (isMouseOnAnIcon (x, y, tileOpenCloseBottomMenuPoint, tileOpenBottomMenuON, tileOpenBottomMenuONAlpha)) {
 				if (doEdgeMenusStuff) {
-					// Cerramos los menús no locked
+					// Cerramos los menus no locked
 					closeNonLockedMenus (false, true, true);
 					delayTime = 0;
 				}
@@ -5492,7 +5493,7 @@ public final class UIPanel {
 				// BOTTOM SUBPANEL
 				if (isMouseOnBottomSubItems (x, y) != -1) {
 					if (doEdgeMenusStuff) {
-						// Cerramos los menús no locked
+						// Cerramos los menus no locked
 						closeNonLockedMenus (false, true, true);
 						delayTime = 0;
 					}
@@ -5500,7 +5501,7 @@ public final class UIPanel {
 				}
 				if (isMouseOnBottomSubPanel (x, y)) {
 					if (doEdgeMenusStuff) {
-						// Cerramos los menús no locked
+						// Cerramos los menus no locked
 						closeNonLockedMenus (false, true, true);
 						delayTime = 0;
 					}
@@ -5521,7 +5522,7 @@ public final class UIPanel {
 				if (isMouseOnAnIcon (x, y, tileOpenCloseBottomMenuPoint, tileOpenBottomMenu, tileOpenBottomMenuAlpha)) {
 					setBottomMenuPanelActive (true);
 
-					// Cerramos los menús no locked
+					// Cerramos los menus no locked
 					closeNonLockedMenus (false, true, true);
 					delayTime = 0;
 					return MOUSE_BOTTOM_OPENCLOSE;
@@ -5533,7 +5534,7 @@ public final class UIPanel {
 		if (isMenuPanelActive ()) {
 			if (isMouseOnMenuItems (x, y) != -1) {
 				if (doEdgeMenusStuff) {
-					// Cerramos los menús no locked
+					// Cerramos los menus no locked
 					closeNonLockedMenus (true, false, true);
 					delayTime = 0;
 				}
@@ -5541,7 +5542,7 @@ public final class UIPanel {
 			}
 			if (isMouseOnMenuPanel (x, y)) {
 				if (doEdgeMenusStuff) {
-					// Cerramos los menús no locked
+					// Cerramos los menus no locked
 					closeNonLockedMenus (true, false, true);
 					delayTime = 0;
 				}
@@ -5549,7 +5550,7 @@ public final class UIPanel {
 			}
 			if (isMouseOnAnIcon (x, y, tileOpenCloseRightMenuPoint, tileOpenRightMenuON, tileOpenRightMenuONAlpha)) {
 				if (doEdgeMenusStuff) {
-					// Cerramos los menús no locked
+					// Cerramos los menus no locked
 					closeNonLockedMenus (true, false, true);
 					delayTime = 0;
 				}
@@ -5569,7 +5570,7 @@ public final class UIPanel {
 				if (isMouseOnAnIcon (x, y, tileOpenCloseRightMenuPoint, tileOpenRightMenu, tileOpenRightMenuAlpha)) {
 					setMenuPanelActive (true);
 
-					// Cerramos los menús no locked
+					// Cerramos los menus no locked
 					closeNonLockedMenus (true, false, true);
 					delayTime = 0;
 					return MOUSE_MENU_OPENCLOSE;
@@ -5781,11 +5782,11 @@ public final class UIPanel {
 
 
 	/**
-	 * Indica si el mouse está en un item, devuelve el número del mismo o -1 en caso de no estar
+	 * Indica si el mouse esta en un item, devuelve el numero del mismo o -1 en caso de no estar
 	 * 
 	 * @param x
 	 * @param y
-	 * @return devuelve el número del item o -1 en caso de no estar
+	 * @return devuelve el numero del item o -1 en caso de no estar
 	 */
 	private int isMouseOnBottomItems (int x, int y) {
 		if (y >= bottomPanelY && y < (bottomPanelY + BOTTOM_PANEL_HEIGHT)) {
@@ -5814,11 +5815,11 @@ public final class UIPanel {
 
 
 	/**
-	 * Indica si el mouse está en un item del submenu de abajo, devuelve el número del mismo o -1 en caso de no estar
+	 * Indica si el mouse esta en un item del submenu de abajo, devuelve el numero del mismo o -1 en caso de no estar
 	 * 
 	 * @param x
 	 * @param y
-	 * @return devuelve el número del item o -1 en caso de no estar
+	 * @return devuelve el numero del item o -1 en caso de no estar
 	 */
 	private int isMouseOnBottomSubItems (int x, int y) {
 		if (bottomSubPanelMenu != null && y >= bottomSubPanelPoint.y && y < (bottomSubPanelPoint.y + BOTTOM_SUBPANEL_HEIGHT) && x >= bottomSubPanelPoint.x && x < (bottomSubPanelPoint.x + BOTTOM_SUBPANEL_WIDTH)) {
@@ -5957,11 +5958,11 @@ public final class UIPanel {
 
 
 	/**
-	 * Indica si el mouse está en un item (o en los +/-) del panel de producción
+	 * Indica si el mouse esta en un item (o en los +/-) del panel de produccion
 	 * 
 	 * @param x
 	 * @param y
-	 * @return Un punto, X es el MOUSE_ID y Y indica la posición del item en el array correspondiente
+	 * @return Un punto, X es el MOUSE_ID y Y indica la posicion del item en el array correspondiente
 	 */
 	private Point isMouseOnProductionItems (int x, int y) {
 		if (y >= productionPanelPoint.y && y < (productionPanelPoint.y + PRODUCTION_PANEL_HEIGHT) && x >= productionPanelPoint.x && x < (productionPanelPoint.x + PRODUCTION_PANEL_WIDTH)) {
@@ -6018,11 +6019,11 @@ public final class UIPanel {
 
 
 	/**
-	 * Indica si el mouse está en un item (o en los up/down) del panel de prioridades
+	 * Indica si el mouse esta en un item (o en los up/down) del panel de prioridades
 	 * 
 	 * @param x
 	 * @param y
-	 * @return Un punto, X es el MOUSE_ID y Y indica la posición del item en el array correspondiente
+	 * @return Un punto, X es el MOUSE_ID y Y indica la posicion del item en el array correspondiente
 	 */
 	private Point isMouseOnPrioritiesItems (int x, int y) {
 		if (typingPanel != null) {
@@ -6101,11 +6102,11 @@ public final class UIPanel {
 
 
 	/**
-	 * Indica si el mouse está en un item (o en los up/down) del panel de trade
+	 * Indica si el mouse esta en un item (o en los up/down) del panel de trade
 	 * 
 	 * @param x
 	 * @param y
-	 * @return Un punto, X es el MOUSE_ID y Y indica la posición del item en el array correspondiente
+	 * @return Un punto, X es el MOUSE_ID y Y indica la posicion del item en el array correspondiente
 	 */
 	private Point isMouseOnTradeButtons (int x, int y) {
 		if (typingPanel != null) {
@@ -6252,11 +6253,11 @@ public final class UIPanel {
 
 
 	/**
-	 * Indica si el mouse está en un item (o en los up/down) del panel de pila
+	 * Indica si el mouse esta en un item (o en los up/down) del panel de pila
 	 * 
 	 * @param x
 	 * @param y
-	 * @return Un punto, X es el MOUSE_ID y Y indica la posición del item en el array correspondiente
+	 * @return Un punto, X es el MOUSE_ID y Y indica la posicion del item en el array correspondiente
 	 */
 	private Point isMouseOnPileButtons (int x, int y) {
 		if (typingPanel != null) {
@@ -6332,11 +6333,11 @@ public final class UIPanel {
 
 
 	/**
-	 * Indica si el mouse está en un item (o en los up/down) del panel de profesiones
+	 * Indica si el mouse esta en un item (o en los up/down) del panel de profesiones
 	 * 
 	 * @param x
 	 * @param y
-	 * @return Un punto, X es el MOUSE_ID y Y indica la posición del item en el array correspondiente
+	 * @return Un punto, X es el MOUSE_ID y Y indica la posicion del item en el array correspondiente
 	 */
 	private Point isMouseOnProfessionsButtons (int x, int y) {
 		if (typingPanel != null) {
@@ -6386,11 +6387,11 @@ public final class UIPanel {
 
 
 	/**
-	 * Indica si el mouse está en un item (o en los up/down) del panel de trade
+	 * Indica si el mouse esta en un item (o en los up/down) del panel de trade
 	 * 
 	 * @param x
 	 * @param y
-	 * @return Un punto, X es el MOUSE_ID y Y indica la posición del item en el array correspondiente
+	 * @return Un punto, X es el MOUSE_ID y Y indica la posicion del item en el array correspondiente
 	 */
 	private Point isMouseOnMatsButtons (int x, int y) {
 		if (typingPanel != null) {
@@ -6805,7 +6806,7 @@ public final class UIPanel {
 
 
 	/**
-	 * Retorna una lista de IDs de livings a partir de lo que esté mostrando el living panel
+	 * Retorna una lista de IDs de livings a partir de lo que este mostrando el living panel
 	 * 
 	 * @return
 	 */
@@ -6815,7 +6816,7 @@ public final class UIPanel {
 				// Citizens sin grupo
 				return Game.getWorld ().getCitizenGroups ().getCitizensWithoutGroup ();
 			} else {
-				// Está mostrando un grupo, miramos los miembros que tiene
+				// Esta mostrando un grupo, miramos los miembros que tiene
 				if (livingsPanelCitizensGroupActive >= 0 && livingsPanelCitizensGroupActive < CitizenGroups.MAX_GROUPS) {
 					return Game.getWorld ().getCitizenGroups ().getGroup (livingsPanelCitizensGroupActive).getLivingIDs ();
 				}
@@ -6827,7 +6828,7 @@ public final class UIPanel {
 				// Soldiers sin grupo
 				return Game.getWorld ().getSoldierGroups ().getSoldiersWithoutGroup ();
 			} else {
-				// Está mostrando un grupo, miramos los miembros que tiene
+				// Esta mostrando un grupo, miramos los miembros que tiene
 				if (livingsPanelSoldiersGroupActive >= 0 && livingsPanelSoldiersGroupActive < SoldierGroups.MAX_GROUPS) {
 					return Game.getWorld ().getSoldierGroups ().getGroup (livingsPanelSoldiersGroupActive).getLivingIDs ();
 				}
@@ -6841,7 +6842,7 @@ public final class UIPanel {
 
 
 	/**
-	 * Retorna la primera posición de la página que esté mostrando el living panel
+	 * Retorna la primera posicion de la pagina que este mostrando el living panel
 	 * 
 	 * @return
 	 */
@@ -6851,7 +6852,7 @@ public final class UIPanel {
 				// Todos los citizens
 				return (livingsDataIndexPages[LIVINGS_PANEL_TYPE_CITIZENS] - 1) * LIVINGS_PANEL_MAX_ROWS;
 			} else {
-				// Está mostrando un grupo, miramos los miembros que tiene
+				// Esta mostrando un grupo, miramos los miembros que tiene
 				return (livingsDataIndexPagesCitizenGroups[livingsPanelCitizensGroupActive] - 1) * LIVINGS_PANEL_MAX_ROWS;
 			}
 		} else if (getLivingsPanelActive () == LIVINGS_PANEL_TYPE_SOLDIERS) {
@@ -6859,7 +6860,7 @@ public final class UIPanel {
 				// Todos los soldiers
 				return (livingsDataIndexPages[LIVINGS_PANEL_TYPE_SOLDIERS] - 1) * LIVINGS_PANEL_MAX_ROWS;
 			} else {
-				// Está mostrando un grupo, miramos los miembros que tiene
+				// Esta mostrando un grupo, miramos los miembros que tiene
 				return (livingsDataIndexPagesSoldierGroups[livingsPanelSoldiersGroupActive] - 1) * LIVINGS_PANEL_MAX_ROWS;
 			}
 		} else if (getLivingsPanelActive () == LIVINGS_PANEL_TYPE_HEROES) {
@@ -6885,7 +6886,7 @@ public final class UIPanel {
 		}
 
 		/*
-		 * TYPING PANEL (Si está activo ya no miraremos nada más)
+		 * TYPING PANEL (Si esta activo ya no miraremos nada mas)
 		 */
 		if (typingPanel != null) {
 			if (iPanel == MOUSE_TYPING_PANEL_CLOSE || (mouseButton == 1 && iPanel == MOUSE_TYPING_PANEL)) {
@@ -6924,7 +6925,7 @@ public final class UIPanel {
 					return;
 				}
 			} else if (iPanel == MOUSE_TUTORIAL_ICON) {
-				// Miramos también el botón (para hacer toggle)
+				// Miramos tambien el boton (para hacer toggle)
 				toggleTutorialPanel (false);
 				UtilsAL.play (UtilsAL.SOURCE_FX_CLICK);
 				return;
@@ -6954,12 +6955,12 @@ public final class UIPanel {
 				UtilsAL.play (UtilsAL.SOURCE_FX_CLICK);
 				return;
 			} else if (iPanel == MOUSE_PROFESSIONS_PANEL_BUTTONS_ITEMS) {
-				// Ha clicado en un item, vamos a ver qué pasa
+				// Ha clicado en un item, vamos a ver que pasa
 				if (menuProfessions == null) {
 					return;
 				}
 
-				if (mouseButton == 1) { // Botón derecho (back al menú)
+				if (mouseButton == 1) { // Boton derecho (back al menu)
 					if (menuProfessions.getParent () != null) {
 						menuProfessions = menuProfessions.getParent ();
 						resizeProfessionsPanel (menuProfessions);
@@ -6971,7 +6972,7 @@ public final class UIPanel {
 					return;
 				}
 
-				// Botón izquierdo
+				// Boton izquierdo
 				Point p = isMouseOnProfessionsButtons (x, y);
 				if (p != null && p.y < menuProfessions.getItems ().size ()) {
 					SmartMenu menuAux = menuProfessions.getItems ().get (p.y);
@@ -7013,7 +7014,7 @@ public final class UIPanel {
 			}
 
 			if (iPanel == MOUSE_PROFESSIONS_PANEL) {
-				if (mouseButton == 1) { // Botón derecho (cerramos o tiramos 1 atrás el menú)
+				if (mouseButton == 1) { // Boton derecho (cerramos o tiramos 1 atras el menu)
 					if (menuProfessions != null) {
 						if (menuProfessions.getParent () != null) {
 							menuProfessions = menuProfessions.getParent ();
@@ -7130,12 +7131,12 @@ public final class UIPanel {
 				UtilsAL.play (UtilsAL.SOURCE_FX_CLICK);
 				return;
 			} else if (iPanel == MOUSE_PILE_PANEL_BUTTONS_ITEMS) {
-				// Ha clicado en un item, vamos a ver qué pasa
+				// Ha clicado en un item, vamos a ver que pasa
 				if (menuPile == null) {
 					return;
 				}
 
-				if (mouseButton == 1) { // Botón derecho (back al menú)
+				if (mouseButton == 1) { // Boton derecho (back al menu)
 					if (menuPile.getParent () != null) {
 						menuPile = menuPile.getParent ();
 						resizePilePanel (menuPile);
@@ -7147,7 +7148,7 @@ public final class UIPanel {
 					return;
 				}
 
-				// Botón izquierdo
+				// Boton izquierdo
 				Point p = isMouseOnPileButtons (x, y);
 				if (p != null && p.y < menuPile.getItems ().size ()) {
 					SmartMenu menuAux = menuPile.getItems ().get (p.y);
@@ -7191,7 +7192,7 @@ public final class UIPanel {
 			}
 
 			if (iPanel == MOUSE_PILE_PANEL) {
-				if (mouseButton == 1) { // Botón derecho (cerramos o tiramos 1 atrás el menú)
+				if (mouseButton == 1) { // Boton derecho (cerramos o tiramos 1 atras el menu)
 					if (menuPile != null) {
 						if (menuPile.getParent () != null) {
 							menuPile = menuPile.getParent ();
@@ -7246,7 +7247,7 @@ public final class UIPanel {
 					return;
 				}
 			} else if (iPanel == MOUSE_MESSAGES_PANEL) {
-				if (mouseButton == 1) { // Botón derecho (cerramos)
+				if (mouseButton == 1) { // Boton derecho (cerramos)
 					setMessagesPanelActive (-1);
 				} else {
 					if (MessagesPanel.mousePressed (x, y, getMessagesPanelActive (), messagesPanelSubPanelPoint.x + tileMessagesPanel[3].getTileWidth (), messagesPanelSubPanelPoint.y + tileMessagesPanel[1].getTileHeight ())) {
@@ -7287,7 +7288,7 @@ public final class UIPanel {
 			}
 
 			if (iPanel == MOUSE_MATS_PANEL) {
-				if (mouseButton == 1) { // Botón derecho (cerramos)
+				if (mouseButton == 1) { // Boton derecho (cerramos)
 					setMatsPanelActive (false);
 				}
 				return;
@@ -7417,7 +7418,7 @@ public final class UIPanel {
 
 								SoldierGroupData sgd;
 								for (int g = 0; g < SoldierGroups.MAX_GROUPS; g++) {
-									// Añadir a grupos existentes
+									// Anadir a grupos existentes
 									sgd = Game.getWorld ().getSoldierGroups ().getGroup (g);
 									if (soldier.getSoldierData ().getState () != SoldierData.STATE_IN_A_GROUP || soldier.getSoldierData ().getGroup () != sgd.getId ()) {
 										sm.addItem (new SmartMenu (SmartMenu.TYPE_ITEM, sgd.getName (), null, CommandPanel.COMMAND_SOLDIER_SET_STATE, Integer.toString (soldier.getID ()), Integer.toString (SoldierData.STATE_IN_A_GROUP), new Point3D (sgd.getId (), -1, -1)));
@@ -7457,7 +7458,7 @@ public final class UIPanel {
 
 								CitizenGroupData cgd;
 								for (int g = 0; g < CitizenGroups.MAX_GROUPS; g++) {
-									// Añadir a grupos existentes
+									// Anadir a grupos existentes
 									cgd = Game.getWorld ().getCitizenGroups ().getGroup (g);
 									if (citizen.getCitizenData ().getGroupID () != g) {
 										sm.addItem (new SmartMenu (SmartMenu.TYPE_ITEM, Messages.getString ("UIPanel.70") + cgd.getName (), null, CommandPanel.COMMAND_CITIZEN_SET_JOB_GROUP, Integer.toString (citizen.getID ()), Integer.toString (g), null, Color.GREEN)); //$NON-NLS-1$
@@ -7726,7 +7727,7 @@ public final class UIPanel {
 			}
 
 			if (iPanel == MOUSE_LIVINGS_PANEL) {
-				if (mouseButton == 1) { // Botón derecho (cerramos)
+				if (mouseButton == 1) { // Boton derecho (cerramos)
 					setLivingsPanelActive (LIVINGS_PANEL_TYPE_NONE, livingsPanelSoldiersGroupActive, livingsPanelCitizensGroupActive);
 				}
 				return;
@@ -7818,7 +7819,7 @@ public final class UIPanel {
 				}
 			}
 			if (iPanel == MOUSE_TRADE_PANEL) {
-				if (mouseButton == 1) { // Botón derecho (cerramos)
+				if (mouseButton == 1) { // Boton derecho (cerramos)
 					setTradePanelActive (false);
 				}
 				return;
@@ -7855,7 +7856,7 @@ public final class UIPanel {
 					return;
 				}
 			} else if (iPanel == MOUSE_PRIORITIES_PANEL) {
-				if (mouseButton == 1) { // Botón derecho (cerramos)
+				if (mouseButton == 1) { // Boton derecho (cerramos)
 					setPrioritiesPanelActive (false);
 				}
 				return;
@@ -7873,7 +7874,7 @@ public final class UIPanel {
 		}
 		if (isProductionPanelActive ()) {
 			if (iPanel == MOUSE_PRODUCTION_PANEL_ITEMS) {
-				if (mouseButton == 1) { // Botón derecho (back al menú)
+				if (mouseButton == 1) { // Boton derecho (back al menu)
 					if (productionPanelMenu.getParent () != null) {
 						productionPanelMenu = productionPanelMenu.getParent ();
 						createProductionPanel (productionPanelMenu);
@@ -7894,11 +7895,11 @@ public final class UIPanel {
 							if (!smItem.getCommand ().equalsIgnoreCase (CommandPanel.COMMAND_BACK)) {
 								CommandPanel.executeCommand (smItem.getCommand (), smItem.getParameter (), smItem.getParameter2 (), smItem.getDirectCoordinates (), smItem.getIcon (), smItem.getIconType ());
 
-								if (Keyboard.isKeyDown (Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown (Keyboard.KEY_RCONTROL)) {
+								if (InputState.isKeyDown (GLFW_KEY_LEFT_CONTROL) || InputState.isKeyDown (GLFW_KEY_RIGHT_CONTROL)) {
 									for (int rep = 0; rep < 99; rep++) {
 										CommandPanel.executeCommand (smItem.getCommand (), smItem.getParameter (), smItem.getParameter2 (), smItem.getDirectCoordinates (), smItem.getIcon (), smItem.getIconType ());
 									}
-								} else if (Keyboard.isKeyDown (Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown (Keyboard.KEY_RSHIFT)) {
+								} else if (InputState.isKeyDown (GLFW_KEY_LEFT_SHIFT) || InputState.isKeyDown (GLFW_KEY_RIGHT_SHIFT)) {
 									CommandPanel.executeCommand (smItem.getCommand (), smItem.getParameter (), smItem.getParameter2 (), smItem.getDirectCoordinates (), smItem.getIcon (), smItem.getIconType ());
 									CommandPanel.executeCommand (smItem.getCommand (), smItem.getParameter (), smItem.getParameter2 (), smItem.getDirectCoordinates (), smItem.getIcon (), smItem.getIconType ());
 									CommandPanel.executeCommand (smItem.getCommand (), smItem.getParameter (), smItem.getParameter2 (), smItem.getDirectCoordinates (), smItem.getIcon (), smItem.getIconType ());
@@ -7928,11 +7929,11 @@ public final class UIPanel {
 								// Tutorial flow
 								Game.updateTutorialFlow (TutorialTrigger.TYPE_INT_ICONHIT, TutorialTrigger.ICON_INT_REGULAR_PLUS, null, smItem.getParameter ());
 
-								if (Keyboard.isKeyDown (Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown (Keyboard.KEY_RCONTROL)) {
+								if (InputState.isKeyDown (GLFW_KEY_LEFT_CONTROL) || InputState.isKeyDown (GLFW_KEY_RIGHT_CONTROL)) {
 									for (int rep = 0; rep < 99; rep++) {
 										CommandPanel.executeCommand (smItem.getCommand (), smItem.getParameter (), smItem.getParameter2 (), smItem.getDirectCoordinates (), smItem.getIcon (), smItem.getIconType ());
 									}
-								} else if (Keyboard.isKeyDown (Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown (Keyboard.KEY_RSHIFT)) {
+								} else if (InputState.isKeyDown (GLFW_KEY_LEFT_SHIFT) || InputState.isKeyDown (GLFW_KEY_RIGHT_SHIFT)) {
 									CommandPanel.executeCommand (smItem.getCommand (), smItem.getParameter (), smItem.getParameter2 (), smItem.getDirectCoordinates (), smItem.getIcon (), smItem.getIconType ());
 									CommandPanel.executeCommand (smItem.getCommand (), smItem.getParameter (), smItem.getParameter2 (), smItem.getDirectCoordinates (), smItem.getIcon (), smItem.getIconType ());
 									CommandPanel.executeCommand (smItem.getCommand (), smItem.getParameter (), smItem.getParameter2 (), smItem.getDirectCoordinates (), smItem.getIcon (), smItem.getIconType ());
@@ -7954,11 +7955,11 @@ public final class UIPanel {
 								// Tutorial flow
 								Game.updateTutorialFlow (TutorialTrigger.TYPE_INT_ICONHIT, TutorialTrigger.ICON_INT_REGULAR_MINUS, null, smItem.getParameter ());
 
-								if (Keyboard.isKeyDown (Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown (Keyboard.KEY_RCONTROL)) {
+								if (InputState.isKeyDown (GLFW_KEY_LEFT_CONTROL) || InputState.isKeyDown (GLFW_KEY_RIGHT_CONTROL)) {
 									for (int rep = 0; rep < 99; rep++) {
 										Game.getWorld ().getTaskManager ().removeFromQueue (smItem.getParameter ());
 									}
-								} else if (Keyboard.isKeyDown (Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown (Keyboard.KEY_RSHIFT)) {
+								} else if (InputState.isKeyDown (GLFW_KEY_LEFT_SHIFT) || InputState.isKeyDown (GLFW_KEY_RIGHT_SHIFT)) {
 									Game.getWorld ().getTaskManager ().removeFromQueue (smItem.getParameter ());
 									Game.getWorld ().getTaskManager ().removeFromQueue (smItem.getParameter ());
 									Game.getWorld ().getTaskManager ().removeFromQueue (smItem.getParameter ());
@@ -7980,11 +7981,11 @@ public final class UIPanel {
 								// Tutorial flow
 								Game.updateTutorialFlow (TutorialTrigger.TYPE_INT_ICONHIT, TutorialTrigger.ICON_INT_AUTOMATED_PLUS, null, smItem.getParameter ());
 
-								if (Keyboard.isKeyDown (Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown (Keyboard.KEY_RCONTROL)) {
+								if (InputState.isKeyDown (GLFW_KEY_LEFT_CONTROL) || InputState.isKeyDown (GLFW_KEY_RIGHT_CONTROL)) {
 									for (int rep = 0; rep < 99; rep++) {
 										Game.getWorld ().getTaskManager ().addItemOnAutomatedQueue (smItem.getParameter ());
 									}
-								} else if (Keyboard.isKeyDown (Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown (Keyboard.KEY_RSHIFT)) {
+								} else if (InputState.isKeyDown (GLFW_KEY_LEFT_SHIFT) || InputState.isKeyDown (GLFW_KEY_RIGHT_SHIFT)) {
 									Game.getWorld ().getTaskManager ().addItemOnAutomatedQueue (smItem.getParameter ());
 									Game.getWorld ().getTaskManager ().addItemOnAutomatedQueue (smItem.getParameter ());
 									Game.getWorld ().getTaskManager ().addItemOnAutomatedQueue (smItem.getParameter ());
@@ -8006,11 +8007,11 @@ public final class UIPanel {
 								// Tutorial flow
 								Game.updateTutorialFlow (TutorialTrigger.TYPE_INT_ICONHIT, TutorialTrigger.ICON_INT_AUTOMATED_MINUS, null, smItem.getParameter ());
 
-								if (Keyboard.isKeyDown (Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown (Keyboard.KEY_RCONTROL)) {
+								if (InputState.isKeyDown (GLFW_KEY_LEFT_CONTROL) || InputState.isKeyDown (GLFW_KEY_RIGHT_CONTROL)) {
 									for (int rep = 0; rep < 99; rep++) {
 										Game.getWorld ().getTaskManager ().removeItemOnAutomatedQueue (smItem.getParameter ());
 									}
-								} else if (Keyboard.isKeyDown (Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown (Keyboard.KEY_RSHIFT)) {
+								} else if (InputState.isKeyDown (GLFW_KEY_LEFT_SHIFT) || InputState.isKeyDown (GLFW_KEY_RIGHT_SHIFT)) {
 									Game.getWorld ().getTaskManager ().removeItemOnAutomatedQueue (smItem.getParameter ());
 									Game.getWorld ().getTaskManager ().removeItemOnAutomatedQueue (smItem.getParameter ());
 									Game.getWorld ().getTaskManager ().removeItemOnAutomatedQueue (smItem.getParameter ());
@@ -8023,7 +8024,7 @@ public final class UIPanel {
 				}
 			}
 			if (iPanel == MOUSE_PRODUCTION_PANEL) {
-				if (mouseButton == 1) { // Botón derecho (back al menú)
+				if (mouseButton == 1) { // Boton derecho (back al menu)
 					if (productionPanelMenu.getParent () != null) {
 						productionPanelMenu = productionPanelMenu.getParent ();
 						createProductionPanel (productionPanelMenu);
@@ -8089,7 +8090,7 @@ public final class UIPanel {
 		}
 		if (isMenuPanelActive ()) {
 			if (iPanel == MOUSE_MENU_PANEL_ITEMS) {
-				if (mouseButton == 1) { // Botón derecho (back al menú)
+				if (mouseButton == 1) { // Boton derecho (back al menu)
 					if (menuPanelMenu.getParent () != null) {
 						menuPanelMenu = menuPanelMenu.getParent ();
 						createMenuPanel (menuPanelMenu);
@@ -8123,7 +8124,7 @@ public final class UIPanel {
 				return;
 			}
 			if (iPanel == MOUSE_MENU_PANEL) {
-				if (mouseButton == 1) { // Botón derecho (back al menú)
+				if (mouseButton == 1) { // Boton derecho (back al menu)
 					if (menuPanelMenu.getParent () != null) {
 						menuPanelMenu = menuPanelMenu.getParent ();
 						createMenuPanel (menuPanelMenu);
@@ -8145,7 +8146,7 @@ public final class UIPanel {
 		// BOTTOM submenu
 		if (bottomSubPanelMenu != null && iPanel == MOUSE_BOTTOM_SUBITEMS) {
 			// BOTTOM SUBPANEL
-			if (mouseButton == 1) { // Botón derecho (back al menú)
+			if (mouseButton == 1) { // Boton derecho (back al menu)
 				bottomSubPanelMenu = bottomSubPanelMenu.getParent ();
 				if (bottomSubPanelMenu != null) {
 					if (bottomSubPanelMenu.getParent () == null) {
@@ -8190,7 +8191,7 @@ public final class UIPanel {
 
 		if (bottomSubPanelMenu != null && iPanel == MOUSE_BOTTOM_SUBPANEL) {
 			// BOTTOM SUBPANEL
-			if (mouseButton == 1) { // Botón derecho (back al menú)
+			if (mouseButton == 1) { // Boton derecho (back al menu)
 				bottomSubPanelMenu = bottomSubPanelMenu.getParent ();
 				if (bottomSubPanelMenu != null) {
 					if (bottomSubPanelMenu.getParent () == null) {
@@ -8208,11 +8209,11 @@ public final class UIPanel {
 		// ICONS
 		if (iPanel == MOUSE_ICON_LEVEL_UP) {
 			CommandPanel.executeCommand (CommandPanel.COMMAND_LEVEL_UP, null, null, null, null, 0);
-			if (Keyboard.isKeyDown (Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown (Keyboard.KEY_RCONTROL)) {
+			if (InputState.isKeyDown (GLFW_KEY_LEFT_CONTROL) || InputState.isKeyDown (GLFW_KEY_RIGHT_CONTROL)) {
 				for (int rep = 0; rep < 99; rep++) {
 					CommandPanel.executeCommand (CommandPanel.COMMAND_LEVEL_UP, null, null, null, null, 0);
 				}
-			} else if (Keyboard.isKeyDown (Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown (Keyboard.KEY_RSHIFT)) {
+			} else if (InputState.isKeyDown (GLFW_KEY_LEFT_SHIFT) || InputState.isKeyDown (GLFW_KEY_RIGHT_SHIFT)) {
 				CommandPanel.executeCommand (CommandPanel.COMMAND_LEVEL_UP, null, null, null, null, 0);
 				CommandPanel.executeCommand (CommandPanel.COMMAND_LEVEL_UP, null, null, null, null, 0);
 				CommandPanel.executeCommand (CommandPanel.COMMAND_LEVEL_UP, null, null, null, null, 0);
@@ -8223,11 +8224,11 @@ public final class UIPanel {
 		}
 		if (iPanel == MOUSE_ICON_LEVEL_DOWN) {
 			CommandPanel.executeCommand (CommandPanel.COMMAND_LEVEL_DOWN, null, null, null, null, 0);
-			if (Keyboard.isKeyDown (Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown (Keyboard.KEY_RCONTROL)) {
+			if (InputState.isKeyDown (GLFW_KEY_LEFT_CONTROL) || InputState.isKeyDown (GLFW_KEY_RIGHT_CONTROL)) {
 				for (int rep = 0; rep < 99; rep++) {
 					CommandPanel.executeCommand (CommandPanel.COMMAND_LEVEL_DOWN, null, null, null, null, 0);
 				}
-			} else if (Keyboard.isKeyDown (Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown (Keyboard.KEY_RSHIFT)) {
+			} else if (InputState.isKeyDown (GLFW_KEY_LEFT_SHIFT) || InputState.isKeyDown (GLFW_KEY_RIGHT_SHIFT)) {
 				CommandPanel.executeCommand (CommandPanel.COMMAND_LEVEL_DOWN, null, null, null, null, 0);
 				CommandPanel.executeCommand (CommandPanel.COMMAND_LEVEL_DOWN, null, null, null, null, 0);
 				CommandPanel.executeCommand (CommandPanel.COMMAND_LEVEL_DOWN, null, null, null, null, 0);
@@ -8419,7 +8420,7 @@ public final class UIPanel {
 	 * @return true if something is done
 	 */
 	public static boolean keyPressed (int tecla) {
-		if (tecla == Keyboard.KEY_ESCAPE) {
+		if (tecla == GLFW_KEY_ESCAPE) {
 			if (imagesPanel != null && ImagesPanel.isVisible ()) {
 				ImagesPanel.setVisible (false);
 				return true;
@@ -8479,7 +8480,7 @@ public final class UIPanel {
 
 
 	private void createMilitaryContextMenu (SmartMenu smToAdd, int iLocation, LivingEntity le, int mouseX, int mouseY) {
-		// Equipar, miramos si hay objetos militares en el mundo, de paso ya hacemos una lista para poner en el menú
+		// Equipar, miramos si hay objetos militares en el mundo, de paso ya hacemos una lista para poner en el menu
 		Integer[] aItems = World.getItems ().keySet ().toArray (new Integer [0]);
 		ArrayList<MilitaryItem> alMilitaryItems = new ArrayList<MilitaryItem> ();
 
@@ -8493,7 +8494,7 @@ public final class UIPanel {
 				if (World.getCell (mi.getCoordinates ()).getAstarZoneID () == iASZID) {
 					imi = ItemManager.getItem (mi.getIniHeader ());
 					if (imi.getLocation () == iLocation) {
-						// Lo metemos en la posición correcta, ordenado por item level
+						// Lo metemos en la posicion correcta, ordenado por item level
 						int iItemLevel = imi.getLevel ();
 						int iIndexLevel = -1;
 						for (int iL = 0; iL < alMilitaryItems.size (); iL++) {
@@ -8529,7 +8530,7 @@ public final class UIPanel {
 				if (mi != null && mi instanceof MilitaryItem) {
 					imi = ItemManager.getItem (mi.getIniHeader ());
 					if (imi.getLocation () == iLocation) {
-						// Lo metemos en la posición correcta, ordenado por item level
+						// Lo metemos en la posicion correcta, ordenado por item level
 						int iItemLevel = imi.getLevel ();
 						int iIndexLevel = -1;
 						for (int iL = 0; iL < alMilitaryItems.size (); iL++) {
@@ -8558,7 +8559,7 @@ public final class UIPanel {
 		SmartMenu smMilitary = new SmartMenu ();
 
 		if (alMilitaryItems.size () > 0 || smToAdd != null) {
-			// Tenemos la lista con items que el aldeano puede equipar, creamos el menú
+			// Tenemos la lista con items que el aldeano puede equipar, creamos el menu
 			if (smToAdd != null) {
 				smMilitary.addItem (smToAdd);
 				if (alMilitaryItems.size () > 0) {
@@ -8566,7 +8567,7 @@ public final class UIPanel {
 				}
 			}
 
-			// Ordenamos el menú por item level
+			// Ordenamos el menu por item level
 			MilitaryItem militaryItem;
 			for (int i = 0; i < alMilitaryItems.size (); i++) {
 				militaryItem = alMilitaryItems.get (i);
@@ -8649,11 +8650,11 @@ public final class UIPanel {
 
 				Game.updateTutorialFlow (TutorialTrigger.TYPE_INT_ICONHIT, TutorialTrigger.ICON_INT_TRADE, null);
 			} else {
-				UIPanel.tradePanelActive = tradePanelActive; // Se pone primero pq sino el Game.resume no funcionará
+				UIPanel.tradePanelActive = tradePanelActive; // Se pone primero pq sino el Game.resume no funcionara
 
 				// Se desactiva el panel, quitamos la pausa si al activar el panel el juego no estaba pausado
 				if (!tradePanelActivePausedBefore) {
-					// Si antes no había pausa la quitamos
+					// Si antes no habia pausa la quitamos
 					Game.resume (false);
 				}
 			}
@@ -8723,7 +8724,7 @@ public final class UIPanel {
 		if (iPileContainerID != -1) {
 			closePanels (true, true, true, true, true, false, true);
 
-			// Creamos el menú
+			// Creamos el menu
 			if (isContainer) {
 				menuPile = Container.createContainerMenu (iPileContainerID);
 
@@ -8741,7 +8742,7 @@ public final class UIPanel {
 			}
 
 			if (menuPile != null) {
-				// Cambiamos el tamaño de los iconos
+				// Cambiamos el tamano de los iconos
 				resizeIcons (menuPile, BOTTOM_ITEM_WIDTH, BOTTOM_ITEM_HEIGHT);
 
 				resizePilePanel (menuPile);
@@ -8772,7 +8773,7 @@ public final class UIPanel {
 		if (iProfessionsCitizenOrGroupID != -1) {
 			closePanels (true, true, true, true, false, true, false);
 
-			// Creamos el menú
+			// Creamos el menu
 			if (isCitizen) {
 				menuProfessions = ActionPriorityManager.createProfessionsMenu (iProfessionsCitizenOrGroupID);
 			} else {
@@ -8780,7 +8781,7 @@ public final class UIPanel {
 			}
 
 			if (menuProfessions != null) {
-				// Cambiamos el tamaño de los iconos
+				// Cambiamos el tamano de los iconos
 				resizeIcons (menuProfessions, BOTTOM_ITEM_WIDTH, BOTTOM_ITEM_HEIGHT);
 
 				resizeProfessionsPanel (menuProfessions);
@@ -8912,7 +8913,7 @@ public final class UIPanel {
 			}
 		}
 
-		// Minibotón para abrir/cerrar el menú
+		// Miniboton para abrir/cerrar el menu
 		tileOpenCloseRightMenuPoint.setLocation (renderWidth - tileOpenRightMenu.getTileWidth (), renderHeight / 2 - tileOpenRightMenu.getTileHeight () / 2);
 	}
 
@@ -9030,7 +9031,7 @@ public final class UIPanel {
 			}
 		}
 
-		// Minibotón para abrir/cerrar el menú de producción
+		// Miniboton para abrir/cerrar el menu de produccion
 		tileOpenCloseProductionPanelPoint.setLocation (0, renderHeight / 2 - tileOpenProductionPanel.getTileHeight () / 2);
 
 
@@ -9066,7 +9067,7 @@ public final class UIPanel {
 	private void createMessagesPanel () {
 		messagesPanelActive = -1;
 
-		// Tamaño y close button
+		// Tamano y close button
 		MESSAGES_PANEL_WIDTH = (renderWidth / 8) * 7;
 		MESSAGES_PANEL_HEIGHT = renderHeight - (iconNumCitizensBackgroundPoint.y + tileBottomItem.getTileHeight ()) - tileBottomItem.getTileHeight () / 2;
 		messagesPanelPoint.setLocation (renderWidth / 8 - ((renderWidth / 8) / 2), iconNumCitizensBackgroundPoint.y + tileBottomItem.getTileHeight () + tileBottomItem.getTileHeight () / 4);
@@ -9116,14 +9117,14 @@ public final class UIPanel {
 		MESSAGES_PANEL_SUBPANEL_HEIGHT = (messagePanelIconScrollDownPoint.y + tileScrollDown.getTileHeight ()) - messagePanelIconScrollUpPoint.y;
 		messagesPanelSubPanelPoint.setLocation (messagesPanelPoint.x + tileMessagesPanel[3].getTileWidth (), messagePanelIconScrollUpPoint.y);
 
-		// Posición de iconos (los 4 de arriba) dentro del panel (va aquí pq tienen que centrarse con el subpanel)
+		// Posicion de iconos (los 4 de arriba) dentro del panel (va aqui pq tienen que centrarse con el subpanel)
 		messagePanelIconPoints = new Point [MessagesPanel.MAX_TYPES];
 		int iSeparation = (MESSAGES_PANEL_SUBPANEL_WIDTH - (MessagesPanel.MAX_TYPES * messagePanelTiles[0].getTileWidth ())) / (MessagesPanel.MAX_TYPES + 1);
 		for (int i = 0; i < MessagesPanel.MAX_TYPES; i++) {
 			messagePanelIconPoints[i] = new Point (messagesPanelSubPanelPoint.x + iSeparation + (i * (messagePanelTiles[0].getTileWidth () + iSeparation)), messagesPanelPoint.y + tileMessagesPanel[1].getTileHeight ());
 		}
 
-		// Ésto es para que parta los messages render
+		// Esto es para que parta los messages render
 		MessagesPanel.resize (MESSAGES_PANEL_WIDTH, MESSAGES_PANEL_HEIGHT);
 	}
 
@@ -9163,7 +9164,7 @@ public final class UIPanel {
 		MATS_PANEL_SUBPANEL_HEIGHT = (matsPanelIconScrollDownPoint.y + tileScrollDown.getTileHeight ()) - matsPanelIconScrollUpPoint.y;
 		matsPanelSubPanelPoint.setLocation (matsPanelPoint.x + tileMatsPanelSubPanel[3].getTileWidth (), matsPanelIconScrollUpPoint.y);
 
-		// Posición de iconos (los X de arriba) dentro del panel (va aquí pq tienen que centrarse con el subpanel)
+		// Posicion de iconos (los X de arriba) dentro del panel (va aqui pq tienen que centrarse con el subpanel)
 		matsPanelIconPoints = new Point [MatsPanelData.numGroups];
 		int iSeparation = (MATS_PANEL_SUBPANEL_WIDTH - (MatsPanelData.numGroups * tileBottomItem.getTileWidth ())) / (MatsPanelData.numGroups + 1);
 		for (int i = 0; i < MatsPanelData.numGroups; i++) {
@@ -9292,7 +9293,7 @@ public final class UIPanel {
 		PILE_PANEL_MAX_ITEMS_PER_PAGE = iMaxItemsWidth * iRows;
 
 		if (iRows <= 1) {
-			// Lo hacemos pequeño por la derecha
+			// Lo hacemos pequeno por la derecha
 			int iSeparationW = (PILE_PANEL_WIDTH - tileScrollUp.getTileWidth () - 4 * tileMatsPanelSubPanel[3].getTileWidth () - iMaxItemsWidth * tileBottomItem.getTileWidth ()) / (iMaxItemsWidth + 1);
 			int iFirstWidth = pilePanelPoint.x + tileMatsPanelSubPanel[3].getTileWidth () + iSeparationW;
 			PILE_PANEL_WIDTH = iFirstWidth + ((menuPile.getItems ().size () + 1) * (tileBottomItem.getTileWidth () + iSeparationW));
@@ -9395,7 +9396,7 @@ public final class UIPanel {
 		PROFESSIONS_PANEL_MAX_ITEMS_PER_PAGE = iMaxItemsWidth * iRows;
 
 		if (iRows <= 1) {
-			// Lo hacemos pequeño por la derecha
+			// Lo hacemos pequeno por la derecha
 			int iSeparationW = (PROFESSIONS_PANEL_WIDTH - tileScrollUp.getTileWidth () - 4 * tileMatsPanelSubPanel[3].getTileWidth () - iMaxItemsWidth * tileBottomItem.getTileWidth ()) / (iMaxItemsWidth + 1);
 			int iFirstWidth = professionsPanelPoint.x + tileMatsPanelSubPanel[3].getTileWidth () + iSeparationW;
 			PROFESSIONS_PANEL_WIDTH = iFirstWidth + ((menuProfessions.getItems ().size () + 1) * (tileBottomItem.getTileWidth () + iSeparationW));
@@ -9437,7 +9438,7 @@ public final class UIPanel {
 			// Sub-groups panel
 			livingsGroupPanelPoint.setLocation (livingsPanelPoint.x + LIVINGS_PANEL_WIDTH - tileLivingsPanel[3].getTileWidth () - LIVINGS_PANEL_GROUPS_WIDTH, livingsPanelPoint.y + (((livingsPanelPoint.y + LIVINGS_PANEL_HEIGHT) - livingsPanelPoint.y) / 2) - LIVINGS_PANEL_GROUPS_HEIGHT / 2);
 
-			// Primer icono del subpanel y la separación
+			// Primer icono del subpanel y la separacion
 			int iSeparation = (LIVINGS_PANEL_GROUPS_HEIGHT - 2 * tileLivingsGroupPanel[3].getTileHeight () - tileLivingsNoGroup.getTileHeight () - (SoldierGroups.MAX_GROUPS * tileLivingsGroup.getTileHeight ())) / (SoldierGroups.MAX_GROUPS + 2);
 			livingsGroupPanelFirstIconPoint.setLocation (livingsGroupPanelPoint.x + LIVINGS_PANEL_GROUPS_WIDTH / 2 - tileLivingsNoGroup.getTileWidth () / 2, livingsGroupPanelPoint.y + tileLivingsGroupPanel[3].getTileHeight () + iSeparation);
 			livingsGroupPanelIconsSeparation = iSeparation + tileLivingsNoGroup.getTileHeight ();
@@ -9679,7 +9680,7 @@ public final class UIPanel {
 	private void createPrioritiesPanel () {
 		PRIORITIES_PANEL_NUM_ITEMS = ActionPriorityManager.getPrioritiesListSize () + 1; // +1 para el back
 
-		// Miramos la separación entre items
+		// Miramos la separacion entre items
 		int iPixelsBetweenItems;
 		if (PRIORITIES_PANEL_NUM_ITEMS > 1) {
 			iPixelsBetweenItems = PIXELS_TO_BORDER;
@@ -9687,18 +9688,18 @@ public final class UIPanel {
 			iPixelsBetweenItems = 0;
 		}
 
-		// Tenemos el tamaño de los items
+		// Tenemos el tamano de los items
 		PRIORITIES_PANEL_WIDTH = PRIORITIES_PANEL_ITEM_SIZE + 2 * tilePrioritiesPanelUpIcon.getTileWidth ();
 		PRIORITIES_PANEL_HEIGHT = 2 * PIXELS_TO_BORDER + (PRIORITIES_PANEL_NUM_ITEMS * PRIORITIES_PANEL_ITEM_SIZE) + ((PRIORITIES_PANEL_NUM_ITEMS - 1) * iPixelsBetweenItems);
 
-		// Número de columnas para que quepa
+		// Numero de columnas para que quepa
 		int MAX_ITEMS_PER_COLUMN = PRIORITIES_PANEL_NUM_ITEMS;
 		int iNumColumns;
 		int iMaxHeight = (bottomPanelY - PIXELS_TO_BORDER) - (20 + 2 * PIXELS_TO_BORDER);
 
 		if (PRIORITIES_PANEL_NUM_ITEMS > 1 && PRIORITIES_PANEL_HEIGHT > iMaxHeight) {
-			if (iMaxHeight - 2 * PIXELS_TO_BORDER != 0) { // Check división por 0
-				iNumColumns = PRIORITIES_PANEL_HEIGHT / (iMaxHeight - 2 * PIXELS_TO_BORDER); // Realmente no entiendo el 2*PIXELS en esta operación
+			if (iMaxHeight - 2 * PIXELS_TO_BORDER != 0) { // Check division por 0
+				iNumColumns = PRIORITIES_PANEL_HEIGHT / (iMaxHeight - 2 * PIXELS_TO_BORDER); // Realmente no entiendo el 2*PIXELS en esta operacion
 				if (PRIORITIES_PANEL_HEIGHT % (iMaxHeight - 2 * PIXELS_TO_BORDER) != 0) {
 					iNumColumns++;
 				}
@@ -9797,7 +9798,7 @@ public final class UIPanel {
 
 
 	/**
-	 * Limpia todos los datos (se usa cuando se sale de la partida y se va al menú principal)
+	 * Limpia todos los datos (se usa cuando se sale de la partida y se va al menu principal)
 	 */
 	public static void clear () {
 		currentMenu = null;

@@ -10,7 +10,7 @@ import xaos.utils.Log;
 import xaos.utils.Messages;
 
 /**
- * Contiene la información de Hate para una living
+ * Contiene la informacion de Hate para una living
  *
  */
 public class HateData {
@@ -48,7 +48,7 @@ public class HateData {
                 if (token.length() > 0) {
 					// Miramos a ver que es
 
-                    // Primero los tipos genéricos
+                    // Primero los tipos genericos
                     if (token.equalsIgnoreCase(LivingEntityManagerItem.TYPE_FRIENDLY)) {
                         setAllFriendlies(true);
                     } else if (token.equalsIgnoreCase(LivingEntityManagerItem.TYPE_ALLY)) {
@@ -181,7 +181,7 @@ public class HateData {
             if (isAllCitizens()) {
                 return true;
             } else if (getCitizens().size() > 0) {
-                // Odia sólo a algunos citizens, miramos si el de la celda es odiado
+                // Odia solo a algunos citizens, miramos si el de la celda es odiado
                 if (getCitizens().contains(le.getIniHeader())) {
                     return true;
                 }
@@ -206,7 +206,7 @@ public class HateData {
             if (isAllHeros()) {
                 return true;
             } else if (getHeros().size() > 0) {
-                // Odia sólo a algunos heros, miramos si el de la celda es odiado
+                // Odia solo a algunos heros, miramos si el de la celda es odiado
                 if (getHeros().contains(le.getIniHeader())) {
                     return true;
                 }
@@ -215,7 +215,7 @@ public class HateData {
             if (isAllAllies()) {
                 return true;
             } else if (getAllies().size() > 0) {
-                // Odia sólo a algunos allies, miramos si el de la celda es odiado
+                // Odia solo a algunos allies, miramos si el de la celda es odiado
                 if (getAllies().contains(le.getIniHeader())) {
                     return true;
                 }

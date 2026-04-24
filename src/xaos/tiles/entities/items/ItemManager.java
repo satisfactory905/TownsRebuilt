@@ -54,8 +54,8 @@ public class ItemManager {
             // De paso rellenamos la lista de mini items (_block)
             // Y de paso comprobamos los habitatGroup y rellenamos los habitat que toquen
             // Y DE PASO los buryItem
-            // Y DE PASO añadimos los types
-            // Y DE PASO añadimos los maxAgeTerrain
+            // Y DE PASO anadimos los types
+            // Y DE PASO anadimos los maxAgeTerrain
             miniItemList = new HashMap<String, Tile>();
             Iterator<ItemManagerItem> itItems = itemList.values().iterator();
             ItemManagerItem imi;
@@ -159,7 +159,7 @@ public class ItemManager {
 
         ArrayList<ItemManagerItem> alReturn = new ArrayList<ItemManagerItem>();
 
-        // Recorremos todos los items buscando el que tenga building = "parámetro pasado"
+        // Recorremos todos los items buscando el que tenga building = "parametro pasado"
         Iterator<String> it = itemList.keySet().iterator();
         ItemManagerItem imi;
         while (it.hasNext()) {
@@ -243,7 +243,7 @@ public class ItemManager {
     }
 
     /**
-     * Devuelve un item a random a partir de un nivel mínimo y máximo o null si
+     * Devuelve un item a random a partir de un nivel minimo y maximo o null si
      * no encuentra Items de level 0 no se devuelven
      *
      * @param level Nivel
@@ -316,7 +316,7 @@ public class ItemManager {
             Document doc = UtilsXML.loadXMLFile(sXMLName);
 
 			// Tenemos el documento XML parseado
-            // Lo recorremos entero y vamos añadiendo los items (ItemManagerItem) a la hash
+            // Lo recorremos entero y vamos anadiendo los items (ItemManagerItem) a la hash
             NodeList nodeList = doc.getDocumentElement().getChildNodes();
             Node node;
             ItemManagerItem item;
@@ -588,7 +588,7 @@ public class ItemManager {
                         item.setHappiness(UtilsXML.getChildValue(node.getChildNodes(), "happiness")); //$NON-NLS-1$
                     }
 
-                    // Se puede dormir ahí?
+                    // Se puede dormir ahi?
                     if (bModChangingValues) {
                         String sAux = UtilsXML.getChildValue(node.getChildNodes(), "usedToSleep"); //$NON-NLS-1$
                         if (sAux != null) {
@@ -598,7 +598,7 @@ public class ItemManager {
                         item.setCanBeUsedToSleep(UtilsXML.getChildValue(node.getChildNodes(), "usedToSleep")); //$NON-NLS-1$
                     }
 
-                    // Se puede sentar ahí?
+                    // Se puede sentar ahi?
                     if (bModChangingValues) {
                         String sAux = UtilsXML.getChildValue(node.getChildNodes(), "usedToSit"); //$NON-NLS-1$
                         if (sAux != null) {
@@ -1014,7 +1014,7 @@ public class ItemManager {
                         item.setBuildAction(UtilsXML.getChildValue(node.getChildNodes(), "buildAction")); //$NON-NLS-1$
                     }
 
-                    // Lo añadimos a la hash
+                    // Lo anadimos a la hash
                     itemList.put(sIniHeader, item);
                 }
             }

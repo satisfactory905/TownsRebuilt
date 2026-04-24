@@ -55,7 +55,7 @@ public class BuildingManager {
             Document doc = UtilsXML.loadXMLFile(sXMLName); //$NON-NLS-1$
 
 			// Tenemos el documento XML parseado
-            // Lo recorremos entero y vamos añadiendo los buildings (BuildingManagerItem) a la hash
+            // Lo recorremos entero y vamos anadiendo los buildings (BuildingManagerItem) a la hash
             NodeList nodeList = doc.getDocumentElement().getChildNodes();
             Node node;
             BuildingManagerItem item;
@@ -190,7 +190,7 @@ public class BuildingManager {
                         item.setAutomatic(UtilsXML.getChildValue(node.getChildNodes(), "automatic")); //$NON-NLS-1$
                     }
 
-                    // Lo añadimos a la hash
+                    // Lo anadimos a la hash
                     itemList.put(sIniHeader, item);
                 }
             }

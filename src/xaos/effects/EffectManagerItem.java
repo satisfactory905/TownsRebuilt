@@ -10,7 +10,7 @@ import xaos.utils.Messages;
 import xaos.utils.Utils;
 
 /**
- * Clase de tipo "managerItem", no es la que se añade a las livings.
+ * Clase de tipo "managerItem", no es la que se anade a las livings.
  */
 public class EffectManagerItem {
 

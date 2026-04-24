@@ -2,7 +2,8 @@ package xaos.utils;
 
 import java.util.StringTokenizer;
 
-import org.lwjgl.input.Keyboard;
+import xaos.utils.KeyMapper;
+import xaos.utils.InputState;
 
 import xaos.Towns;
 
@@ -138,22 +139,22 @@ public final class UtilsKeyboard {
                 sShortcuts = sShortcuts.toUpperCase();
                 StringTokenizer tokenizer = new StringTokenizer(sShortcuts.trim(), ","); //$NON-NLS-1$
                 String key = tokenizer.nextToken().trim();
-                if (key.equals(Keyboard.getKeyName(Keyboard.KEY_ESCAPE))) {
-                    shortcuts[i][0] = Keyboard.KEY_NONE;
+                if (key.equals("ESCAPE")) {
+                    shortcuts[i][0] = KeyMapper.KEY_NONE;
                 } else {
-                    shortcuts[i][0] = Keyboard.getKeyIndex(key);
+                    shortcuts[i][0] = KeyMapper.fromName(key);
                 }
                 if (tokenizer.hasMoreTokens()) {
                     key = tokenizer.nextToken().trim();
-                    if (key.equals(Keyboard.getKeyName(Keyboard.KEY_ESCAPE))) {
-                        shortcuts[i][1] = Keyboard.KEY_NONE;
+                    if (key.equals("ESCAPE")) {
+                        shortcuts[i][1] = KeyMapper.KEY_NONE;
                     } else {
-                        shortcuts[i][1] = Keyboard.getKeyIndex(key);
+                        shortcuts[i][1] = KeyMapper.fromName(key);
                     }
                 }
             } else {
-                shortcuts[i][0] = Keyboard.KEY_NONE;
-                shortcuts[i][1] = Keyboard.KEY_NONE;
+                shortcuts[i][0] = KeyMapper.KEY_NONE;
+                shortcuts[i][1] = KeyMapper.KEY_NONE;
             }
         }
     }
@@ -163,12 +164,12 @@ public final class UtilsKeyboard {
         for (int i = 0; i < FNSTRINGS.length; i++) {
             String value = "";
 
-            if (shortcuts[i][0] != Keyboard.KEY_NONE) {
-                value = Keyboard.getKeyName(shortcuts[i][0]);
+            if (shortcuts[i][0] != KeyMapper.KEY_NONE) {
+                value = KeyMapper.toName(shortcuts[i][0]);
 
-                if (shortcuts[i][1] != Keyboard.KEY_NONE) {
+                if (shortcuts[i][1] != KeyMapper.KEY_NONE) {
                     value += ", "; //$NON-NLS-1$
-                    value += Keyboard.getKeyName(shortcuts[i][1]);
+                    value += KeyMapper.toName(shortcuts[i][1]);
                 }
             }
             pw.setProperty(FNSTRINGS[i], value);
@@ -176,13 +177,13 @@ public final class UtilsKeyboard {
     }
 
     public static String getTooltip(int iFN) {
-        if (shortcuts[iFN][0] == Keyboard.KEY_NONE) {
+        if (shortcuts[iFN][0] == KeyMapper.KEY_NONE) {
             return EMPTY_STRING;
         }
 
-        String sAux = Keyboard.getKeyName(shortcuts[iFN][0]);
-        if (shortcuts[iFN][1] != Keyboard.KEY_NONE) {
-            sAux += ", " + Keyboard.getKeyName(shortcuts[iFN][1]); //$NON-NLS-1$
+        String sAux = KeyMapper.toName(shortcuts[iFN][0]);
+        if (shortcuts[iFN][1] != KeyMapper.KEY_NONE) {
+            sAux += ", " + KeyMapper.toName(shortcuts[iFN][1]); //$NON-NLS-1$
         }
 
         return " (" + Messages.getString("UtilsKeyboard.15") + sAux + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -193,7 +194,7 @@ public final class UtilsKeyboard {
             return shortcuts[fn][iIndex];
         }
 
-        return Keyboard.KEY_NONE;
+        return KeyMapper.KEY_NONE;
     }
 
     public static String getFNString(int fn) {
@@ -213,10 +214,10 @@ public final class UtilsKeyboard {
     }
 
     /**
-     * Retorna la función a partir de la tecla pulsada o -1 si no se encuentra
+     * Retorna la funcion a partir de la tecla pulsada o -1 si no se encuentra
      *
      * @param key Tecla
-     * @return la función a partir de la tecla pulsada o -1 si no se encuentra
+     * @return la funcion a partir de la tecla pulsada o -1 si no se encuentra
      */
     public static int getFN(int key) {
         for (int i = 0; i < shortcuts.length; i++) {
@@ -237,7 +238,7 @@ public final class UtilsKeyboard {
      */
     public static void redefineKey(int iIndex, int iFN, int iKey) {
         if (iIndex == 1 && iKey == shortcuts[iFN][0]) {
-            shortcuts[iFN][1] = Keyboard.KEY_NONE;
+            shortcuts[iFN][1] = KeyMapper.KEY_NONE;
         } else {
             shortcuts[iFN][iIndex] = iKey;
             checkDuplicates(iIndex, iFN, iKey);
@@ -254,14 +255,14 @@ public final class UtilsKeyboard {
      * @param iKey Key to check
      */
     public static void checkDuplicates(int iIndex, int iFN, int iKey) {
-        if (iKey != Keyboard.KEY_NONE) {
+        if (iKey != KeyMapper.KEY_NONE) {
             for (int i = 0; i < shortcuts.length; i++) {
                 for (int j = 0; j <= 1; j++) {
                     if (shortcuts[i][j] == iKey) {
                         // Duplicado?
                         if (iIndex != j || iFN != i) {
                             // Bingo, la borramos
-                            shortcuts[i][j] = Keyboard.KEY_NONE;
+                            shortcuts[i][j] = KeyMapper.KEY_NONE;
                         }
                     }
                 }
@@ -270,17 +271,17 @@ public final class UtilsKeyboard {
     }
 
     /**
-     * Indica si el usuario está pulsando alguna tecla de la función pasadas
+     * Indica si el usuario esta pulsando alguna tecla de la funcion pasadas
      *
-     * @return true si el usuario está pulsando alguna tecla de la función
+     * @return true si el usuario esta pulsando alguna tecla de la funcion
      * pasadas
      */
     public static boolean isFNKeyDown(int fn) {
-        if (shortcuts[fn][0] != Keyboard.KEY_NONE && Keyboard.isKeyDown(shortcuts[fn][0])) {
+        if (shortcuts[fn][0] != KeyMapper.KEY_NONE && InputState.isKeyDown(shortcuts[fn][0])) {
             return true;
         }
 
-        if (shortcuts[fn][1] != Keyboard.KEY_NONE && Keyboard.isKeyDown(shortcuts[fn][1])) {
+        if (shortcuts[fn][1] != KeyMapper.KEY_NONE && InputState.isKeyDown(shortcuts[fn][1])) {
             return true;
         }
 

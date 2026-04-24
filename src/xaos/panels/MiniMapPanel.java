@@ -74,17 +74,17 @@ public final class MiniMapPanel {
         UtilsGL.drawTexture(renderX, renderY + renderHeight / 2, renderX + renderWidth / 2, renderY + renderHeight, renderX + renderWidth, renderY + renderHeight / 2, renderX + renderWidth / 2, renderY, 0, 0, 1, 1);
         UtilsGL.glEnd();
 
-        // Calculamos el tamaño del cuadrado amarillo teniendo en cuenta el tamaño del mainpanel y del minimapa
+        // Calculamos el tamano del cuadrado amarillo teniendo en cuenta el tamano del mainpanel y del minimapa
         int iSquareX = (pointView.x + pointView.y - (World.MAP_WIDTH - World.MAP_HEIGHT) / 2) / 2;
         int iSquareY = (pointView.y - pointView.x + (World.MAP_WIDTH + World.MAP_HEIGHT) / 2) / 2;
         int iSquareWidth = ((MainPanel.renderWidth / Tile.TERRAIN_ICON_WIDTH) * renderWidth) / World.MAP_WIDTH;
         int iSquareHeight = ((MainPanel.renderHeight / Tile.TERRAIN_ICON_HEIGHT) * renderHeight) / World.MAP_HEIGHT;
 
-        // Lo pasamos al tamaño que toca
+        // Lo pasamos al tamano que toca
         iSquareX = (iSquareX * renderWidth) / World.MAP_WIDTH;
         iSquareY = (iSquareY * renderHeight) / World.MAP_HEIGHT;
 
-        // Lo posicionamos en la pantalla (restamos también la mitad del cuadradito amarillo para que quede centrado)
+        // Lo posicionamos en la pantalla (restamos tambien la mitad del cuadradito amarillo para que quede centrado)
         iSquareX += (renderX - iSquareWidth / 2);
         iSquareY += (renderY - iSquareHeight / 2);
 
@@ -173,7 +173,7 @@ public final class MiniMapPanel {
     }
 
     /**
-     * Retorna el color a pintar de una celda según el terreno y/o lo que haya
+     * Retorna el color a pintar de una celda segun el terreno y/o lo que haya
      * en ella
      *
      * @param x
@@ -228,8 +228,8 @@ public final class MiniMapPanel {
     }
 
     /**
-     * Indica si el mouse está encima del minimapa. Como se dibuja en forma de
-     * diamante hacemos el cálculo necesario
+     * Indica si el mouse esta encima del minimapa. Como se dibuja en forma de
+     * diamante hacemos el calculo necesario
      *
      * @param x
      * @param y
@@ -272,7 +272,7 @@ public final class MiniMapPanel {
 
     /**
      * Limpia todos los datos (se usa cuando se sale de la partida y se va al
-     * menú principal)
+     * menu principal)
      */
     public static void clear() {
         texturesReload = null;

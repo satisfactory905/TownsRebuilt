@@ -19,7 +19,7 @@ public class CitizenData implements Externalizable {
 
     private static final long serialVersionUID = -5585963825804884015L;
 
-    // Se usa para la "animación" cuando el aldeano come o duerme (por ejemplo)
+    // Se usa para la "animacion" cuando el aldeano come o duerme (por ejemplo)
     public static final int MAX_BLINK_ANIMATION_TURNS = 10;
 
     private String fullName;
@@ -31,21 +31,21 @@ public class CitizenData implements Externalizable {
     private int happinessIdleCounterMax;
     private int boostCounter; // Boost en sus actividades debido a un BOSS_AROUND solider (por ejemplo)
 
-    // Turnos (se usa para la "animación" (cada X pasos se resetea a 0) (también al pillar un objeto, para que no todos los aldeanos tengan la misma animación)
+    // Turnos (se usa para la "animacion" (cada X pasos se resetea a 0) (tambien al pillar un objeto, para que no todos los aldeanos tengan la misma animacion)
     private int blinkAnimationTurns = 0;
 
     // Hungry
-    private int maxHungry; // Cada aldeano tiene un aguante distinto, aquí lo guardamos
+    private int maxHungry; // Cada aldeano tiene un aguante distinto, aqui lo guardamos
     private int hungry; // Si llega a 0 es que tiene hambre, si llega a -TIME_TURNS_1_DAY muere de hambre
-    private int hungryEating; // Cuando tiene hambre se pone a 0 y luego a cada turno irá sumando 1 hasta llegar a un tope, en ese momento ya habrá comido
+    private int hungryEating; // Cuando tiene hambre se pone a 0 y luego a cada turno ira sumando 1 hasta llegar a un tope, en ese momento ya habra comido
 
     // Sleep
-    private int maxSleep; // Cada aldeano tiene un aguante distinto, aquí lo guardamos
+    private int maxSleep; // Cada aldeano tiene un aguante distinto, aqui lo guardamos
     private int sleep; // Si llega a 0 deja todo y se pone a dormir
-    private int sleepSleeping; // Cuando tiene sueño se pone a 0 y luego a cada turno irá sumando 1 hasta llegar a un tope (6h), en ese momento ya habrá dormido
+    private int sleepSleeping; // Cuando tiene sueno se pone a 0 y luego a cada turno ira sumando 1 hasta llegar a un tope (6h), en ese momento ya habra dormido
 
     // Heal
-    private int healHealing; // Cuando va a curarse se pone a 0, si está en un hospital se irá sumando 1 hasta llegar a un tope (1h), en ese momento se curará 1PV
+    private int healHealing; // Cuando va a curarse se pone a 0, si esta en un hospital se ira sumando 1 hasta llegar a un tope (1h), en ese momento se curara 1PV
 
     // Carrying
     private CarryingData carryingData;
@@ -71,7 +71,7 @@ public class CitizenData implements Externalizable {
             if (lemi.getSurnamePoolTag() != null) {
                 sFullName.append(" "); //$NON-NLS-1$
 
-                // El nick sólo aparece 1 de cada 100
+                // El nick solo aparece 1 de cada 100
                 if (Utils.getRandomBetween(1, 100) == 1) {
                     sFullName.append("'"); //$NON-NLS-1$
                     sFullName.append(Names.getName("nick", Game.getWorld().getCampaignID(), Game.getWorld().getMissionID())); //$NON-NLS-1$

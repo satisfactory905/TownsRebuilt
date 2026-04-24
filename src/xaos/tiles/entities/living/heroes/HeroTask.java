@@ -10,7 +10,7 @@ public class HeroTask implements Externalizable {
     private static final long serialVersionUID = -6266264964470429319L;
 
     public final static int TASK_NO_TASK = 0;
-    public final static int TASK_RAGE = 1; // Héroe entra en furia y empieza a petar aldeanos
+    public final static int TASK_RAGE = 1; // Heroe entra en furia y empieza a petar aldeanos
     public final static int TASK_LEAVING = 2; // Leaving the town
     public final static int TASK_DESTROY_BLOCKING = 3; // Destroys blocking items he found
     public final static int TASK_IDLE = 4;

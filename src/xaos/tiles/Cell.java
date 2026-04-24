@@ -37,23 +37,23 @@ public class Cell implements Externalizable {
 	private static final long serialVersionUID = -3099620916063413505L;
 
 	private static int[][] depths = new int [World.MAP_WIDTH] [World.MAP_HEIGHT];
-	private static int[] neighborIDs = new int [27]; // Será 13 o 26, pongo 27 para poder poner el -1 al final
+	private static int[] neighborIDs = new int [27]; // Sera 13 o 26, pongo 27 para poder poner el -1 al final
 	private static int neighborIDsIndex;
 
 	public static int MAX_ASTAR_ZONE_ID = 0;
 	public static HashMap<Integer, Integer> HASH_ASTAR_ZONE_RELATIONS = new HashMap<Integer, Integer> ();
 
 	// Flags
-	public final static int FLAG_ORDERS = 1; // 00000001 (Indica si la celda tiene órdenes)
-	public final static int FLAG_DISCOVERED = 2; // 00000010 (Indica si la celda está descubierta)
+	public final static int FLAG_ORDERS = 1; // 00000001 (Indica si la celda tiene ordenes)
+	public final static int FLAG_DISCOVERED = 2; // 00000010 (Indica si la celda esta descubierta)
 	public final static int FLAG_CAVE = 4; // 00000100 (Indica si la celda es de tipo caverna (se usa para descubrir la caverna entera cuando descubres una celda tipo cave))
-	public final static int FLAG_PATROL_POINT = 8; // 0000001000 (Indica si algún soldado tiene ese punto de patrulla)
+	public final static int FLAG_PATROL_POINT = 8; // 0000001000 (Indica si algun soldado tiene ese punto de patrulla)
 	public final static int FLAG_HERO_EXPLORING_POINT = 16; // 0000010000 (Indica si el punto es uno de los puntos de exploring de los heroes)
 	public final static int FLAG_SHOULD_PAINT_UNDER = 32; // 0000100000 (Indica si hay que pintar casillas de niveles inferiores)
-	public final static int FLAG_DIGGED = 64; // 0001000000 (Indica si la casilla de abajo está minada)
-	public final static int FLAG_SHADOW = 128; // 0010000000 (Indica si la casilla está en la sombra)
-	public final static int FLAG_BLOCKY = 256; // 0100000000 (Indica si la casilla está ocupada por un bloque que tapa las cosas de debajo)
-	public final static int FLAG_MINED = 512; // 10 00000000 (Indica si la casilla está minada)
+	public final static int FLAG_DIGGED = 64; // 0001000000 (Indica si la casilla de abajo esta minada)
+	public final static int FLAG_SHADOW = 128; // 0010000000 (Indica si la casilla esta en la sombra)
+	public final static int FLAG_BLOCKY = 256; // 0100000000 (Indica si la casilla esta ocupada por un bloque que tapa las cosas de debajo)
+	public final static int FLAG_MINED = 512; // 10 00000000 (Indica si la casilla esta minada)
 	public final static int FLAG_LIGHT_RFULL = 1024; // 100 00000000 (Indica si la casilla tiene luz roja full cerca)
 	public final static int FLAG_LIGHT_GFULL = 2048; // 1000 00000000 (Indica si la casilla tiene luz verde full cerca)
 	public final static int FLAG_LIGHT_BFULL = 4096; // 10000 00000000 (Indica si la casilla tiene luz azul full cerca)
@@ -61,9 +61,9 @@ public class Cell implements Externalizable {
 	public final static int FLAG_LIGHT_GHALF = 16384; // 1000000 00000000 (Indica si la casilla tiene luz verde floja cerca)
 	public final static int FLAG_LIGHT_BHALF = 32768; // 10000000 00000000 (Indica si la casilla tiene luz azul floja cerca)
 	public final static int FLAG_BURY = 65536; // 1 00000000 00000000 (Indica si la casilla tiene luz azul floja cerca)
-	public final static int FLAG_FLUID_CHECK_LIST = 131072; // 10 00000000 00000000 (Indica si la casilla está en la lista de fluidos a chequear
-	public final static int FLAG_OPEN = 262144; // 10 00000000 00000000 (Indica si la casilla está en la lista de fluidos a chequear
-	public final static int FLAG_BLINK = 524288; // 100 00000000 00000000 (Indica si la casilla está en la lista de fluidos a chequear
+	public final static int FLAG_FLUID_CHECK_LIST = 131072; // 10 00000000 00000000 (Indica si la casilla esta en la lista de fluidos a chequear
+	public final static int FLAG_OPEN = 262144; // 10 00000000 00000000 (Indica si la casilla esta en la lista de fluidos a chequear
+	public final static int FLAG_BLINK = 524288; // 100 00000000 00000000 (Indica si la casilla esta en la lista de fluidos a chequear
 
 	private int flags;
 
@@ -78,7 +78,7 @@ public class Cell implements Externalizable {
 	// private transient int depth;
 
 	/**
-	 * Es un ID para saber rápidamente si hay camino entre 2 puntos 2 celdas con distinto ID significa que no hay camino
+	 * Es un ID para saber rapidamente si hay camino entre 2 puntos 2 celdas con distinto ID significa que no hay camino
 	 */
 	private int astarZoneID;
 
@@ -92,7 +92,7 @@ public class Cell implements Externalizable {
 
 
 	/**
-	 * Constructor alternativo, se le pasa un Terrain, deja la entity vacía
+	 * Constructor alternativo, se le pasa un Terrain, deja la entity vacia
 	 */
 	public Cell (Terrain terrain) {
 		this (terrain, null);
@@ -185,7 +185,7 @@ public class Cell implements Externalizable {
 
 
 	/**
-	 * Indica si la celda contiene una living específica por tipo, la devuelve si la encuentra (la primera que pilla)
+	 * Indica si la celda contiene una living especifica por tipo, la devuelve si la encuentra (la primera que pilla)
 	 * 
 	 * @param type
 	 * @return
@@ -231,13 +231,13 @@ public class Cell implements Externalizable {
 		int iLightRadiusItemRemoved = -1;
 		if (entity == null || (this.entity != null)) {
 			// Se va a borrar la celda (o se va a meter algo encima de otro algo), restamos el townvalue de lo que hubiera
-			// También eliminamos el item actual de la lista de hauling
+			// Tambien eliminamos el item actual de la lista de hauling
 			if (this.entity != null && this.entity instanceof Item) {
 				Item cellItem = (Item) this.entity;
 				ItemManagerItem imi = ItemManager.getItem (this.entity.getIniHeader ());
 				World.setTownValue (World.getTownValue () - PricesManager.getPrice (cellItem));
 
-				// Si era un container, restamos también el precio de lo de dentro
+				// Si era un container, restamos tambien el precio de lo de dentro
 				if (imi.isContainer ()) {
 					Container container = Game.getWorld ().getContainer (cellItem.getID ());
 					if (container != null) {
@@ -250,7 +250,7 @@ public class Cell implements Externalizable {
 				// Eliminamos el item de la lista de hauling (si existe)
 				Game.getWorld ().removeItemToBeHauledByItemID (cellItem.getID ());
 
-				// Si la casilla de abajo no está discovered la ponemos discovered ahora
+				// Si la casilla de abajo no esta discovered la ponemos discovered ahora
 				if (getCoordinates ().z < (World.MAP_DEPTH - 1)) {
 					Cell cellUnder = World.getCell (getCoordinates ().x, getCoordinates ().y, getCoordinates ().z + 1);
 					if (!cellUnder.isDiscovered ()) {
@@ -275,7 +275,7 @@ public class Cell implements Externalizable {
 
 		this.entity = entity;
 
-		// Miramos si el item puede ir aquí, en caso contrario lo meteremos en la lista de objetos para haulear
+		// Miramos si el item puede ir aqui, en caso contrario lo meteremos en la lista de objetos para haulear
 		if (entity != null && entity instanceof Item) {
 			if (stockpile != null) {
 				// Hay pila, si la misma no lo acepta lo metemos en la lista de haul
@@ -283,12 +283,12 @@ public class Cell implements Externalizable {
 					Game.getWorld ().addItemToBeHauled ((Item) entity);
 				}
 			} else {
-				// No hay pila, lo metemos en la lista de haul, el taskmanager ya mirará si es un item haul o no
+				// No hay pila, lo metemos en la lista de haul, el taskmanager ya mirara si es un item haul o no
 				Game.getWorld ().addItemToBeHauled ((Item) entity);
 			}
 		}
 
-		// Seteamos la celda indicando que ya no tiene órdenes (se usa para el dibujado)
+		// Seteamos la celda indicando que ya no tiene ordenes (se usa para el dibujado)
 		setFlagOrders (false);
 
 		Point3DShort coord = getCoordinates ();
@@ -297,7 +297,7 @@ public class Cell implements Externalizable {
 		Item newCellItem = null;
 		if (entity != null && entity instanceof Item) {
 			newCellItem = (Item) entity;
-			// Lo añadimos a la lista de check para fall
+			// Lo anadimos a la lista de check para fall
 			World.addFallItem (newCellItem.getID ());
 
 			imi = ItemManager.getItem (newCellItem.getIniHeader ());
@@ -347,15 +347,15 @@ public class Cell implements Externalizable {
 
 		// Light item removed
 		if (iLightRadiusItemRemoved >= 0) {
-			// Se va a borrar un item que producía luz, regeneramos
+			// Se va a borrar un item que producia luz, regeneramos
 			generateLightsItemRemovedCellMined (coord.x, coord.y, coord.z, iLightRadiusItemRemoved);
-			// Si el nuevo item tiene light el método generateLightsItemRemoved ya lo habrá checkeado
+			// Si el nuevo item tiene light el metodo generateLightsItemRemoved ya lo habra checkeado
 		} else {
 			// Light new item
 			if (imi != null && imi.getLightRadius () > 0) {
 				generateLights (World.getCells (), coord.x, coord.y, coord.z);
 			} else {
-				// Nuevo item no produce luz, pero quizá es un lightblocker
+				// Nuevo item no produce luz, pero quiza es un lightblocker
 				if (Utils.isCellBlockingLightItem (imi, newCellItem)) {
 					generateLightsItemRemovedCellMined (coord.x, coord.y, coord.z, ItemManagerItem.MAX_LIGHT_RADIUS);
 				}
@@ -571,7 +571,7 @@ public class Cell implements Externalizable {
 		if (sbConnectors.toString ().length () > 1) {
 			// Buscamos el connector que toca
 			if (bInteriors) {
-				// Si tiene interiors y no existen miraremos el _NSEW (sin minúsculas), si tampoco existe miraremos el iniHeader normal
+				// Si tiene interiors y no existen miraremos el _NSEW (sin minusculas), si tampoco existe miraremos el iniHeader normal
 				boolean bOK = item.setTileSetCoordinatesReturn (item.getIniHeader () + sbConnectors.toString (), item.getIniHeader () + "_NSEW"); //$NON-NLS-1$
 				if (!bOK) {
 					item.setTileSetCoordinates (item.getIniHeader (), item.getIniHeader ());
@@ -929,7 +929,7 @@ public class Cell implements Externalizable {
 
 
 	/**
-	 * Dada una casilla actualiza su A*zoneID según las adyacentes
+	 * Dada una casilla actualiza su A*zoneID segun las adyacentes
 	 * 
 	 * @param p3d
 	 */
@@ -939,7 +939,7 @@ public class Cell implements Externalizable {
 
 
 	/**
-	 * Comprueba que el array de IDs contenga el pasado- Usa la variable global neighborIDIndex para saber el tamaño
+	 * Comprueba que el array de IDs contenga el pasado- Usa la variable global neighborIDIndex para saber el tamano
 	 * 
 	 * @param iID
 	 * @return
@@ -1192,15 +1192,15 @@ public class Cell implements Externalizable {
 
 
 	/**
-	 * Dada una casilla actualiza su A*zoneID según las adyacentes
+	 * Dada una casilla actualiza su A*zoneID segun las adyacentes
 	 * 
 	 * @param x X
 	 * @param y Y
 	 * @param z Z
-	 * @param bFull Indica si se está haciendo un merge de todo, en ese caso el getNeighbour no hace falta que mire todos los vecinos
+	 * @param bFull Indica si se esta haciendo un merge de todo, en ese caso el getNeighbour no hace falta que mire todos los vecinos
 	 */
 	public static void mergeZoneID (int x, int y, int z, boolean bFull) {
-		// Actualizamos el ID de zona A* según las casillas adyacentes
+		// Actualizamos el ID de zona A* segun las casillas adyacentes
 		setNeighborIDs (x, y, z, bFull);
 
 		if (neighborIDsIndex == 0) {
@@ -1209,7 +1209,7 @@ public class Cell implements Externalizable {
 			MAX_ASTAR_ZONE_ID++;
 			World.getCell (x, y, z).setAstarZoneID (MAX_ASTAR_ZONE_ID);
 		} else if (neighborIDsIndex == 1) {
-			// Sólo hay una zona adyacente
+			// Solo hay una zona adyacente
 			World.getCell (x, y, z).setAstarZoneID (neighborIDs[0]);
 		} else {
 			// IDs distintos, acabamos de abrir el punto que une varias zonas, actualizamos todas las celdas que tengan estos IDs
@@ -1297,7 +1297,7 @@ public class Cell implements Externalizable {
 		this.stockPileID = iSPID;
 
 		if (stockPileID == 0) {
-			// Ha borrado la pile de esta celda, si había un item lo metemos en la lista de hauling
+			// Ha borrado la pile de esta celda, si habia un item lo metemos en la lista de hauling
 			Game.getWorld ().addItemToBeHauled (getItem ());
 		}
 	}
@@ -1716,7 +1716,7 @@ public class Cell implements Externalizable {
 	 */
 	public void fallThings () {
 		if (isDigged ()) {
-			// Miramos la casilla de abajo (en teoría no hace falta pq si o si estará mined)
+			// Miramos la casilla de abajo (en teoria no hace falta pq si o si estara mined)
 			// Buildings
 			if (getBuildingCoordinates () != null) {
 				// Tarea de petar edificio
@@ -1733,7 +1733,7 @@ public class Cell implements Externalizable {
 		ItemManagerItem imi;
 		for (int x = 0; x < World.MAP_WIDTH; x++) {
 			for (int y = 0; y < World.MAP_HEIGHT; y++) {
-				for (int z = 0; z < (World.MAP_DEPTH - 1); z++) { // La última layer es false
+				for (int z = 0; z < (World.MAP_DEPTH - 1); z++) { // La ultima layer es false
 					// Si tiene item reseteamos el blocky
 					item = cells[x][y][z].getItem ();
 					if (item != null) {
@@ -1749,7 +1749,7 @@ public class Cell implements Externalizable {
 
 	public static boolean checkPaintUnder (Cell[][][] cells, int x, int y, int z) {
 		if (z >= (World.MAP_DEPTH - 1)) {
-			// Última layer es false
+			// Ultima layer es false
 			return false;
 		}
 
@@ -1889,7 +1889,7 @@ public class Cell implements Externalizable {
 			}
 		}
 
-		// Ahora, teniendo en cuenta el radio máximo de todos los objetos que producen luz, miramos las celdas a iluminar
+		// Ahora, teniendo en cuenta el radio maximo de todos los objetos que producen luz, miramos las celdas a iluminar
 		iXMin -= ItemManagerItem.MAX_LIGHT_RADIUS;
 		iXMax += ItemManagerItem.MAX_LIGHT_RADIUS;
 		iYMin -= ItemManagerItem.MAX_LIGHT_RADIUS;
@@ -1965,7 +1965,7 @@ public class Cell implements Externalizable {
 				cell.setLights (imi);
 
 				// Trazamos lineas a todos los bordes de un cuadrado, con radio pasado
-				// Todas las casillas de las lineas (y las que están por arriba y abajo, teniendo en cuenta el radio) tendrán luz, hasta que lleguen a un non-mined o wall
+				// Todas las casillas de las lineas (y las que estan por arriba y abajo, teniendo en cuenta el radio) tendran luz, hasta que lleguen a un non-mined o wall
 				int iX, iY;
 				// Norte del cuadrado
 				iY = y - iRadius;
@@ -2111,7 +2111,7 @@ public class Cell implements Externalizable {
 				cells[x][y][z].setShadow (true);
 			} else {
 				Cell cell = cells[x][y][z];
-				// Aquí sólo entra en las primeras iteraciones
+				// Aqui solo entra en las primeras iteraciones
 				cell.setShadow (false);
 				if (!cell.isMined ()) {
 					bPutShadowOnNext = true;
@@ -2179,7 +2179,7 @@ public class Cell implements Externalizable {
             // Minimap reload
             MiniMapPanel.setMinimapReload(z);
             MiniMapPanel.setMinimapReload(z - 1);
-            // ShouldPaintUnders 2 (potser pot anar a dalt, per si acàs no li poso :D )
+            // ShouldPaintUnders 2 (potser pot anar a dalt, per si acas no li poso :D )
             if (z < (World.MAP_DEPTH - 1)) {
                 setShouldPaintUnders(World.getCells(), (short) x, (short) y, (short) (z + 1));
             }
@@ -2202,7 +2202,7 @@ public class Cell implements Externalizable {
 			}
 		}
 
-		// Mineds de la última
+		// Mineds de la ultima
 		int z = World.MAP_DEPTH - 1;
 		for (int x = 0; x < World.MAP_WIDTH; x++) {
 			for (int y = 0; y < World.MAP_HEIGHT; y++) {

@@ -61,7 +61,7 @@ public final class MissionPanel extends InfoPanel {
     }
 
     /**
-     * Añade un texto en un array de Strings, partido segun el ancho del panel
+     * Anade un texto en un array de Strings, partido segun el ancho del panel
      *
      * @param text Texto
      *

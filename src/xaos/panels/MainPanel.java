@@ -3,9 +3,9 @@ package xaos.panels;
 import java.awt.Point;
 import java.util.ArrayList;
 
-import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 import xaos.TownsProperties;
+import xaos.utils.InputState;
 
 import xaos.campaign.TutorialFlow;
 import xaos.campaign.TutorialTrigger;
@@ -80,7 +80,7 @@ public final class MainPanel {
 	public static int renderWidth = 1024;
 	public static int renderHeight = 600;
 
-	// Máximo de tiles a pintar
+	// Maximo de tiles a pintar
 	private static int maxTilesWidthHeight;
 	private static int maxTilesX;
 	private static int maxTilesY;
@@ -202,7 +202,7 @@ public final class MainPanel {
 
 		int iBaseXGeneral = (-xView) * (Tile.TERRAIN_ICON_WIDTH / 2) + ((-yView) * Tile.TERRAIN_ICON_WIDTH / 2) + xCentro;
 		int iBaseYGeneral = (-yView) * (Tile.TERRAIN_ICON_HEIGHT / 2) - ((-xView) * Tile.TERRAIN_ICON_HEIGHT / 2) + yCentro;
-		Point pointMouse = new Point (Mouse.getX (), renderHeight - Mouse.getY () - 1);
+		Point pointMouse = new Point (InputState.getMouseX (), InputState.getMouseY ());
 		Point3D pointTileMouse = getTileMouse (pointMouse.x, pointMouse.y, xView, yView, zView);
 		boolean bMouseInMainArea = Game.getPanelUI ().isMouseOnAPanel (pointMouse.x, pointMouse.y) == UIPanel.MOUSE_NONE;
 
@@ -236,7 +236,7 @@ public final class MainPanel {
 
 		Game.getPanelUI ().render ();
 
-		// Información tooltip sólo si no hay un menú contextual abierto
+		// Informacion tooltip solo si no hay un menu contextual abierto
 		if (bMouseInMainArea && pointTileMouse != null && (UIPanel.typingPanel == null)) {
 			if (Game.getCurrentState () != Game.STATE_SHOWING_CONTEXT_MENU) {
 				if (!bHideUION) {
@@ -451,7 +451,7 @@ public final class MainPanel {
 				}
 
 				// Under
-				if (cell == null || cell.isShouldPaintUnder () || (flatMouseON && zLevelOffset == 0 && pointTileMouse != null && isMouseNearCell (cell, pointTileMouse))) { // El zLevelOffset es para que se vea bien cuando acercas al ratón a un item con _block
+				if (cell == null || cell.isShouldPaintUnder () || (flatMouseON && zLevelOffset == 0 && pointTileMouse != null && isMouseNearCell (cell, pointTileMouse))) { // El zLevelOffset es para que se vea bien cuando acercas al raton a un item con _block
 					// Hay que pintar lo de abajo
 					if (zView < (World.MAP_DEPTH - 1)) {
 						currentTextureID = renderAllTerrains (zView + 1, i + 1, i + 1, j - 1, j - 1, iBaseXGeneral, iBaseYGeneral + (Tile.TERRAIN_ICON_WIDTH / 2), null, (zLevelOffset + 1), currentTextureID);
@@ -490,7 +490,7 @@ public final class MainPanel {
 				}
 			}
 		} else {
-			// Niveles por debajo (más oscuro)
+			// Niveles por debajo (mas oscuro)
 			if (cell.isShadow (true)) {
 				if (cell.isLight ()) {
 					fColor = 0.80f;
@@ -745,7 +745,7 @@ public final class MainPanel {
 				// currentTextureID = renderAllEntities (zView + 1, i + 1, i + 1, j - 1, j - 1, iBaseXGeneral, iBaseYGeneral + (Tile.TERRAIN_ICON_WIDTH / 2), null, (zLevelOffset + 1), currentTextureID);
 				// }
 				// }
-				if (cell == null || cell.isShouldPaintUnder () || (flatMouseON && zLevelOffset == 0 && pointTileMouse != null && isMouseNearCell (cell, pointTileMouse))) { // El zLevelOffset es para que se vea bien cuando acercas al ratón a un item con _block
+				if (cell == null || cell.isShouldPaintUnder () || (flatMouseON && zLevelOffset == 0 && pointTileMouse != null && isMouseNearCell (cell, pointTileMouse))) { // El zLevelOffset es para que se vea bien cuando acercas al raton a un item con _block
 					// Hay que pintar lo de abajo
 					if (zView < (World.MAP_DEPTH - 1)) {
 						currentTextureID = renderAllEntities (zView + 1, i + 1, i + 1, j - 1, j - 1, iBaseXGeneral, iBaseYGeneral + (Tile.TERRAIN_ICON_WIDTH / 2), null, (zLevelOffset + 1), currentTextureID);
@@ -777,7 +777,7 @@ public final class MainPanel {
 				if (i >= 0 && j >= 0 && i < World.MAP_WIDTH && j < World.MAP_HEIGHT && iXGeneral > -Tile.TERRAIN_ICON_WIDTH && iYGeneral < (renderHeight + Tile.TERRAIN_ICON_HEIGHT)) {
 					cell = World.getCells ()[i][j][zView];
 
-					// Si la celda tiene órdenes pintamos su tile
+					// Si la celda tiene ordenes pintamos su tile
 					if (cell.isFlagOrders ()) {
 						Tile tile;
 						if (zLevelOffset == 0 && bMiniBlocksON) {
@@ -800,7 +800,7 @@ public final class MainPanel {
 							currentTextureID = UtilsGL.setTexture (GRID_TILE, currentTextureID);
 							UtilsGL.drawTextureZ (iXGeneral, iYGeneral + Tile.TERRAIN_ICON_HEIGHT, iXGeneral + GRID_TILE.getTileWidth (), iYGeneral + GRID_TILE.getTileHeight () + Tile.TERRAIN_ICON_HEIGHT, GRID_TILE.getTileSetTexX0 (), GRID_TILE.getTileSetTexY0 (), GRID_TILE.getTileSetTexX1 (), GRID_TILE.getTileSetTexY1 (), Cell.getDepth (i, j, zView));
 						} else {
-							// Celda digada, pero miramos si hay algo debajo (simplemente mirando el ASZID bastará)
+							// Celda digada, pero miramos si hay algo debajo (simplemente mirando el ASZID bastara)
 							if (cell.getAstarZoneID () != -1) {
 								currentTextureID = UtilsGL.setTexture (GRID_TILE, currentTextureID);
 								UtilsGL.drawTextureZ (iXGeneral, iYGeneral + Tile.TERRAIN_ICON_HEIGHT, iXGeneral + GRID_TILE.getTileWidth (), iYGeneral + GRID_TILE.getTileHeight () + Tile.TERRAIN_ICON_HEIGHT, GRID_TILE.getTileSetTexX0 (), GRID_TILE.getTileSetTexY0 (), GRID_TILE.getTileSetTexX1 (), GRID_TILE.getTileSetTexY1 (), Cell.getDepth (i, j, zView));
@@ -824,7 +824,7 @@ public final class MainPanel {
 
 
 	/**
-	 * Devuelve la Z Máxima donde se deberá dibujar el 3D mouse
+	 * Devuelve la Z Maxima donde se debera dibujar el 3D mouse
 	 * 
 	 * @param x
 	 * @param y
@@ -876,7 +876,7 @@ public final class MainPanel {
 				Cell cell;
 				GL11.glColor4f (1, 1, 1, 1);
 
-				// Miramos donde está el ratón para mostrar info por pantalla y el cuadradito blanco
+				// Miramos donde esta el raton para mostrar info por pantalla y el cuadradito blanco
 				boolean mouseOK = true;
 				boolean bBuilding = false;
 				boolean bIteming = false;
@@ -990,15 +990,15 @@ public final class MainPanel {
 					bBuildingOK = true;
 				} else if (bIteming) {
 					if (queuing) {
-						// En caso de colas el item está en el parámetro 2
+						// En caso de colas el item esta en el parametro 2
 						imi = ItemManager.getItem (Game.getCurrentTask ().getParameter2 ());
 					} else {
 						imi = ItemManager.getItem (Game.getCurrentTask ().getParameter ());
 					}
 					if (imi == null) {
-						// No ha encontrado el item??? Quizá es un createItemByType y el valor es un type, así que pillamos el primer item con ese type
+						// No ha encontrado el item??? Quiza es un createItemByType y el valor es un type, asi que pillamos el primer item con ese type
 						if (queuing) {
-							// En caso de colas el item está en el parámetro 2
+							// En caso de colas el item esta en el parametro 2
 							imi = ItemManager.getFirstItemByType (Game.getCurrentTask ().getParameter2 ());
 						} else {
 							imi = ItemManager.getFirstItemByType (Game.getCurrentTask ().getParameter ());
@@ -1050,9 +1050,9 @@ public final class MainPanel {
 								if (!Item.isCellAvailableForItem (imi, i, j, z3D, true, true)) {
 									bUseMouseBad = true;
 								} else {
-									// El item puede ir ahí, pero miraremos que no esté construyendo en el aire y no haya camino posible
+									// El item puede ir ahi, pero miraremos que no este construyendo en el aire y no haya camino posible
 									if (imi.canBeBuiltOnHoles ()) {
-										// Miramos si hay algún ASZID distinto de -1 en un radio de 3x3x3
+										// Miramos si hay algun ASZID distinto de -1 en un radio de 3x3x3
 										boolean bAllUnavailable = true;
 										foriteming: for (int itemX = (i - 1); itemX <= (i + 1); itemX++) {
 											for (int itemY = (j - 1); itemY <= (j + 1); itemY++) {
@@ -1180,7 +1180,7 @@ public final class MainPanel {
 						if (projectile.getCoordinates ().x == (i) && projectile.getCoordinates ().y == (j) && projectile.getCoordinates ().z == zView) {
 							iYSpecific = iYGeneral - (projectile.getTileHeight () - Tile.TERRAIN_ICON_HEIGHT);
 
-							// Dirección
+							// Direccion
 							float texX0 = projectile.getTileSetTexX0 ();
 							float texX1 = projectile.getTileSetTexX1 ();
 							float texY0 = projectile.getTileSetTexY0 ();
@@ -1355,7 +1355,7 @@ public final class MainPanel {
 
 
 	private static int renderLivings (Cell cell, int iXGeneral, int iYGeneral, int currentTextureID, float fColorShadowLight, boolean bLight, int zLevelOffset) {
-		// Miramos si aquí hay friendlies
+		// Miramos si aqui hay friendlies
 		int iXSpecific = -1, iYSpecific = -1;
 		int iFacingDirection;
 		ArrayList<LivingEntity> alLivings = cell.getLivings ();
@@ -1461,7 +1461,7 @@ public final class MainPanel {
 					}
 				}
 
-				// Miramos si tiene que mostrar el signo de exclamación
+				// Miramos si tiene que mostrar el signo de exclamacion
 				if (cit.getShowExclamationTurns () > 0) {
 					Tile tileExclamation = World.getTileCitizenExclamation ();
 					iYSpecific = iYGeneral - (tileExclamation.getTileHeight () - Tile.TERRAIN_ICON_HEIGHT) + tileExclamation.getTileHeightOffset () + (int) cit.getPositionOffset ().y;
@@ -1487,7 +1487,7 @@ public final class MainPanel {
 						currentTextureID = setColorShadowLightCellNoLight (cell, tileTask, zLevelOffset, currentTextureID, false);
 						UtilsGL.drawTextureZ (iXSpecific, iYSpecific, iXSpecific + tileTask.getTileWidth (), iYSpecific + tileTask.getTileHeight (), tileTask.getTileSetTexX0 (), tileTask.getTileSetTexY0 (), tileTask.getTileSetTexX1 (), tileTask.getTileSetTexY1 (), iDepth);
 
-						// En el caso de comer, miramos si está pasando hambre porque no hay comida
+						// En el caso de comer, miramos si esta pasando hambre porque no hay comida
 						if (!cit.isSleeping () && cit.getCitizenData ().getHungryEating () < 0) {
 							// Dibujamos la cruz roja
 							Tile tileRedCross = World.getTileRedCross ();
@@ -1541,7 +1541,7 @@ public final class MainPanel {
 						}
 					}
 
-					// Miramos si hay que hacer flip según la dirección donde mire
+					// Miramos si hay que hacer flip segun la direccion donde mire
 					// currentTextureID = UtilsGL.setTexture (le, currentTextureID);
 					currentTextureID = setColorShadowLightCell (cell, le, zLevelOffset, currentTextureID, false);
 					if (iFacingDirection == LivingEntity.FACING_DIRECTION_EAST || iFacingDirection == LivingEntity.FACING_DIRECTION_SOUTH_EAST || iFacingDirection == LivingEntity.FACING_DIRECTION_SOUTH) {
@@ -1596,7 +1596,7 @@ public final class MainPanel {
 
 				currentTextureID = setColorShadowLightCell (cell, le, zLevelOffset, currentTextureID, false);
 				if (lemi.isFacingDirections ()) {
-					// Miramos si hay que hacer flip según la dirección donde mire
+					// Miramos si hay que hacer flip segun la direccion donde mire
 					iFacingDirection = le.getFacingDirection ();
 					if (iFacingDirection == LivingEntity.FACING_DIRECTION_EAST || iFacingDirection == LivingEntity.FACING_DIRECTION_SOUTH_EAST || iFacingDirection == LivingEntity.FACING_DIRECTION_SOUTH) {
 						// Flip
@@ -1777,7 +1777,7 @@ public final class MainPanel {
 				iXSpecific = iXGeneral + (int) hero.getPositionOffset ().x;
 				iYSpecific = iYGeneral - (tileTask.getTileHeight () - Tile.TERRAIN_ICON_HEIGHT) + tileTask.getTileHeightOffset () + (int) hero.getPositionOffset ().y;
 
-				// En el caso de comer, miramos si está pasando hambre porque no hay comida
+				// En el caso de comer, miramos si esta pasando hambre porque no hay comida
 				if (!hero.isSleeping () && hero.getCitizenData ().getHungryEating () < 0) {
 					// Dibujamos la cruz roja
 					Tile tileRedCross = World.getTileRedCross ();
@@ -1797,7 +1797,7 @@ public final class MainPanel {
 	private static int renderCarrying (Cell cell, Citizen cit, int iXGeneral, int iYGeneral, int currentTextureID, float fColorShadowLight, boolean bLight, int iDepth, int zLevelOffset) {
 		int iFacingDirection = cit.getFacingDirection ();
 
-		// Miramos si está cargando algo para dibujarlo
+		// Miramos si esta cargando algo para dibujarlo
 		if (cit.getCarrying () != null) {
 			int iXSpecific = iXGeneral + cit.getOffset_carry_x () + (int) cit.getPositionOffset ().x;
 			int iYSpecific = iYGeneral - (cit.getCarrying ().getTileHeight () - Tile.TERRAIN_ICON_HEIGHT) + cit.getOffset_carry_y () + (int) cit.getPositionOffset ().y;
@@ -1847,7 +1847,7 @@ public final class MainPanel {
 	private static int renderCarrying (Cell cell, Hero hero, int iXGeneral, int iYGeneral, int currentTextureID, float fColorShadowLight, boolean bLight, int iDepth, int zLevelOffset) {
 		int iFacingDirection = hero.getFacingDirection ();
 
-		// Miramos si está cargando algo para dibujarlo
+		// Miramos si esta cargando algo para dibujarlo
 		if (hero.getCarrying () != null) {
 			int iXSpecific = iXGeneral + hero.getOffset_carry_x () + (int) hero.getPositionOffset ().x;
 			int iYSpecific = iYGeneral - (hero.getCarrying ().getTileHeight () - Tile.TERRAIN_ICON_HEIGHT) + hero.getOffset_carry_y () + (int) hero.getPositionOffset ().y;
@@ -1940,7 +1940,7 @@ public final class MainPanel {
 							}
 						}
 					} else if (zmi.getType () == ZoneManagerItem.TYPE_HERO_ROOM) {
-						// Miramos si tiene héroe
+						// Miramos si tiene heroe
 						int iHeroID = ((ZoneHeroRoom) zone).getOwnerID ();
 						if (iHeroID != -1) {
 							Hero hero = (Hero) World.getLivingEntityByID (iHeroID);
@@ -2030,7 +2030,7 @@ public final class MainPanel {
 
 				Item item = cell.getItem ();
 				if (item != null) {
-					// Buscamos la descripción
+					// Buscamos la descripcion
 					ItemManagerItem imi = ItemManager.getItem (item.getIniHeader ());
 					if (imi.getDescriptions () != null && imi.getDescriptions ().size () > 0) {
 						for (int d = 0; d < imi.getDescriptions ().size (); d++) {
@@ -2281,7 +2281,7 @@ public final class MainPanel {
 
 
 	/**
-	 * Retorna la celda en la que el mouse está apuntando. Se le pasa la view
+	 * Retorna la celda en la que el mouse esta apuntando. Se le pasa la view
 	 * 
 	 * @param x
 	 * @param y
@@ -2291,7 +2291,7 @@ public final class MainPanel {
 	 * @return
 	 */
 	private static Point3D getTileMouse (int x, int y, int xView, int yView, int zView) {
-		// Mouse en ningún panel (o sea, en la main area)
+		// Mouse en ningun panel (o sea, en la main area)
 		y -= Tile.TERRAIN_ICON_HEIGHT;
 		int casellaX = (x / 2 - y) / Tile.TERRAIN_ICON_HEIGHT;
 		if (x / 2 - y < 0) {
@@ -2372,7 +2372,7 @@ public final class MainPanel {
 
 
 	/**
-	 * Devuelve un contextmenúsegun la casilla en la que està
+	 * Devuelve un contextmenusegun la casilla en la que esta
 	 * 
 	 * @param x
 	 * @param y
@@ -2392,7 +2392,7 @@ public final class MainPanel {
 			return null;
 		}
 
-		// Segun lo que haya en el tile cargamos un menú u otro
+		// Segun lo que haya en el tile cargamos un menu u otro
 		SmartMenu sm = new SmartMenu ();
 		Cell cell = World.getCell (p3d);
 
@@ -2438,7 +2438,7 @@ public final class MainPanel {
 
 
 	/**
-	 * Cambia la textura Y añadi brillo
+	 * Cambia la textura Y anadi brillo
 	 * 
 	 * @param iTexture
 	 * 
@@ -2448,21 +2448,21 @@ public final class MainPanel {
 		MainPanel.renderWidth = renderWidth;
 		MainPanel.renderHeight = renderHeight;
 
-		// Obtenemos el número de tiles máximo que caben por pantalla
+		// Obtenemos el numero de tiles maximo que caben por pantalla
 		maxTilesWidthHeight = renderWidth / Tile.TERRAIN_ICON_WIDTH + renderHeight / Tile.TERRAIN_ICON_HEIGHT + 2;
 
 		// Obtenemos el centro de la pantalla
 		xCentro = ((renderWidth / 2) / Tile.TERRAIN_ICON_WIDTH) * Tile.TERRAIN_ICON_WIDTH;
 		yCentro = ((renderHeight / 2) / Tile.TERRAIN_ICON_HEIGHT) * Tile.TERRAIN_ICON_HEIGHT - (Tile.TERRAIN_ICON_HEIGHT / 2);
 
-		// Máximo de tiles X y Y
+		// Maximo de tiles X y Y
 		maxTilesX = (xCentro / 2 - (yCentro + Tile.TERRAIN_ICON_HEIGHT / 2)) / Tile.TERRAIN_ICON_HEIGHT;
 		maxTilesY = (xCentro / 2 + (yCentro + Tile.TERRAIN_ICON_HEIGHT / 2)) / Tile.TERRAIN_ICON_HEIGHT;
 	}
 
 
 	/**
-	 * Limpia todos los datos (se usa cuando se sale de la partida y se va al menú principal)
+	 * Limpia todos los datos (se usa cuando se sale de la partida y se va al menu principal)
 	 */
 	public void clear () {
 	}

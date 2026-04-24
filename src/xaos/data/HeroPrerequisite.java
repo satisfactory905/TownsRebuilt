@@ -129,7 +129,7 @@ public class HeroPrerequisite implements Externalizable {
             case ID_MAX_CITIZENS:
             case ID_LEVEL_DISCOVERED:
             case ID_FREE_ROOM_HIGH:
-                // Numérico
+                // Numerico
                 setValueInt(Integer.parseInt(sValue));
                 break;
             case ID_FREE_ROOM:
@@ -148,7 +148,7 @@ public class HeroPrerequisite implements Externalizable {
     }
 
     /**
-     * Se le pasa una lista de prerequisitos (puede ser null o vacía) y un ID de
+     * Se le pasa una lista de prerequisitos (puede ser null o vacia) y un ID de
      * prerequisito. Si ese prerequisito existe en la lista lo devuelve, en otro
      * caso devuelve null
      *

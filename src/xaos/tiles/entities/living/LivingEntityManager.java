@@ -196,7 +196,7 @@ public class LivingEntityManager {
             }
         }
 
-        // Si llega aquí es que no hay enemigos del nivel indicado ni inferior
+        // Si llega aqui es que no hay enemigos del nivel indicado ni inferior
         return null;
     }
 
@@ -288,7 +288,7 @@ public class LivingEntityManager {
 
         ArrayList<LivingEntityManagerItem> alReturn = new ArrayList<LivingEntityManagerItem>();
 
-        // Recorremos todos los items buscando el que tenga building = "parámetro pasado"
+        // Recorremos todos los items buscando el que tenga building = "parametro pasado"
         Iterator<String> it = hmLivingEntities.keySet().iterator();
         LivingEntityManagerItem lemi;
         while (it.hasNext()) {
@@ -306,7 +306,7 @@ public class LivingEntityManager {
             Document doc = UtilsXML.loadXMLFile(sXMLName);
 
 			// Tenemos el documento XML parseado
-            // Lo recorremos entero y vamos añadiendo los livingEntities a la hash
+            // Lo recorremos entero y vamos anadiendo los livingEntities a la hash
             NodeList nodeList = doc.getDocumentElement().getChildNodes();
             Node node;
             String sIniHeader;
@@ -847,11 +847,11 @@ public class LivingEntityManager {
                         lemi.setIdleCounterPCT(UtilsXML.getChildValue(node.getChildNodes(), "idleCounterPCT")); //$NON-NLS-1$
                     }
 
-                    // Lo añadimos a la hash
+                    // Lo anadimos a la hash
                     hmLivingEntities.put(sIniHeader, lemi);
 
 					//System.out.println (lemi.getIniHeader () + "," + lemi.getName () + "," + lemi.getAttack () + "," + lemi.getAttackSpeed () + "," + lemi.getDamage () + "," + lemi.getDefense () + "," + lemi.getHealthPoints () + "," + lemi.getLevel ());
-                    // Miramos si tiene gráficos alternativos, en ese caso creamos un "lemi" igual con distinto ID
+                    // Miramos si tiene graficos alternativos, en ese caso creamos un "lemi" igual con distinto ID
                     if (lemi.getAltGraphics() != null && lemi.getAltGraphics().size() > 0) {
                         String altG;
                         for (int a = 0; a < lemi.getAltGraphics().size(); a++) {

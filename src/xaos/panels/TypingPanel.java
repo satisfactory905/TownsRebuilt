@@ -2,8 +2,8 @@ package xaos.panels;
 
 import java.awt.Point;
 
-import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
+import static org.lwjgl.glfw.GLFW.*;
 
 import xaos.main.Game;
 import xaos.tiles.Tile;
@@ -135,7 +135,7 @@ public class TypingPanel {
     }
 
     /**
-     * Determina donde está el mouse y llama al render (mousePanel) Se usa, de
+     * Determina donde esta el mouse y llama al render (mousePanel) Se usa, de
      * momento, desde el main menu, para teclear el nombre de la partida grabada
      */
     public static void render(int mouseX, int mouseY) {
@@ -204,18 +204,18 @@ public class TypingPanel {
     }
 
     /**
-     * Añade un caracter al texto y retorna true en caso de que ya haya
+     * Anade un caracter al texto y retorna true en caso de que ya haya
      * terminado.
      *
      * @param key
      * @return
      */
     public static boolean keyPressed(int key) {
-        return keyPressed(key, Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT));
+        return keyPressed(key, false);
     }
 
     /**
-     * Añade un caracter al texto y retorna true en caso de que ya haya
+     * Anade un caracter al texto y retorna true en caso de que ya haya
      * terminado.
      *
      * @param key
@@ -224,10 +224,10 @@ public class TypingPanel {
      */
     public static boolean keyPressed(int key, boolean shift) {
         if (TYPING_TYPE == TYPE_REDEFINE_KEYS) {
-            if (key == Keyboard.KEY_ESCAPE) {
+            if (key == GLFW_KEY_ESCAPE) {
                 return true;
             }
-            if (key == Keyboard.KEY_LSHIFT || key == Keyboard.KEY_RSHIFT) {
+            if (key == GLFW_KEY_LEFT_SHIFT || key == GLFW_KEY_RIGHT_SHIFT) {
                 return false;
             }
 
@@ -235,14 +235,14 @@ public class TypingPanel {
             return true;
         }
 
-        if (key == Keyboard.KEY_BACK || key == Keyboard.KEY_DELETE) {
+        if (key == GLFW_KEY_BACKSPACE || key == GLFW_KEY_DELETE) {
             if (getNewText().length() > 0) {
                 setNewText(getNewText().substring(0, getNewText().length() - 1));
             }
-        } else if (key == Keyboard.KEY_ESCAPE) {
+        } else if (key == GLFW_KEY_ESCAPE) {
             setNewText(getOldText());
             return true;
-        } else if (key == Keyboard.KEY_RETURN) {
+        } else if (key == GLFW_KEY_ENTER) {
             String sNewName = getNewText().trim();
             setNewText(sNewName);
 
@@ -250,119 +250,34 @@ public class TypingPanel {
                 setNewText(getOldText());
             }
             return true;
-        } else {
-            // Teclas normales
-            if (getNewText().length() < MAX_CHARS) {
-                String sChar = getKeyString(key, shift);
-                if (sChar != null) {
-                    if (sChar.equals(" ")) { //$NON-NLS-1$
-                        // Si ya tenía un espacio al final pasamos de éste
-                        if (getNewText().length() > 0) {
-                            if (getNewText().charAt(getNewText().length() - 1) != ' ') {
-                                setNewText(getNewText() + sChar);
-                            }
-                        }
-                    } else {
-                        setNewText(getNewText() + sChar);
-                    }
-                }
-            }
         }
 
         return false;
     }
 
-    public static String getKeyString(int key, boolean shift) {
-        switch (key) {
-            case Keyboard.KEY_SPACE:
-                return " "; //$NON-NLS-1$
-            case Keyboard.KEY_A:
-                return (shift) ? "A" : "a"; //$NON-NLS-1$ //$NON-NLS-2$
-            case Keyboard.KEY_B:
-                return (shift) ? "B" : "b"; //$NON-NLS-1$ //$NON-NLS-2$
-            case Keyboard.KEY_C:
-                return (shift) ? "C" : "c"; //$NON-NLS-1$ //$NON-NLS-2$
-            case Keyboard.KEY_D:
-                return (shift) ? "D" : "d"; //$NON-NLS-1$ //$NON-NLS-2$
-            case Keyboard.KEY_E:
-                return (shift) ? "E" : "e"; //$NON-NLS-1$ //$NON-NLS-2$
-            case Keyboard.KEY_F:
-                return (shift) ? "F" : "f"; //$NON-NLS-1$ //$NON-NLS-2$
-            case Keyboard.KEY_G:
-                return (shift) ? "G" : "g"; //$NON-NLS-1$ //$NON-NLS-2$
-            case Keyboard.KEY_H:
-                return (shift) ? "H" : "h"; //$NON-NLS-1$ //$NON-NLS-2$
-            case Keyboard.KEY_I:
-                return (shift) ? "I" : "i"; //$NON-NLS-1$ //$NON-NLS-2$
-            case Keyboard.KEY_J:
-                return (shift) ? "J" : "j"; //$NON-NLS-1$ //$NON-NLS-2$
-            case Keyboard.KEY_K:
-                return (shift) ? "K" : "k"; //$NON-NLS-1$ //$NON-NLS-2$
-            case Keyboard.KEY_L:
-                return (shift) ? "L" : "l"; //$NON-NLS-1$ //$NON-NLS-2$
-            case Keyboard.KEY_M:
-                return (shift) ? "M" : "m"; //$NON-NLS-1$ //$NON-NLS-2$
-            case Keyboard.KEY_N:
-                return (shift) ? "N" : "n"; //$NON-NLS-1$ //$NON-NLS-2$
-            case Keyboard.KEY_O:
-                return (shift) ? "O" : "o"; //$NON-NLS-1$ //$NON-NLS-2$
-            case Keyboard.KEY_P:
-                return (shift) ? "P" : "p"; //$NON-NLS-1$ //$NON-NLS-2$
-            case Keyboard.KEY_Q:
-                return (shift) ? "Q" : "q"; //$NON-NLS-1$ //$NON-NLS-2$
-            case Keyboard.KEY_R:
-                return (shift) ? "R" : "r"; //$NON-NLS-1$ //$NON-NLS-2$
-            case Keyboard.KEY_S:
-                return (shift) ? "S" : "s"; //$NON-NLS-1$ //$NON-NLS-2$
-            case Keyboard.KEY_T:
-                return (shift) ? "T" : "t"; //$NON-NLS-1$ //$NON-NLS-2$
-            case Keyboard.KEY_U:
-                return (shift) ? "U" : "u"; //$NON-NLS-1$ //$NON-NLS-2$
-            case Keyboard.KEY_V:
-                return (shift) ? "V" : "v"; //$NON-NLS-1$ //$NON-NLS-2$
-            case Keyboard.KEY_W:
-                return (shift) ? "W" : "w"; //$NON-NLS-1$ //$NON-NLS-2$
-            case Keyboard.KEY_X:
-                return (shift) ? "X" : "x"; //$NON-NLS-1$ //$NON-NLS-2$
-            case Keyboard.KEY_Y:
-                return (shift) ? "Y" : "y"; //$NON-NLS-1$ //$NON-NLS-2$
-            case Keyboard.KEY_Z:
-                return (shift) ? "Z" : "z"; //$NON-NLS-1$ //$NON-NLS-2$
-
-            case Keyboard.KEY_0:
-                return (shift) ? "" + Keyboard.getEventCharacter() : "0"; //$NON-NLS-1$ //$NON-NLS-2$
-            case Keyboard.KEY_1:
-                return (shift) ? "" + Keyboard.getEventCharacter() : "1"; //$NON-NLS-1$ //$NON-NLS-2$
-            case Keyboard.KEY_2:
-                return (shift) ? "" + Keyboard.getEventCharacter() : "2"; //$NON-NLS-1$ //$NON-NLS-2$
-            case Keyboard.KEY_3:
-                return (shift) ? "" + Keyboard.getEventCharacter() : "3"; //$NON-NLS-1$ //$NON-NLS-2$
-            case Keyboard.KEY_4:
-                return (shift) ? "" + Keyboard.getEventCharacter() : "4"; //$NON-NLS-1$ //$NON-NLS-2$
-            case Keyboard.KEY_5:
-                return (shift) ? "" + Keyboard.getEventCharacter() : "5"; //$NON-NLS-1$ //$NON-NLS-2$
-            case Keyboard.KEY_6:
-                return (shift) ? "" + Keyboard.getEventCharacter() : "6"; //$NON-NLS-1$ //$NON-NLS-2$
-            case Keyboard.KEY_7:
-                return (shift) ? "" + Keyboard.getEventCharacter() : "7"; //$NON-NLS-1$ //$NON-NLS-2$
-            case Keyboard.KEY_8:
-                return (shift) ? "" + Keyboard.getEventCharacter() : "8"; //$NON-NLS-1$ //$NON-NLS-2$
-            case Keyboard.KEY_9:
-                return (shift) ? "" + Keyboard.getEventCharacter() : "9"; //$NON-NLS-1$ //$NON-NLS-2$
-
-            // Server chars
-            case Keyboard.KEY_SLASH:
-            case Keyboard.KEY_DIVIDE:
-                if (TYPING_TYPE == TYPE_ADD_SERVER) {
-                    return "/"; //$NON-NLS-1$
+    /**
+     * Anade un caracter al texto tecleado (llamado desde el char callback de GLFW).
+     * Retorna false (escritura no completada).
+     *
+     * @param c
+     * @return
+     */
+    public static boolean charInput(char c) {
+        if (c >= 32 && c < 127) {  // printable ASCII
+            if (getNewText().length() < MAX_CHARS) {
+                if (c == ' ') {
+                    // Si ya tenia un espacio al final pasamos de este
+                    if (getNewText().length() > 0) {
+                        if (getNewText().charAt(getNewText().length() - 1) != ' ') {
+                            setNewText(getNewText() + c);
+                        }
+                    }
+                } else {
+                    setNewText(getNewText() + c);
                 }
-            case Keyboard.KEY_PERIOD:
-                if (TYPING_TYPE == TYPE_ADD_SERVER) {
-                    return "."; //$NON-NLS-1$
-                }
+            }
         }
-
-        return null;
+        return false;
     }
 
     public static String getTitle() {
@@ -388,7 +303,7 @@ public class TypingPanel {
     public static void setNewText(String newText) {
         TypingPanel.newText = newText;
 
-        // En el caso de que esté pòniendo el nombre de una partida, miraremos que no exista en disco
+        // En el caso de que este poniendo el nombre de una partida, miraremos que no exista en disco
         if (TYPING_TYPE == TYPE_SAVEGAME_NAME) {
             if (Utils.existsSavegame(getNewText())) {
                 setSubTitle(Messages.getString("TypingPanel.1")); //$NON-NLS-1$

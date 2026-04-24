@@ -44,7 +44,7 @@ public class CaravanManagerItem {
                         itemID = ItemManager.getRandomItemByType(cid.getType()).getIniHeader();
                     }
 
-                    // Que el item exista (debería)
+                    // Que el item exista (deberia)
                     if (itemID == null) {
                         continue;
                     }

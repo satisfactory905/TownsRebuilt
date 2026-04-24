@@ -45,7 +45,7 @@ public class LivingEntityManagerItem {
     private int HPregeneration;
 
     // Age
-    private String maxAge; // Edad máxima del living
+    private String maxAge; // Edad maxima del living
     private String maxAgeLiving; // Living que "suelta" al morir
 
     // Equipment
@@ -211,7 +211,7 @@ public class LivingEntityManagerItem {
     }
 
     public LivingEntityData getRandom() {
-        // Se ponen aquí las cosas que hay que lanzar dados, las cosas fijas no hace falta, siempre se pueden consultar de un LivingEntityManagerItem
+        // Se ponen aqui las cosas que hay que lanzar dados, las cosas fijas no hace falta, siempre se pueden consultar de un LivingEntityManagerItem
         LivingEntityData led = new LivingEntityData();
         led.setName(getName());
 
@@ -599,7 +599,7 @@ public class LivingEntityManagerItem {
     }
 
     public void setMaxHungryTurns(String maxHungryTurns) throws Exception {
-        // Sólo se llama si es citizen o hero
+        // Solo se llama si es citizen o hero
         if (maxHungryTurns == null || maxHungryTurns.trim().length() == 0) {
             throw new Exception(Messages.getString("LivingEntityManagerItem.0")); //$NON-NLS-1$
         }
@@ -616,7 +616,7 @@ public class LivingEntityManagerItem {
     }
 
     public void setMaxSleepTurns(String maxSleepTurns) throws Exception {
-        // Sólo se llama si es citizen o hero
+        // Solo se llama si es citizen o hero
         if (maxSleepTurns == null || maxSleepTurns.trim().length() == 0) {
             throw new Exception(Messages.getString("LivingEntityManagerItem.3")); //$NON-NLS-1$
         }
@@ -786,7 +786,7 @@ public class LivingEntityManagerItem {
                 }
             }
 
-            // Llegados aquí tenemos una lista de items, comprobamos que existan
+            // Llegados aqui tenemos una lista de items, comprobamos que existan
             for (int i = 0; i < alItems.size(); i++) {
                 if (ItemManager.getItem(alItems.get(i)) == null) {
                     throw new Exception(Messages.getString("LivingEntityManagerItem.11") + " [" + alItems.get(i) + "]"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$

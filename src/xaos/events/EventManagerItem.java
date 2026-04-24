@@ -19,7 +19,7 @@ import xaos.utils.Messages;
 import xaos.utils.Utils;
 
 /**
- * Clase de tipo "managerItem", no es la que se añade a la lista de eventos
+ * Clase de tipo "managerItem", no es la que se anade a la lista de eventos
  */
 public class EventManagerItem {
 
@@ -364,7 +364,7 @@ public class EventManagerItem {
             }
         } else {
             if (siegeSize.size() > 0) {
-                // Tiene que tener el mismo número de elementos que siegeLivings
+                // Tiene que tener el mismo numero de elementos que siegeLivings
                 if (siegeLivings == null || siegeLivings.size() != siegeSize.size()) {
                     throw new Exception(Messages.getString("EventManagerItem.0")); //$NON-NLS-1$
                 }
@@ -411,7 +411,7 @@ public class EventManagerItem {
             }
         } else {
             if (targetsPCT.size() > 0) {
-                // Tiene que tener el mismo número de elementos que siegeLivings
+                // Tiene que tener el mismo numero de elementos que siegeLivings
                 if (targets == null || targets.size() != targetsPCT.size()) {
                     throw new Exception(Messages.getString("EventManagerItem.9")); //$NON-NLS-1$
                 }
@@ -483,7 +483,7 @@ public class EventManagerItem {
         this.itemsMaxAgePCT = itemsMaxAgePCT;
 
         if (itemsMaxAgePCT != null && itemsMaxAgePCT.size() > 0) {
-            // Tiene que tener el mismo número de elementos que items
+            // Tiene que tener el mismo numero de elementos que items
             if (items == null || items.size() != itemsMaxAgePCT.size()) {
                 throw new Exception(Messages.getString("EventManagerItem.1")); //$NON-NLS-1$
             }
@@ -498,7 +498,7 @@ public class EventManagerItem {
         this.itemsDeletePCT = itemsDeletePCT;
 
         if (itemsDeletePCT != null && itemsDeletePCT.size() > 0) {
-            // Tiene que tener el mismo número de elementos que items
+            // Tiene que tener el mismo numero de elementos que items
             if (items == null || items.size() != itemsDeletePCT.size()) {
                 throw new Exception(Messages.getString("EventManagerItem.2")); //$NON-NLS-1$
             }
@@ -513,7 +513,7 @@ public class EventManagerItem {
         this.itemsSpawnLiving = itemsSpawnLiving;
 
         if (itemsSpawnLiving != null && itemsSpawnLiving.size() > 0) {
-            // Tiene que tener el mismo número de elementos que items
+            // Tiene que tener el mismo numero de elementos que items
             if (items == null || items.size() != itemsSpawnLiving.size()) {
                 throw new Exception(Messages.getString("EventManagerItem.4")); //$NON-NLS-1$
             }
@@ -528,7 +528,7 @@ public class EventManagerItem {
         this.itemsSpawnLivingSize = itemsSpawnLivingSize;
 
         if (itemsSpawnLivingSize != null && itemsSpawnLivingSize.size() > 0) {
-            // Tiene que tener el mismo número de elementos que items
+            // Tiene que tener el mismo numero de elementos que items
             if (items == null || items.size() != itemsSpawnLivingSize.size()) {
                 throw new Exception(Messages.getString("EventManagerItem.5")); //$NON-NLS-1$
             }

@@ -5,7 +5,7 @@ import xaos.utils.Utils;
 
 public class PrefixSuffixManagerItem {
 
-    private String id; // Sólo se usa al cargar mods y lost <delete>
+    private String id; // Solo se usa al cargar mods y lost <delete>
     private String type;
     private String name;
     private String attack;

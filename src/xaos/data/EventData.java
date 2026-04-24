@@ -179,17 +179,17 @@ public class EventData implements Externalizable {
      *
      * @param emi
      * @param effectsList afterEat, afterSleep, effects, ...
-     * @param singleLiving Si se pasa una living sólo intenta aplicarlo a ella,
+     * @param singleLiving Si se pasa una living solo intenta aplicarlo a ella,
      * no a todos
      */
     public void launchEffects(EventManagerItem emi, ArrayList<String> effectsList, LivingEntity singleLiving) {
         if (emi.getTargets() != null && emi.getTargets().size() > 0) {
-            // Tiene targets, vamos a ver si aplicamos efectos de 1 sólo uso (<effects>)
+            // Tiene targets, vamos a ver si aplicamos efectos de 1 solo uso (<effects>)
             if (effectsList != null && effectsList.size() > 0) {
                 ArrayList<String> alTargets = emi.getTargets();
                 ArrayList<String> alPCTs = emi.getTargetsPCT();
 
-                // Por si acaso han cambiado el xml, comprobamos tamaños y esas cosas
+                // Por si acaso han cambiado el xml, comprobamos tamanos y esas cosas
                 if (alTargets != null && alPCTs != null && alTargets.size() == alPCTs.size()) {
 					// Go, go, go
 
@@ -246,7 +246,7 @@ public class EventData implements Externalizable {
                                     }
 
                                     if (iTargetType == LivingEntity.TYPE_HERO) {
-                                        // Héroes
+                                        // Heroes
                                         for (int h = 0; h < World.getHeroIDs().size(); h++) {
                                             le = World.getLivingEntityByID(World.getHeroIDs().get((h)));
                                             if (le != null && Utils.getRandomBetween(1, 100) <= iPCT) {
@@ -328,7 +328,7 @@ public class EventData implements Externalizable {
                             }
                         }
                     } else {
-                        // Hay random cell, allá vamos!
+                        // Hay random cell, alla vamos!
                         int iNumCells = Utils.launchDice(emi.getTargetsRandomCell());
                         Cell cell;
                         while (iNumCells > 0) {
@@ -344,7 +344,7 @@ public class EventData implements Externalizable {
                                     continue;
                                 }
 								// Cell con livings
-                                // Por cada livings que esté en el target le meteremos todos los efectos
+                                // Por cada livings que este en el target le meteremos todos los efectos
                                 LivingEntityManagerItem lemi;
                                 LivingEntity le;
                                 for (int l = 0; l < cell.getLivings().size(); l++) {
@@ -352,7 +352,7 @@ public class EventData implements Externalizable {
                                     lemi = LivingEntityManager.getItem(le.getIniHeader());
                                     if (lemi != null) {
                                         if (emi.getTargetsHateData().isHate(le)) {
-                                            // Miramos si es un target válido
+                                            // Miramos si es un target valido
                                             int iTargetIndex = -1;
                                             int iType = lemi.getType();
                                             for (int t = 0; t < alTargets.size(); t++) {
@@ -441,7 +441,7 @@ public class EventData implements Externalizable {
         }
 
         if (turns <= 0) {
-            // Se acabó
+            // Se acabo
             return true;
         }
 
@@ -1149,7 +1149,7 @@ public class EventData implements Externalizable {
 
         boolean bHaySeeds = true;
         while (bHaySeeds) {
-            // Copiamos el auxiliar (y de paso miramos que aún haya seeds)
+            // Copiamos el auxiliar (y de paso miramos que aun haya seeds)
             bHaySeeds = false;
             for (int x = 0; x < World.MAP_WIDTH; x++) {
                 for (int y = 0; y < World.MAP_HEIGHT; y++) {
@@ -1170,7 +1170,7 @@ public class EventData implements Externalizable {
                 for (int y = 0; y < World.MAP_HEIGHT; y++) {
                     if (abMap[x][y]) {
 						// Raiseamos
-                        // Buscamos el último _AIR
+                        // Buscamos el ultimo _AIR
                         boolean bHayAIRs = false;
                         for (int z = 0; z <= World.MAP_NUM_LEVELS_OUTSIDE; z++) {
                             cell = World.getCell(x, y, z);
@@ -1179,7 +1179,7 @@ public class EventData implements Externalizable {
                             } else {
                                 // Tenemos un no-air
                                 if (bHayAIRs) {
-                                    // Tiene espacio por encima, así que simplemente cambiamos el terrain por el de abajo
+                                    // Tiene espacio por encima, asi que simplemente cambiamos el terrain por el de abajo
                                     generateTerrain(cell.getTerrain().getTerrainID(), x, y, z - 1, false);
                                 }
                             }

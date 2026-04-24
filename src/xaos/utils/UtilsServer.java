@@ -109,7 +109,7 @@ public class UtilsServer {
                                         String sName = UtilsXML.getChildValue(nodeBurieds.getChildNodes(), "fileName"); //$NON-NLS-1$
                                         String sID = UtilsXML.getChildValue(nodeBurieds.getChildNodes(), "fileID"); //$NON-NLS-1$
                                         if (sName != null && sID != null && sName.trim().length() > 0 && sID.trim().length() > 0) {
-                                            // Miramos que no tenga carácteres especiales
+                                            // Miramos que no tenga caracteres especiales
                                             if (!sName.contains("/") && !sName.contains("\\") && !sName.contains(";") && !sName.contains("&") && !sName.contains("#") && !sName.contains("..")) {
                                                 // Todo ok, aunque primero miramos que el fichero no exista en local
                                                 File fTest = new File(buryFolder + File.separator + sName);

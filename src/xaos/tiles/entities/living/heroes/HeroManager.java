@@ -138,7 +138,7 @@ public class HeroManager {
                                         hp.setId(sChildID);
                                         hp.setValue(UtilsXML.getChildValue(nodePrerequisiteChilds, sChildID));
 
-                                        // Lo añadimos a la lista
+                                        // Lo anadimos a la lista
                                         alPrerequisites.add(hp);
                                     } else if (iType == 3) {
                                         // Behaviours
@@ -162,7 +162,7 @@ public class HeroManager {
                                 }
                             }
 
-                            // Añadimos la lista a la hash que toque
+                            // Anadimos la lista a la hash que toque
                             if (iType == 1) {
                                 hmComePrerequisites.put(sID, alPrerequisites);
                             } else if (iType == 2) {

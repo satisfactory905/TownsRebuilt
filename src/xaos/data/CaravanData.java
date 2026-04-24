@@ -113,10 +113,10 @@ public class CaravanData implements Externalizable {
     }
 
     /**
-     * Chequea si la caravana está lista para trade Cambia el flag "ready" de la
+     * Chequea si la caravana esta lista para trade Cambia el flag "ready" de la
      * misma (tanto true como false)
      *
-     * @return true si hay que eliminar la caravana (pq se fué)
+     * @return true si hay que eliminar la caravana (pq se fue)
      */
     public boolean updateCaravanStatus() {
         if (getStatus() == STATUS_NONE) {
@@ -129,7 +129,7 @@ public class CaravanData implements Externalizable {
             if (getTurnsToLeave() > 0) {
                 setTurnsToLeave(getTurnsToLeave() - 1);
                 if (getTurnsToLeave() <= 0) {
-                    // Se acabó la espera, nos piramos
+                    // Se acabo la espera, nos piramos
                     setStatus(STATUS_LEAVING);
                 }
             }
@@ -153,7 +153,7 @@ public class CaravanData implements Externalizable {
                                     UIPanel.createTradePanelContent(this);
                                 }
                             } else {
-                                // No está en una zona y no tiene path. A buscar zona o a pirarse
+                                // No esta en una zona y no tiene path. A buscar zona o a pirarse
                                 Zone zone;
                                 ArrayList<Point3DShort> alDestinations = null;
                                 CaravanManagerItem cmi = CaravanManager.getItem(lemi.getCaravan());
@@ -186,7 +186,7 @@ public class CaravanData implements Externalizable {
                                             }
                                         }
 
-                                        // Si llega aquí es que nanay de la china
+                                        // Si llega aqui es que nanay de la china
                                         setStatus(STATUS_LEAVING);
                                     }
                                 } else {
@@ -195,14 +195,14 @@ public class CaravanData implements Externalizable {
                                 }
                             }
                         } else {
-                            // Tiene camino, a saber pq se ha llamado a esta función
+                            // Tiene camino, a saber pq se ha llamado a esta funcion
                         }
                     } else {
                         // Raro, por si acaso nos piramos
                         setStatus(STATUS_LEAVING);
                     }
                 } else {
-                    // Rarísimo, no existe en el mundo
+                    // Rarisimo, no existe en el mundo
                     setStatus(STATUS_LEAVING);
                 }
                 break;
@@ -278,7 +278,7 @@ public class CaravanData implements Externalizable {
             }
         }
 
-        // Miramos si ya se puede soltar algún item
+        // Miramos si ya se puede soltar algun item
         while (checkItemToDrop()) {
         }
 
@@ -301,10 +301,10 @@ public class CaravanData implements Externalizable {
             return false;
         }
 
-        // Según la pasta del pueblo miramos si puede soltar objetos
+        // Segun la pasta del pueblo miramos si puede soltar objetos
         int iWorldCoins = Game.getWorld().getCoins();
         if (iWorldCoins > 0) {
-            // Hay pasta, miramos si hay algún item que pueda soltar
+            // Hay pasta, miramos si hay algun item que pueda soltar
             int iIndexItem = -1;
             SmartMenu smItem = null;
             for (int i = 0; i < getMenuCaravanToBuy().getItems().size(); i++) {
@@ -386,7 +386,7 @@ public class CaravanData implements Externalizable {
                         return true;
                     }
                 } else {
-                    // Item no encontrado ¿?¿?¿? rarísimo, lo eliminamos de la lista de to-buy
+                    // Item no encontrado ??? rarisimo, lo eliminamos de la lista de to-buy
                     getMenuCaravanToBuy().getItems().remove(iIndexItem);
                 }
             }
@@ -399,7 +399,7 @@ public class CaravanData implements Externalizable {
      * Se llama cuando un aldeano ha dejado un item en la caravana
      *
      * @param item
-     * @return true si la transacción es correcta (debería)
+     * @return true si la transaccion es correcta (deberia)
      */
     public boolean itemCarried(Item item) {
         if (item == null) {
@@ -454,7 +454,7 @@ public class CaravanData implements Externalizable {
                 caravanData.setCoins(caravanData.getCoins() - iPrice);
             }
 
-            // Miramos si la caravana puede soltar más cosas
+            // Miramos si la caravana puede soltar mas cosas
             checkItemToDrop();
 
             // Miramos si ya se ha acabado el trade
@@ -482,7 +482,7 @@ public class CaravanData implements Externalizable {
     private Point3DShort getDropPoint(Point3DShort p3dIniPoint, ItemManagerItem imi) {
         Point3DShort p3dDrop = null;
 
-		// Si está en una zona (debería) miraremos los puntos de la misma
+		// Si esta en una zona (deberia) miraremos los puntos de la misma
         // En otro caso (o si en la zona no hay puntos libres) miraremos en un radio de 8 casillas
         int iZoneID = World.getCell(p3dIniPoint).getZoneID();
         boolean bCellFound = false;
@@ -499,7 +499,7 @@ public class CaravanData implements Externalizable {
             }
         }
 
-        // No está en zona o no hay places disponibles, miramos un radio de 8
+        // No esta en zona o no hay places disponibles, miramos un radio de 8
         if (!bCellFound) {
             Point3DShort p3dTemp;
             radiusloop:

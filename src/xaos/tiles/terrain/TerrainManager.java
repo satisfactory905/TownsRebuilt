@@ -168,7 +168,7 @@ public class TerrainManager {
             Document doc = UtilsXML.loadXMLFile(sXMLName); //$NON-NLS-1$
 
 			// Tenemos el documento XML parseado
-            // Lo recorremos entero y vamos añadiendo los terrenos (TerrainManagerItem) a la hash
+            // Lo recorremos entero y vamos anadiendo los terrenos (TerrainManagerItem) a la hash
             NodeList nodeList = doc.getDocumentElement().getChildNodes();
             Node node;
             TerrainManagerItem item;
@@ -256,7 +256,7 @@ public class TerrainManager {
                         item.setBlocky(UtilsXML.getChildValue(node.getChildNodes(), "blocky")); //$NON-NLS-1$
                     }
 
-                    // Lo añadimos a la hash
+                    // Lo anadimos a la hash
                     terrainList.put(sIniHeader, item);
                 }
             }

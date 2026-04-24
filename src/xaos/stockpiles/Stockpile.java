@@ -144,10 +144,10 @@ public class Stockpile implements Externalizable {
 
 
 	/**
-	 * Indica si el item pasado (iniheader) está permitido por la stockpiles
+	 * Indica si el item pasado (iniheader) esta permitido por la stockpiles
 	 * 
 	 * @param sItemIniHeader
-	 * @return true si el item pasado (iniheader) está permitido por la stockpiles
+	 * @return true si el item pasado (iniheader) esta permitido por la stockpiles
 	 */
 	public boolean itemAllowed (String sItemIniHeader) {
 		return getType ().contains (sItemIniHeader);
@@ -204,7 +204,7 @@ public class Stockpile implements Externalizable {
 					for (int t = 0; t < type.getElements ().size (); t++) {
 						imi = ItemManager.getItem (type.getElements ().get (t));
 						if (imi.getType () != null && imi.getType ().equals (sSubType)) {
-							// Item a habilitar si no lo está ya
+							// Item a habilitar si no lo esta ya
 							if (!stockpile.getType ().contains (imi.getIniHeader ())) {
 								stockpile.getType ().addElement (type.getElements ().get (t), type.getElementNames ().get (t));
 							}
@@ -242,7 +242,7 @@ public class Stockpile implements Externalizable {
 
 
 	/**
-	 * Inhabilita todos los elementos de la pila. Si se le pasa un subtype deshabilita sólo esos
+	 * Inhabilita todos los elementos de la pila. Si se le pasa un subtype deshabilita solo esos
 	 * 
 	 * @param iID
 	 */
@@ -500,7 +500,7 @@ public class Stockpile implements Externalizable {
 
 	public static void updateIndexID () {
 		/**
-		 * Obtiene el ID más alto de Stockpile
+		 * Obtiene el ID mas alto de Stockpile
 		 */
 		ArrayList<Stockpile> stockpiles = Game.getWorld ().getStockpiles ();
 		Stockpile pile;
@@ -517,7 +517,7 @@ public class Stockpile implements Externalizable {
 
 
 	/**
-	 * Fills a contextual menú refering citizens of a cell
+	 * Fills a contextual menu refering citizens of a cell
 	 * 
 	 * @param cell
 	 * @param sm
@@ -547,11 +547,11 @@ public class Stockpile implements Externalizable {
 
 
 	/**
-	 * Se recorre todo el menú y setea el valor de los items a enabled o disabled según la configuración de la pila
+	 * Se recorre todo el menu y setea el valor de los items a enabled o disabled segun la configuracion de la pila
 	 * 
 	 * @param iStockpileID
 	 * @param menuPile
-	 * @return true si todo está ok
+	 * @return true si todo esta ok
 	 */
 	public static boolean regeneratePilePanelMenu (int iStockpileID, SmartMenu menuPile) {
 		if (menuPile == null) {
@@ -593,7 +593,7 @@ public class Stockpile implements Externalizable {
 				if (smAux.getCommand ().equals (CommandPanel.COMMAND_STOCKPILE_ENABLE_ITEM) || smAux.getCommand ().equals (CommandPanel.COMMAND_STOCKPILE_DISABLE_ITEM)) {
 					// Toca mirar si va a ser enabled o disabled
 					if (stockpile.getType ().contains (smAux.getParameter ())) {
-						// Existe, pués lo ponemos para disable
+						// Existe, pues lo ponemos para disable
 						smAux.setCommand (CommandPanel.COMMAND_STOCKPILE_DISABLE_ITEM);
 					} else {
 						// No existe, lo ponemos para enable
@@ -637,7 +637,7 @@ public class Stockpile implements Externalizable {
 		// Ya tenemos la pila y un punto donde se encuentra
 		SmartMenu smReturn = new SmartMenu (SmartMenu.TYPE_MENU, Messages.getString ("Stockpile.6"), null, null, sPileID); //$NON-NLS-1$
 
-		// Añadimos el enable todo/disable todo
+		// Anadimos el enable todo/disable todo
 		SmartMenu smAux = new SmartMenu (SmartMenu.TYPE_ITEM, Messages.getString ("Stockpile.4"), null, CommandPanel.COMMAND_STOCKPILE_ENABLE_ALL, Integer.toString (iStockpileID), null, null, Color.GREEN); //$NON-NLS-1$
 		smAux.setIcon ("iconenableall"); //$NON-NLS-1$
 		smReturn.addItem (smAux);
@@ -646,7 +646,7 @@ public class Stockpile implements Externalizable {
 		smAux.setIcon ("icondisableall"); //$NON-NLS-1$
 		smReturn.addItem (smAux);
 
-		// Añadimos 1 linea por cada objeto del tipo de stockpile (para poner/quitar)
+		// Anadimos 1 linea por cada objeto del tipo de stockpile (para poner/quitar)
 		Type stockpileType = stockpile.getType ();
 		Type type = Types.getType (stockpileType.getID ());
 		String sItemType;
@@ -688,7 +688,7 @@ public class Stockpile implements Externalizable {
 				smSubMenu.setIcon (Type.getIcon (alElementsWithSubtypeName.get (i)));
 			}
 
-			// Añadimos el enable todo/disable todo (del subtipo)
+			// Anadimos el enable todo/disable todo (del subtipo)
 			smAux = new SmartMenu (SmartMenu.TYPE_ITEM, Messages.getString ("Stockpile.4"), null, CommandPanel.COMMAND_STOCKPILE_ENABLE_ALL, Integer.toString (iStockpileID), alElementsWithSubtypeName.get (i), null, Color.GREEN); //$NON-NLS-1$
 			smAux.setIcon ("iconenableall"); //$NON-NLS-1$
 			smSubMenu.addItem (smAux);

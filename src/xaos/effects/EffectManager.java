@@ -122,7 +122,7 @@ public class EffectManager {
             Document doc = UtilsXML.loadXMLFile(sXMLName); //$NON-NLS-1$
 
 			// Tenemos el documento XML parseado
-            // Lo recorremos entero y vamos añadiendo las skills (SkillManagerItem) a la hash
+            // Lo recorremos entero y vamos anadiendo las skills (SkillManagerItem) a la hash
             NodeList nodeList = doc.getDocumentElement().getChildNodes();
             Node node;
             EffectManagerItem effectData;
@@ -342,7 +342,7 @@ public class EffectManager {
                         effectData.setHappy(UtilsXML.getChildValue(node.getChildNodes(), "happy")); //$NON-NLS-1$
                     }
 
-                    // Lo añadimos a la hash
+                    // Lo anadimos a la hash
                     effectList.put(sIniHeader, effectData);
                 }
             }

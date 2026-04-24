@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>xaos</groupId>
+    <artifactId>towns</artifactId>
+    <version>14f</version>
+    <packaging>jar</packaging>
+
+    <properties>
+        <maven.compiler.source>25</maven.compiler.source>
+        <maven.compiler.target>25</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <lwjgl.version>3.3.3</lwjgl.version>
+    </properties>
+
+    <build>
+        <!-- Predictable output filenames: towns.jar rather than towns-14f.jar -->
+        <finalName>towns</finalName>
+
+        <!-- Sources live directly in src/, not the Maven-standard src/main/java -->
+        <sourceDirectory>${project.basedir}/src</sourceDirectory>
+
+        <!-- Include .properties files from the source tree on the classpath
+             (needed for ResourceBundle-based i18n in xaos.utils.Messages) -->
+        <resources>
+            <resource>
+                <directory>${project.basedir}/src</directory>
+                <includes>
+                    <include>**/*.properties</include>
+                </includes>
+            </resource>
+        </resources>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <source>25</source>
+                    <target>25</target>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+
+            <!--
+                Run with: mvn exec:exec
+                This launches a fresh JVM (required for LWJGL native loading) with:
+                  - java.library.path pointing at the native DLLs
+                  - working directory set to src/ (where towns.ini and data/ live)
+            -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <executable>java</executable>
+                    <workingDirectory>${project.basedir}/src</workingDirectory>
+                    <arguments>
+                        <argument>-XX:+UseZGC</argument>
+                        <argument>-XX:+ZGenerational</argument>
+                        <argument>-XX:+UseCompactObjectHeaders</argument>
+                        <argument>-classpath</argument>
+                        <classpath/>
+                        <argument>xaos.Towns</argument>
+                    </arguments>
+                </configuration>
+            </plugin>
+
+            <!--
+                Fat JAR for packaging. Shade pulls in the entire compile+runtime
+                dependency graph (including LWJGL 3 natives-windows classifier JARs).
+                The LWJGL native JARs are signed; their signature files must be
+                stripped or the JVM throws SecurityException at load time.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.5.3</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <outputFile>${project.build.directory}/dist/input/towns.jar</outputFile>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                        <exclude>module-info.class</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <manifestEntries>
+                                        <Main-Class>xaos.Towns</Main-Class>
+                                    </manifestEntries>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!--
+                Stage runtime assets (ini files + data/ tree) alongside towns.jar
+                so target/dist/input/ is a ready-to-feed jpackage input directory.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.3.1</version>
+                <executions>
+                    <execution>
+                        <id>copy-runtime-assets</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/dist/input</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}/src</directory>
+                                    <filtering>false</filtering>
+                                    <includes>
+                                        <include>towns.ini</include>
+                                        <include>audio.ini</include>
+                                        <include>graphics.ini</include>
+                                        <include>data/**</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <!--
+            dist profile: builds a self-contained Windows app-image folder with bundled JRE via jpackage.
+            Run with: mvn package -Pdist
+            Output: target/dist/Towns/Towns.exe (+ runtime/ + app/). Portable — just run the .exe.
+            Requires a JDK containing jpackage (Java 14+). No WiX / other tooling needed for APP_IMAGE.
+            Icon is intentionally omitted; user will add .ico later (tracked in todo.md).
+            To produce a true installer .exe instead, install WiX Toolset and change type to EXE.
+        -->
+        <profile>
+            <id>dist</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.panteleyev</groupId>
+                        <artifactId>jpackage-maven-plugin</artifactId>
+                        <version>1.6.0</version>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>jpackage</goal>
+                                </goals>
+                                <configuration>
+                                    <type>APP_IMAGE</type>
+                                    <name>Towns</name>
+                                    <appVersion>14.0.6</appVersion>
+                                    <vendor>SMP</vendor>
+                                    <input>${project.build.directory}/dist/input</input>
+                                    <mainJar>towns.jar</mainJar>
+                                    <mainClass>xaos.Towns</mainClass>
+                                    <destination>${project.build.directory}/dist</destination>
+                                    <javaOptions>
+                                        <option>-XX:+UseZGC</option>
+                                        <option>-XX:+ZGenerational</option>
+                                        <option>-XX:+UseCompactObjectHeaders</option>
+                                    </javaOptions>
+                                    <!--
+                                        Custom jlink runtime: ship only the JDK modules Towns actually uses
+                                        (verified with jdeps: java.base, java.desktop, jdk.unsupported).
+                                        Without addModules, jpackage falls back to copying the full JDK — that is
+                                        what produced the ~122 MB runtime folder containing ct.sym, jvm.lib, etc.
+                                        jlink flags: strip debug symbols, drop dev-only header files and man pages,
+                                        and compress the modules image with zip-6 (default for Java 20+).
+                                    -->
+                                    <addModules>
+                                        <module>java.base</module>
+                                        <module>java.desktop</module>
+                                        <module>jdk.unsupported</module>
+                                    </addModules>
+                                    <jLinkOptions>
+                                        <jLinkOption>--strip-debug</jLinkOption>
+                                        <jLinkOption>--no-header-files</jLinkOption>
+                                        <jLinkOption>--no-man-pages</jLinkOption>
+                                        <jLinkOption>--compress=zip-6</jLinkOption>
+                                    </jLinkOptions>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+    <dependencies>
+        <!-- LWJGL 3 — core -->
+        <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl</artifactId><version>${lwjgl.version}</version></dependency>
+        <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl</artifactId><version>${lwjgl.version}</version><classifier>natives-windows</classifier></dependency>
+        <!-- LWJGL 3 — GLFW (window + input) -->
+        <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-glfw</artifactId><version>${lwjgl.version}</version></dependency>
+        <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-glfw</artifactId><version>${lwjgl.version}</version><classifier>natives-windows</classifier></dependency>
+        <!-- LWJGL 3 — OpenGL -->
+        <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-opengl</artifactId><version>${lwjgl.version}</version></dependency>
+        <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-opengl</artifactId><version>${lwjgl.version}</version><classifier>natives-windows</classifier></dependency>
+        <!-- LWJGL 3 — OpenAL -->
+        <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-openal</artifactId><version>${lwjgl.version}</version></dependency>
+        <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-openal</artifactId><version>${lwjgl.version}</version><classifier>natives-windows</classifier></dependency>
+        <!-- LWJGL 3 — STB (image loading) -->
+        <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-stb</artifactId><version>${lwjgl.version}</version></dependency>
+        <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-stb</artifactId><version>${lwjgl.version}</version><classifier>natives-windows</classifier></dependency>
+    </dependencies>
+
+</project>

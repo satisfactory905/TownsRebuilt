@@ -12,7 +12,7 @@ public class ZoneHeroRoom extends Zone implements Externalizable {
 
     private static final long serialVersionUID = 5451613796754869362L;
 
-    private int ownerID = -1; // ID de héroe, propietario de la zona
+    private int ownerID = -1; // ID de heroe, propietario de la zona
 
     public ZoneHeroRoom() {
         super();
@@ -32,7 +32,7 @@ public class ZoneHeroRoom extends Zone implements Externalizable {
     }
 
     /**
-     * Asigna una zona personal libre a un héroe. Si el héroe YA tiene ID de
+     * Asigna una zona personal libre a un heroe. Si el heroe YA tiene ID de
      * zona NO hace nada y devolvemos false.
      *
      * @param hero
@@ -43,7 +43,7 @@ public class ZoneHeroRoom extends Zone implements Externalizable {
     }
 
     /**
-     * Asigna una zona personal CONCRETA y libre a un héroe Si el héroe YA tiene
+     * Asigna una zona personal CONCRETA y libre a un heroe Si el heroe YA tiene
      * ID de zona NO hace nada y devolvemos false.
      *
      * @param hero
@@ -73,7 +73,7 @@ public class ZoneHeroRoom extends Zone implements Externalizable {
     }
 
     /**
-     * Libera una personal hero zone, se usa si el héroe muere o se pira, por
+     * Libera una personal hero zone, se usa si el heroe muere o se pira, por
      * ejemplo.
      *
      * @param hero

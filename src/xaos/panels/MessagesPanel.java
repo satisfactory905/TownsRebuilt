@@ -111,7 +111,7 @@ public final class MessagesPanel {
     }
 
     /**
-     * Añade un mensaje al final de la cola de mensajes, lo parte si no cabe
+     * Anade un mensaje al final de la cola de mensajes, lo parte si no cabe
      *
      * @param iMessageType
      * @param sMessage Mensaje
@@ -121,7 +121,7 @@ public final class MessagesPanel {
     }
 
     /**
-     * Añade un mensaje al final de la cola de mensajes, lo parte si no cabe
+     * Anade un mensaje al final de la cola de mensajes, lo parte si no cabe
      *
      * @param iMessageType
      * @param sMessage Mensaje
@@ -132,7 +132,7 @@ public final class MessagesPanel {
     }
 
     /**
-     * Añade un mensaje al final de la cola de mensajes Lo parte para meter en
+     * Anade un mensaje al final de la cola de mensajes Lo parte para meter en
      * la cola a renderizar
      *
      * @param iMessageType
@@ -161,7 +161,7 @@ public final class MessagesPanel {
     }
 
     /**
-     * Añade el mensaje a la cola de mensajes a renderizar
+     * Anade el mensaje a la cola de mensajes a renderizar
      *
      * @param sMessage
      * @param color
@@ -198,7 +198,7 @@ public final class MessagesPanel {
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, Game.TEXTURE_FONT_ID);
         GL11.glTexEnvf(GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_MODE, GL11.GL_MODULATE);
         UtilsGL.glBegin(GL11.GL_QUADS);
-        // Pintamos los mensajes y también miramos si el ratón está allí para highlightearlos
+        // Pintamos los mensajes y tambien miramos si el raton esta alli para highlightearlos
         MessagesPanelData[] messagesDataRender = messagesDataFull.get(iMessagesType * 2 + 1);
         int xM = x;
         int iIndex = (pages[iMessagesType] + 1 - pagesCurrent[iMessagesType]) * maxRenderLines;
@@ -312,7 +312,7 @@ public final class MessagesPanel {
 
     /**
      * Limpia todos los datos (se usa cuando se sale de la partida y se va al
-     * menú principal)
+     * menu principal)
      */
     public static void initialize() {
         messagesDataFull = new ArrayList<MessagesPanelData[]>(MAX_TYPES * 2);
@@ -358,7 +358,7 @@ public final class MessagesPanel {
                                 Game.getWorld().setView(messagesDataRender[i].getView());
                                 return true;
                             }
-                        } else if (messagesDataRender[i].getView() != null) { // Si llega aquí debería ser != null siempre
+                        } else if (messagesDataRender[i].getView() != null) { // Si llega aqui deberia ser != null siempre
                             Game.getWorld().setView(messagesDataRender[i].getView());
                             return true;
                         }

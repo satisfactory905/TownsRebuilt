@@ -43,7 +43,7 @@ public class QueueItem implements Externalizable {
     public final static int TYPE_DESTROY_ITEM = 4;
     public final static int TYPE_UNLOCK = 5;
     public final static int TYPE_CREATE_ITEM = 6;
-    public final static int TYPE_PLACE_ITEM = 7; // Código interno, lo usan los aldeanos
+    public final static int TYPE_PLACE_ITEM = 7; // Codigo interno, lo usan los aldeanos
     public final static int TYPE_PICK_FRIENDLY = 8;
     public final static int TYPE_DESTROY_FRIENDLY = 9;
     public final static int TYPE_CREATE_FRIENDLY = 10;

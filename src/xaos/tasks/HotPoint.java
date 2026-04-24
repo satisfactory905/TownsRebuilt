@@ -10,7 +10,7 @@ import xaos.utils.Point3DShort;
 
 /**
  * Clase usada por las tareas (Task's) para indicar donde hay que ir y sobre que
- * casilla actuar. Ej: Hay que ir a la posición 10,10,0 y minar la casilla
+ * casilla actuar. Ej: Hay que ir a la posicion 10,10,0 y minar la casilla
  * 10,11,0
  */
 public final class HotPoint implements Externalizable {
@@ -18,7 +18,7 @@ public final class HotPoint implements Externalizable {
     private static final long serialVersionUID = 7742440798076745420L;
 
     /**
-     * Punto donde ejecutar la acción
+     * Punto donde ejecutar la accion
      */
     private Point3DShort hotPoint;
 
@@ -28,7 +28,7 @@ public final class HotPoint implements Externalizable {
     private ArrayList<Point3DShort> places;
 
     /**
-     * Indica si el hotpoint está acabado
+     * Indica si el hotpoint esta acabado
      */
     private boolean finished;
 
@@ -64,7 +64,7 @@ public final class HotPoint implements Externalizable {
 
     public void setPlaces(ArrayList<Point3DShort> places, boolean maintainCurrentOrder) {
         if (maintainCurrentOrder && this.places != null && places != null) {
-            // Mantenemos el orden, ya que otros aldeanos podrían estar haciendo cosas
+            // Mantenemos el orden, ya que otros aldeanos podrian estar haciendo cosas
             int iSize = this.places.size();
             for (int i = (iSize - 1); i >= 0; i--) {
                 if (places.contains(this.places.get(i))) {

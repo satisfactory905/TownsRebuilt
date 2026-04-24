@@ -12,11 +12,9 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 import xaos.main.Game;
-import xaos.utils.JNASteamAPI;
 import xaos.utils.Log;
 import xaos.utils.Messages;
 
-import com.sun.jna.Native;
 import xaos.property.Property;
 
 public final class Towns {
@@ -25,25 +23,66 @@ public final class Towns {
     public static Properties propertiesMain;
     public static Properties propertiesGraphics;
 
-    public static boolean loadSteamAPI(String sLibName) {
-        try {
-            JNASteamAPI steamAPI = (JNASteamAPI) Native.loadLibrary(sLibName, JNASteamAPI.class);
-            steamAPI.SteamAPI_Init();
-            return true;
-        } catch (Throwable t) {
-        }
+    // Install root: directory containing towns.ini, audio.ini, graphics.ini, data/.
+    // Resolved lazily on first access (or eagerly from main()).
+    private static File installRoot;
 
-        return false;
+    /**
+     * Computes the install root.
+     * - If the code source is a directory (mvn exec:exec from target/classes/), use process CWD.
+     * - If it is a JAR (jpackage build), use that JAR's parent directory.
+     * - On any exception, fall back to process CWD.
+     */
+    private static File computeInstallRoot() {
+        java.net.URL codeSourceLocation = null;
+        try {
+            codeSourceLocation = Towns.class.getProtectionDomain().getCodeSource().getLocation();
+            File codeSourceFile = new File(codeSourceLocation.toURI());
+            File resolved;
+            if (codeSourceFile.isDirectory()) {
+                resolved = new File(System.getProperty("user.dir"));
+            } else {
+                // Treat as JAR file: install root is the JAR's parent directory.
+                File parent = codeSourceFile.getParentFile();
+                resolved = (parent != null) ? parent : new File(System.getProperty("user.dir"));
+            }
+            Log.log(Log.LEVEL_DEBUG, "Install root: " + resolved.getAbsolutePath()
+                    + " (code source: " + codeSourceLocation + "; user.dir: " + System.getProperty("user.dir") + ")", "Towns");
+            return resolved;
+        } catch (Exception e) {
+            Log.log(Log.LEVEL_ERROR, "Failed to resolve install root from code source (" + codeSourceLocation + "): " + e.toString(), "Towns");
+            File fallback = new File(System.getProperty("user.dir"));
+            Log.log(Log.LEVEL_DEBUG, "Install root (fallback): " + fallback.getAbsolutePath()
+                    + " (code source: " + codeSourceLocation + "; user.dir: " + System.getProperty("user.dir") + ")", "Towns");
+            return fallback;
+        }
+    }
+
+    /**
+     * Absolute path to the directory containing towns.ini, audio.ini, graphics.ini, and data/.
+     * Never returns null.
+     */
+    public static File getInstallRoot() {
+        if (installRoot == null) {
+            installRoot = computeInstallRoot();
+        }
+        return installRoot;
+    }
+
+    /**
+     * Resolve a path relative to the install root.
+     * Equivalent to new File(getInstallRoot(), rel). Returns an absolute File.
+     */
+    public static File resolveFile(String rel) {
+        File f = new File(getInstallRoot(), rel);
+        return f.isAbsolute() ? f : f.getAbsoluteFile();
     }
 
     public static void main(String[] args) {
 //		if (true) System.exit (0);
-        // Steam
-        if (!loadSteamAPI("steam_api")) {
-            loadSteamAPI("steam_api64");
-        }
-
-        // Lanzamos la ventana principal
+        // Resolve install root eagerly so the log line appears at startup.
+        getInstallRoot();
+        // Launch the main window
         try {
             new Game();
         } catch (Throwable t) {
@@ -74,18 +113,62 @@ public final class Towns {
 
         String sFile = "towns.ini"; //$NON-NLS-1$
         try {
-            propertiesMain.load(new FileInputStream(sFile));
+            propertiesMain.load(new FileInputStream(resolveFile(sFile)));
             try {
                 propertiesMain.load(new FileInputStream(Game.getUserFolder() + Game.getFileSeparator() + sFile));
             } catch (Exception e) {
             }
+
+            // Absolutize any *_FOLDER value that is currently a relative path so
+            // downstream CWD-relative reads still resolve after jpackage.
+            absolutizeFolderProperties(propertiesMain);
         } catch (FileNotFoundException e) {
-            Log.log(Log.LEVEL_ERROR, Messages.getString("Towns.2") + sFile, "Towns"); //$NON-NLS-1$ //$NON-NLS-2$
+            Log.log(Log.LEVEL_ERROR, "Could not load " + sFile + " from " + resolveFile(sFile).getAbsolutePath(), "Towns"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
             Game.exit();
         } catch (IOException e) {
             Log.log(Log.LEVEL_ERROR, Messages.getString("Towns.7"), "Towns"); //$NON-NLS-1$ //$NON-NLS-2$
             Log.log(Log.LEVEL_ERROR, e.toString(), "Towns"); //$NON-NLS-1$
             Game.exit();
+        }
+    }
+
+    /**
+     * Rewrites any property whose value is a relative path under data/ (or data\), making
+     * it absolute against the install root. Targets data/ specifically because under the
+     * jpackage launcher the process CWD is not the install root, so bare data/... paths
+     * fail to resolve. URL-like values (e.g. SERVERS) are left alone because they do not
+     * start with data/. USER_FOLDER is a user-home path handled elsewhere. The original
+     * trailing-separator shape is preserved so downstream concatenation still works.
+     */
+    private static void absolutizeFolderProperties(Properties props) {
+        if (props == null) {
+            return;
+        }
+        for (String key : props.stringPropertyNames()) {
+            if ("USER_FOLDER".equals(key)) {
+                continue;
+            }
+            String value = props.getProperty(key);
+            if (value == null || value.isEmpty()) {
+                continue;
+            }
+            if (!value.startsWith("data/") && !value.startsWith("data\\")) {
+                continue;
+            }
+            if (new File(value).isAbsolute()) {
+                continue;
+            }
+            boolean hadTrailingSeparator = value.endsWith("/") || value.endsWith("\\");
+            String trimmed = value;
+            while (trimmed.endsWith("/") || trimmed.endsWith("\\")) {
+                trimmed = trimmed.substring(0, trimmed.length() - 1);
+            }
+            String absoluteValue = resolveFile(trimmed).getAbsolutePath();
+            if (hadTrailingSeparator) {
+                absoluteValue = absoluteValue + File.separator;
+            }
+            props.setProperty(key, absoluteValue);
+            Log.log(Log.LEVEL_DEBUG, "Resolved " + key + " -> " + absoluteValue, "Towns");
         }
     }
 
@@ -98,7 +181,10 @@ public final class Towns {
 
         String sFile = "graphics.ini"; //$NON-NLS-1$
         try {
-            propertiesGraphics.load(new FileInputStream(sFile));
+            propertiesGraphics.load(new FileInputStream(resolveFile(sFile)));
+
+            // Defensive: if a mod graphics.ini adds *_FOLDER keys, absolutize them.
+            absolutizeFolderProperties(propertiesGraphics);
 
             // Mods
             File fUserFolder = new File(Game.getUserFolder());
@@ -117,7 +203,7 @@ public final class Towns {
                 }
             }
         } catch (FileNotFoundException e) {
-            Log.log(Log.LEVEL_ERROR, Messages.getString("Towns.2") + sFile, "Towns"); //$NON-NLS-1$ //$NON-NLS-2$
+            Log.log(Log.LEVEL_ERROR, "Could not load " + sFile + " from " + resolveFile(sFile).getAbsolutePath(), "Towns"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
             Game.exit();
         } catch (IOException e) {
             Log.log(Log.LEVEL_ERROR, Messages.getString("Towns.7"), "Towns"); //$NON-NLS-1$ //$NON-NLS-2$

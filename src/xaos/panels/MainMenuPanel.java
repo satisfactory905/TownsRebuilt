@@ -5,10 +5,11 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
 
-import org.lwjgl.input.Keyboard;
-import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
+import static org.lwjgl.glfw.GLFW.*;
+import xaos.utils.DisplayManager;
+import xaos.utils.InputState;
+import xaos.utils.KeyMapper;
 import xaos.property.PropertyFile;
 
 import xaos.Towns;
@@ -187,7 +188,7 @@ public final class MainMenuPanel implements Runnable {
                     String missionName = alCampaigns.get(i).getMissions().get(j).getName();
                     String sMissionID = alCampaigns.get(i).getMissions().get(j).getId();
 
-                    // Añadimos la opción de bajar burieds
+                    // Anadimos la opcion de bajar burieds
                     if (Game.isAllowBury() && alCampaigns.get(i).getMissions().get(j).isAllowBury()) {
                         SmartMenu loadBurieds = new SmartMenu(SmartMenu.TYPE_MENU, missionName, campaign, null, null, null, null, textColor);
                         loadBurieds.setTrasparency(true);
@@ -291,7 +292,7 @@ public final class MainMenuPanel implements Runnable {
 
                 // Load game
                 menuLoad.addItem(new SmartMenu(SmartMenu.TYPE_ITEM, Messages.getString("MainMenuPanel.40") + Utils.removeExtension(fAux.getName()) + sDate, null, CommandPanel.COMMAND_MM_CONTINUEGAME, fAux.getName(), null, null, textColor)); //$NON-NLS-1$
-                // Delete game (con su submenú de confirmación)
+                // Delete game (con su submenu de confirmacion)
                 SmartMenu menuDelete = new SmartMenu(SmartMenu.TYPE_MENU, Messages.getString("MainMenuPanel.49") + Utils.removeExtension(fAux.getName()) + sDate, menuLoad, null, null, null, null, Color.RED); //$NON-NLS-1$
                 menuDelete.setTrasparency(mainMenu.isTrasparency());
                 menuDelete.setBorderColor(borderColor);
@@ -598,7 +599,7 @@ public final class MainMenuPanel implements Runnable {
                 if (ld.mod == null || Game.getModsLoaded() == null) {
                     menuAux = new SmartMenu(SmartMenu.TYPE_ITEM, ld.name, null, CommandPanel.COMMAND_CHANGE_LANGUAGE, ld.language, ld.country, null, textColor);
                 } else {
-                    // Buscamos el índice del mod
+                    // Buscamos el indice del mod
                     int iModIndex = -1;
                     for (int m = 0; m < Game.getModsLoaded().size(); m++) {
                         if (Game.getModsLoaded().get(m).equals(ld.mod)) {
@@ -747,7 +748,7 @@ public final class MainMenuPanel implements Runnable {
     public void setSettingHotkey(boolean settingHotkey, int iFN) {
         if (settingHotkey) {
             this.settingHotkey = 1;
-            new TypingPanel(renderWidth, renderHeight, Messages.getString("MainMenuPanel.48") + UtilsKeyboard.getFNHumanString(iFN) + ((UtilsKeyboard.getKey(iFN, 0) == Keyboard.KEY_NONE) ? "" : Messages.getString("MainMenuPanel.50") + Keyboard.getKeyName(UtilsKeyboard.getKey(iFN, 0)) + ")"), new String(), TypingPanel.TYPE_REDEFINE_KEYS, iFN); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+            new TypingPanel(renderWidth, renderHeight, Messages.getString("MainMenuPanel.48") + UtilsKeyboard.getFNHumanString(iFN) + ((UtilsKeyboard.getKey(iFN, 0) == KeyMapper.KEY_NONE) ? "" : Messages.getString("MainMenuPanel.50") + KeyMapper.toName(UtilsKeyboard.getKey(iFN, 0)) + ")"), new String(), TypingPanel.TYPE_REDEFINE_KEYS, iFN); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
         } else {
             this.settingHotkey = 0;
             // El panel se cierra, cambiamos los textos de todos los menus COMMAND_CHANGE_HOTKEY
@@ -768,8 +769,18 @@ public final class MainMenuPanel implements Runnable {
     }
 
     /**
+     * True when a main-menu TypingPanel is open that accepts printable text
+     * (savegame name, new server URL). Deliberately excludes the key-rebind dialog,
+     * which consumes key codes rather than characters and would be corrupted by
+     * char events being appended to its text.
+     */
+    public boolean isTypingTextActive() {
+        return settingSavegameName || settingNewServer;
+    }
+
+    /**
      * Cambia los textos de todos los menus COMMAND_CHANGE_HOTKEY Se llama
-     * después deredifinir alguna tecla.
+     * despues deredifinir alguna tecla.
      *
      */
     private void checkChangeHotkeyMenusText(SmartMenu sm) {
@@ -839,7 +850,7 @@ public final class MainMenuPanel implements Runnable {
             UtilsGL.drawTexture(centerX - imageLoadingWidth / 2, centerY + 10, centerX + imageLoadingWidth / 2, centerY + 10 + imageLoadingHeight, 0, 0, 1, 1);
             UtilsGL.glEnd();
 
-            // Si hay texto de loading lo pintamos también
+            // Si hay texto de loading lo pintamos tambien
             String sLoadingText = getLoadingText();
             if (sLoadingText.length() > 0) {
                 bTextureFontLoaded = true;
@@ -852,7 +863,7 @@ public final class MainMenuPanel implements Runnable {
             }
         }
 
-        // Versión del juego abajo a la derecha
+        // Version del juego abajo a la derecha
         if (!bTextureFontLoaded) {
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, Game.TEXTURE_FONT_ID);
             GL11.glTexEnvf(GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_MODE, GL11.GL_MODULATE);
@@ -871,19 +882,19 @@ public final class MainMenuPanel implements Runnable {
         UtilsGL.glEnd();
 
         if (!loadingGame && !isSettingSavegameName() && !isSettingHotkey() && !isSettingNewServer()) {
-            // Pintamos el menú
+            // Pintamos el menu
             menu.render();
         }
 
         if (isSettingSavegameName() || isSettingHotkey() || isSettingNewServer()) {
-            int mouseX = Mouse.getEventX();
-            int mouseY = UtilsGL.getHeight() - Mouse.getEventY() - 1;
+            int mouseX = InputState.getMouseX();
+            int mouseY = InputState.getMouseY();
             TypingPanel.render(mouseX, mouseY);
         }
     }
 
     /**
-     * Método que se llama cuando pulse con el ratón.
+     * Metodo que se llama cuando pulse con el raton.
      *
      * @param x Coordenada X
      * @param y Coordenada Y
@@ -894,7 +905,7 @@ public final class MainMenuPanel implements Runnable {
         } else {
             if (mouseButton == 0) {
                 if (isSettingSavegameName()) {
-                    // Ha pulsado en algún sitio mientras el panel de savegame name está abierto
+                    // Ha pulsado en algun sitio mientras el panel de savegame name esta abierto
                     int iMousePanel = TypingPanel.whereIsMouse(x, y);
                     if (iMousePanel == UIPanel.MOUSE_TYPING_PANEL_CLOSE) {
                         // Cerramos
@@ -902,20 +913,20 @@ public final class MainMenuPanel implements Runnable {
                     } else if (iMousePanel == UIPanel.MOUSE_TYPING_PANEL_CONFIRM) {
                         if (TypingPanel.getNewText() != null && TypingPanel.getNewText().length() > 0) {
                             // Confirmamos y empieza la partida
-                            if (!Utils.existsSavegame(TypingPanel.getNewText())) { // Sólo si no existe en disco previamente
+                            if (!Utils.existsSavegame(TypingPanel.getNewText())) { // Solo si no existe en disco previamente
                                 startGame(TypingPanel.getNewText());
                             }
                         }
                     }
                 } else if (isSettingHotkey()) {
-                    // Ha pulsado en algún sitio mientras el panel de hotkeys está abierto
+                    // Ha pulsado en algun sitio mientras el panel de hotkeys esta abierto
                     int iMousePanel = TypingPanel.whereIsMouse(x, y);
                     if (iMousePanel == UIPanel.MOUSE_TYPING_PANEL_CLOSE) {
                         // Cerramos
                         setSettingHotkey(false, 0);
                     }
                 } else if (isSettingNewServer()) {
-                    // Ha pulsado en algún sitio mientras el panel de new server está abierto
+                    // Ha pulsado en algun sitio mientras el panel de new server esta abierto
                     int iMousePanel = TypingPanel.whereIsMouse(x, y);
                     if (iMousePanel == UIPanel.MOUSE_TYPING_PANEL_CLOSE) {
                         // Cerramos
@@ -938,7 +949,7 @@ public final class MainMenuPanel implements Runnable {
     }
 
     /**
-     * Método llamado al pulsar una tecla cuando estamos en el main menu
+     * Metodo llamado al pulsar una tecla cuando estamos en el main menu
      *
      * @param iKey
      */
@@ -947,7 +958,7 @@ public final class MainMenuPanel implements Runnable {
             if (TypingPanel.keyPressed(iKey)) {
                 // Ya ha acabado (o ha pulsado ESC)
                 if (TypingPanel.getNewText() != null && TypingPanel.getNewText().length() > 0) {
-                    // Todo ok, toca empezar la partida (sólo si la partida no existe previamente en disco)
+                    // Todo ok, toca empezar la partida (solo si la partida no existe previamente en disco)
                     if (!Utils.existsSavegame(TypingPanel.getNewText())) {
                         startGame(TypingPanel.getNewText());
                     }
@@ -963,7 +974,7 @@ public final class MainMenuPanel implements Runnable {
                     if (settingHotkey == 1) {
                         UtilsKeyboard.redefineKey(0, TypingPanel.TYPING_PARAMETER, Integer.parseInt(TypingPanel.getNewText()));
                         settingHotkey = 2;
-                        TypingPanel.setTitle(Messages.getString("MainMenuPanel.52") + UtilsKeyboard.getFNHumanString(TypingPanel.TYPING_PARAMETER) + ((UtilsKeyboard.getKey(TypingPanel.TYPING_PARAMETER, 0) == Keyboard.KEY_NONE) ? "" : Messages.getString("MainMenuPanel.50") + Keyboard.getKeyName(UtilsKeyboard.getKey(TypingPanel.TYPING_PARAMETER, 1)) + ")")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+                        TypingPanel.setTitle(Messages.getString("MainMenuPanel.52") + UtilsKeyboard.getFNHumanString(TypingPanel.TYPING_PARAMETER) + ((UtilsKeyboard.getKey(TypingPanel.TYPING_PARAMETER, 0) == KeyMapper.KEY_NONE) ? "" : Messages.getString("MainMenuPanel.50") + KeyMapper.toName(UtilsKeyboard.getKey(TypingPanel.TYPING_PARAMETER, 1)) + ")")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
                         TypingPanel.setNewText(new String());
                     } else {
                         // Key 2
@@ -973,11 +984,11 @@ public final class MainMenuPanel implements Runnable {
                 } else {
                     // Ha pulsado ESC, borramos hotkeys
                     if (settingHotkey == 1) {
-                        UtilsKeyboard.redefineKey(0, TypingPanel.TYPING_PARAMETER, Keyboard.KEY_NONE);
-                        UtilsKeyboard.redefineKey(1, TypingPanel.TYPING_PARAMETER, Keyboard.KEY_NONE);
+                        UtilsKeyboard.redefineKey(0, TypingPanel.TYPING_PARAMETER, KeyMapper.KEY_NONE);
+                        UtilsKeyboard.redefineKey(1, TypingPanel.TYPING_PARAMETER, KeyMapper.KEY_NONE);
                     } else {
                         // Key 2
-                        UtilsKeyboard.redefineKey(1, TypingPanel.TYPING_PARAMETER, Keyboard.KEY_NONE);
+                        UtilsKeyboard.redefineKey(1, TypingPanel.TYPING_PARAMETER, KeyMapper.KEY_NONE);
                     }
 
                     setSettingHotkey(false, 0);
@@ -1018,8 +1029,8 @@ public final class MainMenuPanel implements Runnable {
             if (isActive()) {
                 Game.getPanelMainMenu().render();
                 // Updateamos la pantalla / ventana
-                Display.update();
-                Display.sync(Game.FPS_MAINMENU); // Para "capear" a 30 fps
+                DisplayManager.swapAndPoll();
+                DisplayManager.sync(Game.FPS_MAINMENU); // Para "capear" a 30 fps
                 GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_ACCUM_BUFFER_BIT | GL11.GL_STENCIL_BUFFER_BIT);
             }
         }

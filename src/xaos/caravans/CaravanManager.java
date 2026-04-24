@@ -59,7 +59,7 @@ public class CaravanManager {
             Document doc = UtilsXML.loadXMLFile(sXMLName); //$NON-NLS-1$
 
 			// Tenemos el documento XML parseado
-            // Lo recorremos entero y vamos añadiendo las caravans a la hash
+            // Lo recorremos entero y vamos anadiendo las caravans a la hash
             NodeList nodeList = doc.getDocumentElement().getChildNodes();
             Node node;
             CaravanManagerItem caravanData;
@@ -127,7 +127,7 @@ public class CaravanManager {
                         caravanData.setComePCT(UtilsXML.getChildValue(node.getChildNodes(), "comePCT")); //$NON-NLS-1$
                     }
 
-                    // Lo añadimos a la hash
+                    // Lo anadimos a la hash
                     caravanList.put(sID, caravanData);
                 }
             }
