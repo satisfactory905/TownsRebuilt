@@ -22,7 +22,7 @@
 
         <!-- Sources live directly in src/, not the Maven-standard src/main/java -->
         <sourceDirectory>${project.basedir}/src</sourceDirectory>
-        <testSourceDirectory>test</testSourceDirectory>
+        <testSourceDirectory>${project.basedir}/test</testSourceDirectory>
 
         <!-- Include .properties files from the source tree on the classpath
              (needed for ResourceBundle-based i18n in xaos.utils.Messages) -->
