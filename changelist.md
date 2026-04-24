@@ -120,6 +120,16 @@ optimization genuinely requires it.
   `(Enumeration<String>) properties.propertyNames()` pattern to the
   type-safe `properties.stringPropertyNames()`.
 
+- **`Game.java` minor cleanups.** OpenGL version-parse exceptions are now logged
+  at `LEVEL_DEBUG` instead of silently swallowed (previously the two
+  `catch (Exception e) {}` blocks dropped parse failures with no diagnostic).
+  `setModsLoaded` and `setServers` use `String.split(",")` instead of
+  `StringTokenizer` (both retain the `length() > 0` filter so empty-token
+  handling is equivalent). Also deleted ~60 lines of commented-out dead code
+  from `run()` (disabled victory-check, tutorial-trigger, mission-completed,
+  and FPS-counter blocks) to reduce reading noise. No behavior change to any
+  live code path.
+
 ## Static analysis (documented, not yet fixed)
 
 Twelve of the largest source files have been analyzed for bugs, allocation hotspots,
