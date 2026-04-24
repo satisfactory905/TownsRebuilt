@@ -7,6 +7,12 @@ than strict chronology — reads as the story of the work, newest-within-theme l
 > **Note:** This file is intentionally tracked in git (unlike session logs and
 > planning documents, which are listed in `.gitignore`). Add an entry here
 > whenever a meaningful change lands.
+>
+> **Scope rule:** Entries describe what this fork has added or changed **relative
+> to upstream**, not relative to an intermediate state of the fork itself. Fixes
+> for regressions introduced during the fork's own migration work do **not**
+> belong here — net-vs-upstream, restoring upstream behavior is a no-op. Only
+> entries where the final state differs from upstream go in this file.
 
 ---
 
@@ -63,40 +69,6 @@ than strict chronology — reads as the story of the work, newest-within-theme l
 - **Image decoding** — PNGDecoder replaced with `javax.imageio.ImageIO`.
 - **Cursor** — `UtilsGL.setNativeCursor()` rewritten for GLFW `GLFWImage` +
   `glfwCreateCursor`.
-
-## Regression fixes from the LWJGL 2 → 3 port
-
-- **Fullscreen resolution.** `DisplayManager.init()` was passing the stored window
-  dimensions straight to `glfwCreateWindow(..., monitor, NULL)`. Combined with a
-  previously saved `FULLSCREEN=true / WINDOW_WIDTH=1024 / WINDOW_HEIGHT=600` in the
-  user ini, this produced an exclusive 1024×600 fullscreen that Windows 10's
-  fullscreen-optimizations compositor mangled into a 1176×664 framebuffer — visibly
-  wrong resolution, misaligned mouse. Fixed by querying
-  `glfwGetVideoMode(glfwGetPrimaryMonitor())` when `fs==true` and using *its*
-  width/height/refreshRate. Restores the pre-port LWJGL 2 behavior (which called
-  `Display.getDesktopDisplayMode()` — verified from the obfuscated 2014 bytecode).
-- **Mouse scaling.** `InputState` was multiplying cursor coordinates by
-  `framebufferWidth / windowWidth`. But `glOrtho`, every UI hit-test, and all gameplay
-  cursor math use logical (window) coords — the scaling drifted the cursor on HiDPI
-  displays (~15% on a 125%-DPI Windows setup). Removed the multiplication in both the
-  cursor callback and `getMouseX`/`getMouseY`.
-- **Width-clamp typo.** `Game.java:239` had `Math.min(desktopWidth, configuredHeight)`
-  — clamping *height* against desktop *width*. Changed to `desktopHeight`.
-- **Double `DisplayManager.init()`.** `handleResize()` was calling `init()` a second
-  time to re-create the window when it fell below the minimum size. Replaced with
-  `glfwSetWindowSizeLimits()` at initial window creation — GLFW enforces the minimum
-  directly, so no re-init is needed. `handleResize()` now only updates viewport and
-  panel geometry.
-- **Main-menu typing dialogs didn't accept printable text.** The "Set a savegame name"
-  and "Add server" dialogs are `TypingPanel` instances created by `MainMenuPanel`
-  without assigning to `UIPanel.typingPanel` (which is the in-game typing-panel
-  reference). The char-event drain in `Game.checkKeyboardEvents` was gated on
-  `UIPanel.typingPanel != null`, so GLFW char events (printable text) never reached
-  `TypingPanel.charInput()` while the main menu was active. `Enter`/`Backspace`/`Esc`
-  worked because they go through the key event path via `MainMenuPanel.keyPressed`.
-  Fixed by adding `MainMenuPanel.isTypingTextActive()` and widening the drain gate.
-  Deliberately excludes the key-rebind dialog, which uses key codes and would be
-  corrupted by char events being appended to its text.
 
 ## Encoding
 
