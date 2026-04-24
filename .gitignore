@@ -1,6 +1,10 @@
 # Maven build output
 target/
 
+# Brainstorming/design docs from the superpowers skills. These are planning
+# artifacts rather than user-facing docs; they stay local like session notes.
+docs/
+
 # Runtime logs. The game currently writes error.log in the process CWD
 # (src/error.log under `mvn exec:exec`). See Log.java:33 — that path should
 # move under the user folder; until then, keep any *.log out of the repo.
