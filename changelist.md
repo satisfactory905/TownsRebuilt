@@ -130,6 +130,20 @@ optimization genuinely requires it.
   and FPS-counter blocks) to reduce reading noise. No behavior change to any
   live code path.
 
+- **`World.modifyHappiness` eliminates per-citizen-per-hour allocation via
+  reservoir sampling.** The hourly LOS happiness scan used to allocate a
+  fresh `ArrayList<Integer>` per citizen and box each visible happy item's
+  happiness value into an `Integer` before picking one entry at random.
+  Replaced with **reservoir sampling of size 1**: as each visible happy
+  item is encountered during the scan, a 1/count coin flip decides whether
+  to replace the currently-selected value. After the scan completes, the
+  selected value is uniformly random across all visible happy items —
+  mathematically equivalent to the original random-index pick over the
+  populated list. Allocation per eligible citizen per hour: was
+  ArrayList + N boxed Integers, now zero. Semantics preserved exactly —
+  the scan still picks one visible happy item at random and adds its
+  happiness to the citizen's happiness.
+
 - **`World.nextTurn` eliminates per-tick `Integer[]` allocation.** The items and
   livings iteration loops used `map.keySet().toArray(new Integer[0])` every
   tick to get a snapshot that was safe against `Item.delete()` /
