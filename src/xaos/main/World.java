@@ -7,7 +7,9 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.function.BiConsumer;
 
 import org.lwjgl.opengl.GL11;
 
@@ -144,6 +146,10 @@ public final class World implements Externalizable {
 	private static ArrayList<Integer> fallItemList = new ArrayList<Integer> ();
 	private static HashMap<Integer, LivingEntity> livingsDiscovered = new HashMap<Integer, LivingEntity> ();
 	private static HashMap<Integer, LivingEntity> livingsUndiscovered = new HashMap<Integer, LivingEntity> ();
+	// Reusable snapshot buffers for nextTurn's items/livings iteration. Grow once to peak size,
+	// then reused every tick — no Integer[] allocation per frame. See forEachSnapshotReversed.
+	private Integer[] itemsIterationBuffer = new Integer [0];
+	private Integer[] livingsIterationBuffer = new Integer [0];
 	private ArrayList<Container> containers;
 	private ArrayList<Stockpile> stockpiles;
 	private ArrayList<BuryData> buryData;
@@ -1645,18 +1651,14 @@ public final class World implements Externalizable {
 			checkEvents ();
 		}
 
-		// Recorremos los items lanzando el nextTurn en cada uno
-		Integer[] aItems = items.keySet ().toArray (new Integer [0]);
-		Item oItem;
-		for (int i = (aItems.length - 1); i >= 0; i--) {
-			oItem = getItems ().get (aItems[i]);
-			if (oItem != null) {
-				if (oItem.nextTurn ()) {
-					// Borrar item
-					oItem.delete ();
-				}
+		// Recorremos los items lanzando el nextTurn en cada uno.
+		// Snapshot-based iteration because Item.delete() mutates the items map.
+		itemsIterationBuffer = forEachSnapshotReversed (items, itemsIterationBuffer, (id, oItem) -> {
+			if (oItem.nextTurn ()) {
+				// Borrar item
+				oItem.delete ();
 			}
-		}
+		});
 
 		// Recorremos los edificios lanzando el nextTurn en cada uno
 		int iIndex = getBuildings ().size () - 1;
@@ -1667,21 +1669,16 @@ public final class World implements Externalizable {
 			iIndex--;
 		}
 
-		// Livings
-		aItems = livingsDiscovered.keySet ().toArray (new Integer [0]);
-		LivingEntity oLiving;
-		for (int i = (aItems.length - 1); i >= 0; i--) {
-			oLiving = livingsDiscovered.get (aItems[i]);
-			if (oLiving != null) {
-				if (oLiving.nextTurn ()) {
-					// Borrar living
-					oLiving.delete ();
+		// Livings. Snapshot-based iteration because LivingEntity.delete() mutates livingsDiscovered.
+		livingsIterationBuffer = forEachSnapshotReversed (livingsDiscovered, livingsIterationBuffer, (id, oLiving) -> {
+			if (oLiving.nextTurn ()) {
+				// Borrar living
+				oLiving.delete ();
 
-					// Tutorial flow
-					Game.updateTutorialFlow (TutorialTrigger.TYPE_INT_KILL, oLiving.getNumericIniHeader (), null);
-				}
+				// Tutorial flow
+				Game.updateTutorialFlow (TutorialTrigger.TYPE_INT_KILL, oLiving.getNumericIniHeader (), null);
 			}
-		}
+		});
 
 		// Llamamos al nextTurn de los proyectiles
 		// Primero borramos los que toque
@@ -1740,6 +1737,42 @@ public final class World implements Externalizable {
 		if (turn % 128 == 0) {
 			evaporateFluids ();
 		}
+	}
+
+
+	/**
+	 * Iterates a snapshot of the map's keys in reverse and invokes the action
+	 * for each non-null value. Safe against ConcurrentModificationException
+	 * when the action mutates the underlying map (e.g., Item.delete() removes
+	 * itself from World.items, LivingEntity.delete() removes from
+	 * livingsDiscovered) — references are captured before iteration begins,
+	 * and subsequent lookups via map.get() for removed keys return null and
+	 * are skipped. Entries added to the map during iteration are not visited
+	 * in the current call.
+	 *
+	 * The buffer is reused across calls: if it already has capacity for
+	 * map.size() entries, no allocation occurs; otherwise Collection.toArray
+	 * returns a new, larger array which the caller should retain for the
+	 * next invocation. After the initial grow-to-peak, per-tick allocation
+	 * is eliminated.
+	 *
+	 * Package-private so WorldTest can exercise it directly.
+	 *
+	 * @param map the map to snapshot; must have Integer keys
+	 * @param buffer reusable snapshot buffer; may be replaced if too small
+	 * @param action invoked with (key, value) for each non-null value
+	 * @return the buffer used (same reference or a new larger one)
+	 */
+	static <V> Integer[] forEachSnapshotReversed (Map<Integer, V> map, Integer[] buffer, BiConsumer<Integer, V> action) {
+		Integer[] snapshot = map.keySet ().toArray (buffer);
+		int count = map.size ();
+		for (int i = count - 1; i >= 0; i--) {
+			V value = map.get (snapshot[i]);
+			if (value != null) {
+				action.accept (snapshot[i], value);
+			}
+		}
+		return snapshot;
 	}
 
 
