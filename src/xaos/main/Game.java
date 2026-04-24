@@ -261,10 +261,12 @@ public final class Game {
 							iMinor = Integer.parseInt (tokenizer.nextToken ());
 						}
 						catch (Exception e) {
+							Log.log (Log.LEVEL_DEBUG, "Failed to parse OpenGL minor version from '" + sVersion + "': " + e, "Game"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 						}
 					}
 				}
 				catch (Exception e) {
+					Log.log (Log.LEVEL_DEBUG, "Failed to parse OpenGL major version from '" + sVersion + "': " + e, "Game"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				}
 			}
 
@@ -1334,15 +1336,8 @@ public final class Game {
 	 * Se encarga de todo, OJO! No estamos extendiendo de runnable (single threaded)
 	 */
 	public void run () {
-		// long fps = 0;
-		// long lastFPS = (Sys.getTime () * 1000) / Sys.getTimerResolution ();
-
 		// Hacemos sonar la musica del main menu
 		UtilsAL.play (UtilsAL.SOURCE_MUSIC_MAINMENU);
-//		int checkTrigger = (4 * FPS_INGAME); // Para que lo mire nada mas empezar, en el primer ciclo
-//		boolean bVictory = false;
-
-//		int iMissionCompletedWidth = (UtilFont.getWidth (Messages.getString ("Game.2"))) / 2; //$NON-NLS-1$
 		while (!DisplayManager.isCloseRequested ()) {
 			handleResize ();
 
@@ -1354,79 +1349,10 @@ public final class Game {
 			// Game logic
 			if (!getPanelMainMenu ().isActive ()) {
 				world.nextTurn ();
-/*
-				// Comprobamos la victoria cada 4xFPS_INGAME turnos (para ganar un poquillo de performance)
-				if (bVictory == false && world != null && getWorld ().getCampaignID () != null) {
-					checkVictory++;
-					if (checkVictory >= (4 * FPS_INGAME)) {
-						checkVictory = 0;
-						MissionData md = CampaignManager.getMission (getWorld ().getCampaignID (), getWorld ().getMissionID ());
-						if (md != null && ObjectiveData.checkCompleted (md.getObjectives ())) {
-							// Victoria !!
-							bVictory = true;
-						}
-					}
-				}
-			} else {
-				bVictory = false;
-*/
-
-/*
-				// Tutorial trigger?
-				checkTrigger++;
-				if (checkTrigger >= (4 * FPS_INGAME)) {
-					checkTrigger = 0;
-					if (Game.getCurrentMissionData () != null && Game.getCurrentMissionData ().getTutorialFlowIndex () < Game.getCurrentMissionData ().getTutorialFlows ().size ()) {
-						if (Game.getCurrentMissionData ().getTutorialFlows ().get (Game.getCurrentMissionData ().getTutorialFlowIndex ()).getTriggers () != null && Game.getCurrentMissionData ().getTutorialFlows ().get (Game.getCurrentMissionData ().getTutorialFlowIndex ()).getTriggers ().size () > 0) {
-							// There are triggers to check
-							if (TutorialTrigger.checkCompleted (Game.getCurrentMissionData ().getTutorialFlows ().get (Game.getCurrentMissionData ().getTutorialFlowIndex ()).getTriggers ().get (0))) {
-								// Trigger completed!
-								Game.getCurrentMissionData ().getTutorialFlows ().get (Game.getCurrentMissionData ().getTutorialFlowIndex ()).getTriggers ().remove (0);
-								// If no more triggers we update the index
-								if (Game.getCurrentMissionData ().getTutorialFlows ().get (Game.getCurrentMissionData ().getTutorialFlowIndex ()).getTriggers ().size () == 0) {
-									Game.getCurrentMissionData ().setTutorialFlowIndex (Game.getCurrentMissionData ().getTutorialFlowIndex () + 1);
-								}
-
-								// We trigger a new image on the images panel
-								ImagesPanel.triggerNewFlow ();
-							}
-						} else {
-							// No more triggers, we update the index
-							Game.getCurrentMissionData ().setTutorialFlowIndex (Game.getCurrentMissionData ().getTutorialFlowIndex () + 1);
-							//ImagesPanel.notifyFlowChanged ();
-						}
-					}
-				}
-*/
 			}
-
-			// FPS
-			// if (((Sys.getTime () * 1000) / Sys.getTimerResolution ()) - lastFPS > 1000) {
-			//				Display.setTitle ("FPS: " + fps); //$NON-NLS-1$
-			// fps = 0;
-			// lastFPS += 1000;
-			// }
-			// fps++;
 
 			// Render
-			// if (getPanelMainMenu ().isActive () || (world != null && World.getCitizenIDs ().size () == 0)) {
 			render ();
-
-			// Mision completada?
-/*
-			if (bVictory) {
-				GL11.glBindTexture (GL11.GL_TEXTURE_2D, Game.TEXTURE_FONT_ID);
-				GL11.glTexEnvf (GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_MODE, GL11.GL_MODULATE);
-				UtilsGL.glBegin (GL11.GL_QUADS);
-				UtilsGL.drawStringWithBorder (Messages.getString ("Game.2"), (MainPanel.renderWidth / 2) - iMissionCompletedWidth, MainPanel.renderHeight / 2 - UtilFont.MAX_HEIGHT / 2, ColorGL.RED, ColorGL.WHITE); //$NON-NLS-1$
-				UtilsGL.glEnd ();
-
-				if (getCurrentState () == STATE_SHOWING_CONTEXT_MENU && getCurrentContextMenu () != null) {
-					// ContextMenu
-					getCurrentContextMenu ().render ();
-				}
-			}
-*/
 
 			// Updateamos la pantalla / ventana
 			DisplayManager.swapAndPoll ();
@@ -2057,9 +1983,7 @@ public final class Game {
 	public static void setModsLoaded (String sMods) {
 		alModsLoaded.clear ();
 		if (sMods != null && sMods.length () > 0) {
-			StringTokenizer tokenizer = new StringTokenizer (sMods, ","); //$NON-NLS-1$
-			while (tokenizer.hasMoreTokens ()) {
-				String sModName = tokenizer.nextToken ();
+			for (String sModName : sMods.split (",")) { //$NON-NLS-1$
 				if (sModName.length () > 0) {
 					alModsLoaded.add (sModName);
 				}
@@ -2133,9 +2057,7 @@ public final class Game {
 		alServerNames.clear ();
 
 		if (sServers != null && sServers.trim ().length () > 0) {
-			StringTokenizer tokenizer = new StringTokenizer (sServers, ","); //$NON-NLS-1$
-			while (tokenizer.hasMoreTokens ()) {
-				String sServerAddress = tokenizer.nextToken ();
+			for (String sServerAddress : sServers.split (",")) { //$NON-NLS-1$
 				if (sServerAddress.length () > 0) {
 					alServers.add (sServerAddress.trim ());
 
