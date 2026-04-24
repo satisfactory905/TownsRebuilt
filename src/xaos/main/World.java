@@ -1828,10 +1828,14 @@ public final class World implements Externalizable {
 		// Modificador por tarea
 		// POPO citizen.getCitizenData ().setHappiness (citizen.getCitizenData ().getHappiness () + Task.getHappiness (citizen.getCurrentTask ()));
 
-		// Modificador por LOS (solo si el idle y work counters no son 0)
+		// Modificador por LOS (solo si el idle y work counters no son 0).
+		// Uses reservoir sampling (size 1): as we find each visible happy item we flip
+		// a 1/count coin to replace the currently-selected value. After the scan,
+		// `selected` is uniformly random across all visible happy items. No per-citizen
+		// ArrayList or Integer boxing; allocation-free.
 		if (citizen.getCitizenData ().getHappinessWorkCounter () != 0 && citizen.getCitizenData ().getHappinessIdleCounter () != 0) {
-			ArrayList<Integer> alItemsHappy = new ArrayList<Integer> ();
-			// Llenamos la lista con los valores de happiness que encontramos en LOS, quitando los que tienen happiness = 0
+			int visibleHappyCount = 0;
+			int selectedHappiness = 0;
 			for (short x = (short) (citizen.getX () - citizen.getLivingEntityData ().getLOSCurrent ()); x <= (citizen.getX () + citizen.getLivingEntityData ().getLOSCurrent ()); x++) {
 				for (short y = (short) (citizen.getY () - citizen.getLivingEntityData ().getLOSCurrent ()); y <= (citizen.getY () + citizen.getLivingEntityData ().getLOSCurrent ()); y++) {
 					if (Utils.isInsideMap (x, y, citizen.getZ ())) {
@@ -1842,7 +1846,11 @@ public final class World implements Externalizable {
 								// Evitamos la infravision (teniendo en cuenta que si que hay camino hasta la misma casilla donde esta)
 								// if ((x == citizen.getX () && y == citizen.getY ()) || Utils.bresenhamLineExists (citizen.getX (), citizen.getY (), x, y, citizen.getZ (), LivingEntity.TYPE_CITIZEN) || Utils.bresenhamLineExists (x, y, citizen.getX (), citizen.getY (), citizen.getZ (), LivingEntity.TYPE_CITIZEN)) {
 								if ((x == citizen.getX () && y == citizen.getY ()) || Utils.bresenhamLineExists (citizen.getX (), citizen.getY (), x, y, citizen.getZ ()) || Utils.bresenhamLineExists (x, y, citizen.getX (), citizen.getY (), citizen.getZ ())) {
-									alItemsHappy.add (Integer.valueOf (imi.getHappiness ()));
+									visibleHappyCount++;
+									// 1/count chance to replace the currently-selected value — reservoir sampling of size 1.
+									if (Utils.getRandomBetween (1, visibleHappyCount) == 1) {
+										selectedHappiness = imi.getHappiness ();
+									}
 								}
 							}
 						}
@@ -1850,9 +1858,8 @@ public final class World implements Externalizable {
 				}
 			}
 
-			// Si la lista tiene items pillamos uno a random
-			if (alItemsHappy.size () > 0) {
-				citizen.getCitizenData ().setHappiness (citizen.getCitizenData ().getHappiness () + alItemsHappy.get (Utils.getRandomBetween (0, alItemsHappy.size () - 1)).intValue ());
+			if (visibleHappyCount > 0) {
+				citizen.getCitizenData ().setHappiness (citizen.getCitizenData ().getHappiness () + selectedHappiness);
 			}
 		}
 	}
