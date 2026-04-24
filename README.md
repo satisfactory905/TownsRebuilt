@@ -27,6 +27,9 @@ mvn compile
 # Clean rebuild — wipes target/ first.
 mvn clean compile
 
+# Run the test suite (JUnit 5). Tests live under /test/ parallel to /src/.
+mvn test
+
 # Run the game from source.
 # The exec-maven-plugin launches a separate JVM with the correct working
 # directory (src/, where towns.ini and data/ live) and the required JVM flags

@@ -105,6 +105,36 @@ than strict chronology — reads as the story of the work, newest-within-theme l
   characters were transliterated to plain ASCII equivalents but the comments were
   otherwise left as-is (Spanish, upstream author's style).
 
+## Test infrastructure and first pure-function refactor
+
+- **JUnit 5 test infrastructure.** Introduced `junit-jupiter` 5.11.3 (test scope,
+  never shaded into the dist jar) and `maven-surefire-plugin` 3.5.2. Added
+  `<testSourceDirectory>${project.basedir}/test</testSourceDirectory>` parallel
+  to the existing non-standard `<sourceDirectory>${project.basedir}/src</sourceDirectory>`.
+  `mvn test` is now a valid build goal; tests live at `test/xaos/...` mirroring
+  the `src/xaos/...` package layout. No prior test framework existed.
+- **`xaos.utils.HitDetection.isPointInRect`** — first pure-function extraction
+  from the `code-optimizations.md` backlog. A `public final` utility class with a
+  single static method: returns whether `(x, y)` falls within the half-open
+  rectangle `[rectX, rectX+rectW) x [rectY, rectY+rectH)` (left/top inclusive,
+  right/bottom exclusive). Covered by 12 parameterized `@CsvSource` boundary
+  cases (strictly-inside, each edge inclusive/exclusive, one-pixel-inside edges,
+  past each edge, zero-dimension rectangles, negative coordinates).
+- **Refactored `Game.checkMouseEvents`.** Replaced five inline 4-term AND bounds
+  checks (one left-click routing site + four scroll-edge guards) with calls to
+  `HitDetection.isPointInRect`, caching `currentContextMenu` to a local `ctx` at
+  each site to avoid four repeated static-getter calls per check per frame.
+  Behavior preserved by substitution — the helper returns the same boolean as
+  the inlined expression for every input.
+
+This set establishes the **pattern for future per-method optimizations** from
+the code-level backlog: extract the logic to a pure static helper, write
+parameterized unit tests over boundary conditions, substitute at call sites.
+Behavior preservation follows by construction. For fixes that can't be
+characterized this way (pathfinding, races, simulation tick logic), a
+save-state-driven integration harness is planned but deferred until the first
+optimization genuinely requires it.
+
 ## Static analysis (documented, not yet fixed)
 
 Twelve of the largest source files have been analyzed for bugs, allocation hotspots,
