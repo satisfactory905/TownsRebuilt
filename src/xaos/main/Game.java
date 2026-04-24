@@ -7,7 +7,9 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Properties;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.imageio.ImageIO;
@@ -302,27 +304,39 @@ public final class Game {
 
 
 	public static void loadAllIniTextures () {
-		Properties properties = Towns.getPropertiesGraphics ();
-		if (properties != null) {
-			Enumeration<String> enumNames = (Enumeration<String>) properties.propertyNames ();
-			String sName;
-			ArrayList<String> alNames = new ArrayList<String> ();
-			while (enumNames.hasMoreElements ()) {
-				sName = enumNames.nextElement ();
-				if (sName.indexOf ("TEXTURE_FILE") != -1) { //$NON-NLS-1$
-					sName = properties.getProperty (sName);
-					if (!alNames.contains (sName)) {
-						alNames.add (sName);
-					}
-				}
-			}
+		Set<String> textureFiles = collectTextureFileNames (Towns.getPropertiesGraphics ());
+		// UtilsGL.clearAllCached ();
+		// Tenemos la lista de texturas, las cargamos
+		for (String fileName : textureFiles) {
+			UtilsGL.loadTexture (fileName, GL11.GL_MODULATE);
+		}
+	}
 
-			// UtilsGL.clearAllCached ();
-			// Tenemos la lista de texturas, las cargamos
-			for (int i = 0; i < alNames.size (); i++) {
-				UtilsGL.loadTexture (alNames.get (i), GL11.GL_MODULATE);
+
+	/**
+	 * Collects the unique, order-preserved set of TEXTURE_FILE values from a
+	 * graphics properties map. A key qualifies as a texture-file entry if its
+	 * name contains the substring "TEXTURE_FILE" (covering both the bare
+	 * "TEXTURE_FILE" key and tile-specific forms like "[grass]TEXTURE_FILE").
+	 * Duplicates are dropped (each filename loaded only once) and the returned
+	 * set preserves encounter order so downstream texture loading runs in the
+	 * same order as the prior ArrayList+contains implementation. Returns an
+	 * empty set for a null input.
+	 *
+	 * Package-private so GameTest can exercise it directly. Not intended for
+	 * use outside Game's texture-loading pipeline.
+	 */
+	static Set<String> collectTextureFileNames (Properties properties) {
+		Set<String> names = new LinkedHashSet<String> ();
+		if (properties == null) {
+			return names;
+		}
+		for (String key : properties.stringPropertyNames ()) {
+			if (key.indexOf ("TEXTURE_FILE") != -1) { //$NON-NLS-1$
+				names.add (properties.getProperty (key));
 			}
 		}
+		return names;
 	}
 
 
