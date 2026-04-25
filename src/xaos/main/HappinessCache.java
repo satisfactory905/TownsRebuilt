@@ -66,7 +66,11 @@ public final class HappinessCache {
      * Caller MUST NOT modify the returned list.
      */
     public List<int[]> getVisibleHappyItems(int x, int y, int z) {
-        throw new UnsupportedOperationException("not yet implemented");
+        if (dirty[x][y][z]) {
+            buildCacheForTile(x, y, z);
+        }
+        List<int[]> list = cells[x][y][z];
+        return list != null ? list : java.util.Collections.emptyList();
     }
 
     /** See spec; called when a happy item is placed at (x, y, z). */
@@ -92,5 +96,28 @@ public final class HappinessCache {
     /** See spec; called when a cell at (x, y, z) is discovered for the first time. */
     public void onDiscovered(int x, int y, int z) {
         throw new UnsupportedOperationException("not yet implemented");
+    }
+
+    private void buildCacheForTile(int x, int y, int z) {
+        List<int[]> list = new ArrayList<>();
+        for (int ix = x - MAX_LOS; ix <= x + MAX_LOS; ix++) {
+            for (int iy = y - MAX_LOS; iy <= y + MAX_LOS; iy++) {
+                if (!xaos.utils.Utils.isInsideMap(ix, iy, z)) continue;
+                xaos.tiles.Cell cell = World.getCell(ix, iy, z);
+                if (!cell.hasEntity()) continue;
+                xaos.tiles.entities.items.ItemManagerItem imi =
+                    xaos.tiles.entities.items.ItemManager.getItem(cell.getEntity().getIniHeader());
+                if (imi == null || imi.getHappiness() == 0) continue;
+                boolean visible = (ix == x && iy == y)
+                        || xaos.utils.Utils.bresenhamLineExists(x, y, ix, iy, z)
+                        || xaos.utils.Utils.bresenhamLineExists(ix, iy, x, y, z);
+                if (visible) {
+                    int distance = Math.max(Math.abs(ix - x), Math.abs(iy - y));
+                    list.add(new int[]{ imi.getHappiness(), distance });
+                }
+            }
+        }
+        cells[x][y][z] = list;
+        dirty[x][y][z] = false;
     }
 }

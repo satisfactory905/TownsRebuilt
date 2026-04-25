@@ -128,7 +128,14 @@ public final class HappinessFixtures implements AutoCloseable {
 
     /**
      * Constructs a world with a deliberate variety of obstacles and items,
-     * intended for parametric equivalence tests. The 20x20x1 world contains:
+     * intended for parametric equivalence tests. The active region is cells
+     * 0-19 in both axes (the original 20x20 layout); the fixture array is
+     * allocated at 116x116x1 (= 20 + MAX_LOS*2 = 20 + 48*2) so that a
+     * LOS=48 scan from any cell in the active region stays within array bounds.
+     * Cells outside 0-19 are empty, discovered, and mined (default) -- the
+     * cache and reference both return empty lists for those positions.
+     *
+     * Contents of the active 0-19 region:
      *   - Several happy items at varying coordinates (different happiness
      *     values, supplied by the caller in itemsByHappiness).
      *   - A vertical wall column at x=10 spanning a few rows.
@@ -144,7 +151,10 @@ public final class HappinessFixtures implements AutoCloseable {
         if (!itemsByHappiness.containsKey(1) || !itemsByHappiness.containsKey(2)) {
             throw new IllegalArgumentException("buildVariedWorld requires items with happiness 1 and 2");
         }
-        HappinessFixtures fx = new HappinessFixtures(20, 20, 1);
+        // 116 = 20 (active region) + 48*2 (MAX_LOS buffer on each side of a 0-based scan).
+        // Ensures World.getCell() never goes out of bounds during a MAX_LOS=48 scan from
+        // any cell in the 0-19 active region.
+        HappinessFixtures fx = new HappinessFixtures(116, 116, 1);
         ItemManagerItem h1 = itemsByHappiness.get(1);
         ItemManagerItem h2 = itemsByHappiness.get(2);
 
