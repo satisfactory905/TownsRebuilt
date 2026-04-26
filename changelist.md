@@ -173,3 +173,51 @@ optimization genuinely requires it.
   commented stubs were unreachable anyway; the flag remains and still gates
   the feature off. No behavior change to any live code path.
 
+- **`World.modifyHappiness(Citizen)` swapped to a per-tile happiness-visibility
+  cache.** The hourly per-citizen line-of-sight scan was the dominant cost of
+  `modifyHappiness`: an O(MAX_LOS²) bresenham sweep of the `[x±LOS, y±LOS]`
+  square, repeated for every eligible citizen on every hour tick. Replaced
+  with a precomputed `xaos.main.HappinessCache` (transient `World` field) that
+  stores, per tile, the list of `(happiness, Chebyshev-distance)` entries for
+  every visible happy item within `MAX_LOS = 48` (= base 12 + 4 equipment
+  slots × 9 max LOS bonus). `modifyHappiness(Citizen)` now does a list lookup
+  + filter by the citizen's effective `LOSCurrent` + reservoir-sample of size
+  1 — O(visible_items), no bresenham. The cache builds lazily per tile on
+  first read and is invalidated incrementally:
+  - `Cell.setEntity` fires `onItemPlaced` / `onItemRemoved` when the entity's
+    `ItemManagerItem.getHappiness()` is non-zero, and `onWallChanged` when
+    the entity's `Item.blocksLos()` predicate flips (mirrors
+    `LivingEntity.isCellAllowed`'s item-side conditions: locked + operative +
+    (wall OR locked-and-closed door)).
+  - `Item.setLocked`, `Item.setOperative`, and `Item.setWallConnectorStatus`
+    fire `onWallChanged` when their mutation flips `blocksLos()` — covering
+    the door open/close paths from `TaskManager.TASK_LOCK / TASK_UNLOCK_OPEN
+    / TASK_UNLOCK_CLOSE` that bypass `setEntity`.
+  - `Cell.setMined` and `Cell.setDiscovered` fire `onMiningChanged` /
+    `onDiscovered` on actual flips. Wall/mining/discovery hooks dirty-mark
+    a `2·MAX_LOS` neighborhood (any tile whose visible-set could include or
+    exclude lines passing through the changed tile).
+  Cache is constructed at the end of `World.generateAll()` and at the end
+  of `World.readExternal()`; before construction, all setters' null guards
+  make hooks a no-op (so world-gen and save-load mutations don't waste work
+  against an uninitialized cache). Behavior preservation:
+  - Same bresenham 2-way OR check (`A→B || B→A`) as the original scan, so the
+    visible set is identical to what the inline code produced.
+  - Same self-tile branch (Chebyshev distance 0 entry).
+  - Same `Utils.getRandomBetween(1, count) == 1` reservoir sampling. The
+    cache iterates entries in the same order the original scan did (outer x,
+    inner y, both ascending), so for any citizen with `LOSCurrent < MAX_LOS`
+    the RNG-draw sequence is bit-identical and save-state determinism is
+    preserved.
+  - Same flat-add happiness application (no distance-attenuation formula
+    existed in the original; the `distance` field in cache entries is
+    consumed only by the LOSCurrent filter).
+  Verified by 13 cache-equivalence tests (single item, walls, fluids,
+  undiscovered, multi-item, varied-world fuzzer, save/load equivalence,
+  incremental hook updates, dirty-mark hook updates) plus 7 reference
+  ground-truth tests of the original scan as a verbatim helper. Allocation
+  per `modifyHappiness(Citizen)` call is unchanged from the prior reservoir-
+  sampling commit (still zero); the savings are CPU — the bresenham sweep
+  is gone from the hot path. Cache memory is bounded by total visible-happy-
+  item edges in the world.
+
