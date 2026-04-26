@@ -7,6 +7,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.function.BiConsumer;
@@ -1838,37 +1839,44 @@ public final class World implements Externalizable {
 
 
 	private void modifyHappiness (Citizen citizen) {
-		Cell cell;
 		// Modificador por tarea
 		// POPO citizen.getCitizenData ().setHappiness (citizen.getCitizenData ().getHappiness () + Task.getHappiness (citizen.getCurrentTask ()));
 
 		// Modificador por LOS (solo si el idle y work counters no son 0).
-		// Uses reservoir sampling (size 1): as we find each visible happy item we flip
-		// a 1/count coin to replace the currently-selected value. After the scan,
-		// `selected` is uniformly random across all visible happy items. No per-citizen
-		// ArrayList or Integer boxing; allocation-free.
+		// Uses reservoir sampling (size 1) over the per-tile happiness cache: as we
+		// scan visible happy items reachable from this citizen's tile, we flip a
+		// 1/count coin to replace the currently-selected value. After the scan,
+		// `selectedHappiness` is uniformly random across all visible happy items.
+		//
+		// The cache stores entries up to HappinessCache.MAX_LOS (48) regardless of
+		// the citizen; each entry is {happiness, chebyshevDistance}. We filter by
+		// the citizen's actual effective LOS (LOSCurrent) so the result is identical
+		// to the previous inline bresenham scan that bounded iteration by LOSCurrent
+		// (the previous scan's square-neighborhood bound is exactly Chebyshev <= LOSCurrent).
 		if (citizen.getCitizenData ().getHappinessWorkCounter () != 0 && citizen.getCitizenData ().getHappinessIdleCounter () != 0) {
+			HappinessCache cache = happinessCache;
+			// Defensive: cache is built at end of generateAll/readExternal. If we somehow
+			// run before that completes, just skip this hour's happiness mod — it'll be
+			// applied next hour once the cache exists.
+			if (cache == null) {
+				return;
+			}
+			int effectiveLos = citizen.getLivingEntityData ().getLOSCurrent ();
+			List<int[]> visible = cache.getVisibleHappyItems (citizen.getX (), citizen.getY (), citizen.getZ ());
 			int visibleHappyCount = 0;
 			int selectedHappiness = 0;
-			for (short x = (short) (citizen.getX () - citizen.getLivingEntityData ().getLOSCurrent ()); x <= (citizen.getX () + citizen.getLivingEntityData ().getLOSCurrent ()); x++) {
-				for (short y = (short) (citizen.getY () - citizen.getLivingEntityData ().getLOSCurrent ()); y <= (citizen.getY () + citizen.getLivingEntityData ().getLOSCurrent ()); y++) {
-					if (Utils.isInsideMap (x, y, citizen.getZ ())) {
-						cell = getCell (x, y, citizen.getZ ());
-						if (cell.hasEntity ()) {
-							ItemManagerItem imi = ItemManager.getItem (cell.getEntity ().getIniHeader ());
-							if (imi != null && imi.getHappiness () != 0) {
-								// Evitamos la infravision (teniendo en cuenta que si que hay camino hasta la misma casilla donde esta)
-								// if ((x == citizen.getX () && y == citizen.getY ()) || Utils.bresenhamLineExists (citizen.getX (), citizen.getY (), x, y, citizen.getZ (), LivingEntity.TYPE_CITIZEN) || Utils.bresenhamLineExists (x, y, citizen.getX (), citizen.getY (), citizen.getZ (), LivingEntity.TYPE_CITIZEN)) {
-								if ((x == citizen.getX () && y == citizen.getY ()) || Utils.bresenhamLineExists (citizen.getX (), citizen.getY (), x, y, citizen.getZ ()) || Utils.bresenhamLineExists (x, y, citizen.getX (), citizen.getY (), citizen.getZ ())) {
-									visibleHappyCount++;
-									// 1/count chance to replace the currently-selected value — reservoir sampling of size 1.
-									if (Utils.getRandomBetween (1, visibleHappyCount) == 1) {
-										selectedHappiness = imi.getHappiness ();
-									}
-								}
-							}
-						}
-					}
+			for (int i = 0; i < visible.size (); i++) {
+				int[] entry = visible.get (i);
+				// entry[1] is Chebyshev distance from citizen's tile to the happy item.
+				// Filter by the citizen's actual effective LOS (which may be < MAX_LOS).
+				if (entry[1] > effectiveLos) {
+					continue;
+				}
+				visibleHappyCount++;
+				// 1/count chance to replace the currently-selected value — reservoir sampling of size 1.
+				// Uses Utils.getRandomBetween, the same RNG path as the previous inline scan.
+				if (Utils.getRandomBetween (1, visibleHappyCount) == 1) {
+					selectedHappiness = entry[0];
 				}
 			}
 
