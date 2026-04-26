@@ -66,12 +66,68 @@ public class Building extends Entity implements Externalizable {
     }
 
     public void setOperative(boolean operative, boolean setZoneIDS) {
+        boolean wasOperative = this.operative;
         this.operative = operative;
 
         // Regeneramos las zonas A*
         if (setZoneIDS) {
             World.setRecheckASZID(true);
         }
+
+        // HappinessCache: building's LOS-blocking semantics flip with operative state for
+        // every footprint cell that is NOT GROUND_TRANSITABLE / GROUND_ENTRANCE (mirrors
+        // the building branch of LivingEntity.isCellAllowed). Fire onWallChanged for each
+        // such cell. World/cache may be null during early gen / save load — guard.
+        if (wasOperative != operative && Game.getWorld() != null) {
+            xaos.main.HappinessCache cache = Game.getWorld().getHappinessCache();
+            if (cache != null) {
+                BuildingManagerItem bmi = BuildingManager.getItem(getIniHeader());
+                if (bmi != null) {
+                    int x0 = getX();
+                    int y0 = getY();
+                    int z = getZ();
+                    String groundData = bmi.getGroundData();
+                    int width = bmi.getWidth();
+                    int height = bmi.getHeight();
+                    for (int dx = 0; dx < width; dx++) {
+                        for (int dy = 0; dy < height; dy++) {
+                            char gd = groundData.charAt(dy * width + dx);
+                            if (gd == GROUND_NON_BUILDING) continue;
+                            // GROUND_TRANSITABLE / GROUND_ENTRANCE never block — skip.
+                            if (gd == GROUND_TRANSITABLE || gd == GROUND_ENTRANCE) continue;
+                            cache.onWallChanged(x0 + dx, y0 + dy, z);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns true if the cell at (cellX, cellY, getZ()) within this building's
+     * footprint blocks LOS in its current state. Mirrors the building branch of
+     * {@link xaos.tiles.entities.living.LivingEntity#isCellAllowed(xaos.tiles.Cell)}:
+     * a building cell blocks LOS when the building is operative AND the cell's
+     * ground-data char is neither GROUND_TRANSITABLE nor GROUND_ENTRANCE. Used by
+     * {@link xaos.tiles.Cell#entityBlocksLos(xaos.tiles.entities.Entity)} so that
+     * the existing setEntity-side hook firing covers Building add/remove events.
+     *
+     * <p>(cellX, cellY) are absolute world coordinates; this method computes the
+     * local offset into the building's footprint internally.
+     */
+    public boolean blocksLosAt(int cellX, int cellY) {
+        if (!isOperative()) return false;
+        BuildingManagerItem bmi = BuildingManager.getItem(getIniHeader());
+        if (bmi == null) return false;
+        int localX = cellX - getX();
+        int localY = cellY - getY();
+        int width = bmi.getWidth();
+        int height = bmi.getHeight();
+        if (localX < 0 || localX >= width || localY < 0 || localY >= height) return false;
+        char gd = bmi.getGroundData().charAt(localY * width + localX);
+        if (gd == GROUND_NON_BUILDING) return false;
+        if (gd == GROUND_TRANSITABLE || gd == GROUND_ENTRANCE) return false;
+        return true;
     }
 
     public ArrayList<int[]> getPrerequisites() {

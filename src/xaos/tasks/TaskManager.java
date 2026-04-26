@@ -881,8 +881,8 @@ public final class TaskManager implements Externalizable {
                 int iFluidType = Integer.parseInt(item.getTask().getParameter());
                 int iFluidCount = Integer.parseInt(item.getTask().getParameter2());
 
-                cell.getTerrain().setFluidType(iFluidType);
-                cell.getTerrain().setFluidCount(iFluidCount);
+                cell.setFluidType(iFluidType);
+                cell.setFluidCount(iFluidCount);
 
                 World.checkNewEvaporation(cell);
 
@@ -902,8 +902,8 @@ public final class TaskManager implements Externalizable {
                 Point3D p3d = item.getTask().getPointIni();
                 Cell cell = World.getCell(p3d);
 
-                cell.getTerrain().setFluidType(Terrain.FLUIDS_NONE);
-                cell.getTerrain().setFluidCount(0);
+                cell.setFluidType(Terrain.FLUIDS_NONE);
+                cell.setFluidCount(0);
                 World.checkNewEvaporation(cell);
                 Game.getWorld().addFluidCellToProcess(p3d.x, p3d.y, p3d.z, true);
 

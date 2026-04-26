@@ -771,8 +771,8 @@ public class Item extends Entity implements Externalizable {
 				ItemManagerItem imi = ItemManager.getItem (getIniHeader ());
 				if (imi != null && imi.isBlockFluids ()) {
 					Cell cell = World.getCell (getCoordinates ());
-					cell.getTerrain ().setFluidType (Terrain.FLUIDS_NONE);
-					cell.getTerrain ().setFluidCount (0);
+					cell.setFluidType (Terrain.FLUIDS_NONE);
+					cell.setFluidCount (0);
 					World.checkNewEvaporation (cell);
 					Cell.mergeZoneID (cell.getCoordinates (), false);
 				}

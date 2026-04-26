@@ -745,8 +745,8 @@ public class EventData implements Externalizable {
         // La des-minamos en caso de no ser AIR, minamos en caso de air
         if (iTerrainID != TerrainManagerItem.TERRAIN_AIR_ID) {
             if (!bJustChange) {
-                cell.getTerrain().setFluidType(Terrain.FLUIDS_NONE);
-                cell.getTerrain().setFluidCount(0);
+                cell.setFluidType(Terrain.FLUIDS_NONE);
+                cell.setFluidCount(0);
 
                 cell.getTerrain().setMineTurns(tmi.getMineTurns());
                 cell.setMined(tmi.getMineTurns() <= 0);
@@ -800,23 +800,23 @@ public class EventData implements Externalizable {
         }
 
         if (iSpecialType == MapGeneratorItem.SPECIAL_INT_WATER_1) {
-            cell.getTerrain().setFluidType(Terrain.FLUIDS_WATER);
-            cell.getTerrain().setFluidCount(1);
+            cell.setFluidType(Terrain.FLUIDS_WATER);
+            cell.setFluidCount(1);
         } else if (iSpecialType == MapGeneratorItem.SPECIAL_INT_WATER) {
-            cell.getTerrain().setFluidType(Terrain.FLUIDS_WATER);
-            cell.getTerrain().setFluidCount(Terrain.FLUIDS_COUNT_MAX);
+            cell.setFluidType(Terrain.FLUIDS_WATER);
+            cell.setFluidCount(Terrain.FLUIDS_COUNT_MAX);
         } else if (iSpecialType == MapGeneratorItem.SPECIAL_INT_WATER_INF) {
-            cell.getTerrain().setFluidType(Terrain.FLUIDS_WATER);
-            cell.getTerrain().setFluidCount(Terrain.FLUIDS_COUNT_INFINITE);
+            cell.setFluidType(Terrain.FLUIDS_WATER);
+            cell.setFluidCount(Terrain.FLUIDS_COUNT_INFINITE);
         } else if (iSpecialType == MapGeneratorItem.SPECIAL_INT_LAVA_1) {
-            cell.getTerrain().setFluidType(Terrain.FLUIDS_LAVA);
-            cell.getTerrain().setFluidCount(1);
+            cell.setFluidType(Terrain.FLUIDS_LAVA);
+            cell.setFluidCount(1);
         } else if (iSpecialType == MapGeneratorItem.SPECIAL_INT_LAVA) {
-            cell.getTerrain().setFluidType(Terrain.FLUIDS_LAVA);
-            cell.getTerrain().setFluidCount(Terrain.FLUIDS_COUNT_MAX);
+            cell.setFluidType(Terrain.FLUIDS_LAVA);
+            cell.setFluidCount(Terrain.FLUIDS_COUNT_MAX);
         } else if (iSpecialType == MapGeneratorItem.SPECIAL_INT_LAVA_INF) {
-            cell.getTerrain().setFluidType(Terrain.FLUIDS_LAVA);
-            cell.getTerrain().setFluidCount(Terrain.FLUIDS_COUNT_INFINITE);
+            cell.setFluidType(Terrain.FLUIDS_LAVA);
+            cell.setFluidCount(Terrain.FLUIDS_COUNT_INFINITE);
         }
 
         generateCellChanges(cell, (short) x, (short) y, (short) z);

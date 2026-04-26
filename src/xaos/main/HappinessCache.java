@@ -66,6 +66,13 @@ public final class HappinessCache {
      * Caller MUST NOT modify the returned list.
      */
     public List<int[]> getVisibleHappyItems(int x, int y, int z) {
+        // Defensive bounds guard: out-of-range coordinates yield "nothing visible"
+        // for symmetry with the other public APIs (onItemPlaced/onItemRemoved use
+        // isInsideMap-style filtering). Current callers stay within bounds, so this
+        // is polish, not a correctness fix.
+        if (x < 0 || x >= w || y < 0 || y >= h || z < 0 || z >= d) {
+            return java.util.Collections.emptyList();
+        }
         if (dirty[x][y][z]) {
             buildCacheForTile(x, y, z);
         }
@@ -162,6 +169,23 @@ public final class HappinessCache {
      * dirty-mark for nothing.
      */
     public void onDiscovered(int x, int y, int z) {
+        markNeighborhoodDirty(x, y, z);
+    }
+
+    /**
+     * Notifies the cache that a cell at (x, y, z) had its fluid presence flip
+     * (i.e., {@code Terrain.hasFluids()} changed value). Fluid cells block
+     * bresenham LOS via {@code LivingEntity.isCellAllowed}, so flood/drain
+     * events must invalidate the surrounding neighborhood. Marks every tile
+     * within {@code 2 * MAX_LOS} of the change as dirty for lazy rebuild on
+     * next read.
+     *
+     * <p>Caller should only invoke when {@code hasFluids()} actually flipped.
+     * Pure fluid-count changes that don't cross the zero boundary do not
+     * affect LOS and don't need to fire this hook. Redundant calls are safe
+     * but cost a {@code 2 * MAX_LOS} neighborhood dirty-mark for nothing.
+     */
+    public void onFluidChanged(int x, int y, int z) {
         markNeighborhoodDirty(x, y, z);
     }
 

@@ -3573,11 +3573,11 @@ public final class World implements Externalizable {
 		boolean bMovedFromFluidToFluid = cellDestination.getTerrain ().hasFluids ();
 		if (!bMovedFromFluidToFluid) {
 			// Celda destino sin fluidos
-			cellDestination.getTerrain ().setFluidType (cellSource.getTerrain ().getFluidType ());
+			cellDestination.setFluidType (cellSource.getTerrain ().getFluidType ());
 			if (bPreloading) {
-				cellDestination.getTerrain ().setFluidCount (cellSource.getTerrain ().getFluidCount ());
+				cellDestination.setFluidCount (cellSource.getTerrain ().getFluidCount ());
 			} else {
-				cellDestination.getTerrain ().setFluidCount (1);
+				cellDestination.setFluidCount (1);
 				cellDestination.setAstarZoneID (-1);
 			}
 			World.checkNewEvaporation (cellDestination);
@@ -3588,18 +3588,18 @@ public final class World implements Externalizable {
 
 			if (cellSource.getTerrain ().getFluidType () != cellDestination.getTerrain ().getFluidType ()) {
 				// Fluidos distintos
-				cellDestination.getTerrain ().setFluidCount (cellDestination.getTerrain ().getFluidCount () - 1);
+				cellDestination.setFluidCount (cellDestination.getTerrain ().getFluidCount () - 1);
 				if (cellDestination.getTerrain ().getFluidCount () == 0) {
-					cellDestination.getTerrain ().setFluidType (cellSource.getTerrain ().getFluidType ());
-					cellDestination.getTerrain ().setFluidCount (1);
+					cellDestination.setFluidType (cellSource.getTerrain ().getFluidType ());
+					cellDestination.setFluidCount (1);
 				}
 				World.checkNewEvaporation (cellDestination);
 			} else {
 				// Fluidos iguales
 				if (bPreloading) {
-					cellDestination.getTerrain ().setFluidCount (cellSource.getTerrain ().getFluidCount ());
+					cellDestination.setFluidCount (cellSource.getTerrain ().getFluidCount ());
 				} else {
-					cellDestination.getTerrain ().setFluidCount (cellDestination.getTerrain ().getFluidCount () + 1);
+					cellDestination.setFluidCount (cellDestination.getTerrain ().getFluidCount () + 1);
 				}
 				World.checkNewEvaporation (cellDestination);
 			}
@@ -3609,7 +3609,7 @@ public final class World implements Externalizable {
 		// Restamos 1 al counter de la celda origen (en caso de que no sea infinito)
 		if (!bPreloading) {
 			if (cellSource.getTerrain ().getFluidCount () != 0 && cellSource.getTerrain ().getFluidCount () != Terrain.FLUIDS_COUNT_INFINITE) {
-				cellSource.getTerrain ().setFluidCount (cellSource.getTerrain ().getFluidCount () - 1);
+				cellSource.setFluidCount (cellSource.getTerrain ().getFluidCount () - 1);
 				World.checkNewEvaporation (cellSource);
 
 				Cell.setShouldPaintUnders (World.getCells (), p3dSource);
@@ -3717,8 +3717,8 @@ public final class World implements Externalizable {
 
 					if (!bMasFuerza) {
 						// BAM
-						cell.getTerrain ().setFluidType (Terrain.FLUIDS_NONE);
-						cell.getTerrain ().setFluidCount (0);
+						cell.setFluidType (Terrain.FLUIDS_NONE);
+						cell.setFluidCount (0);
 						Cell.mergeZoneID (p3ds, false);
 
 						addFluidCellToProcess (p3ds.x, p3ds.y, p3ds.z, true);

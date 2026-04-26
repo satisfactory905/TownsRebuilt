@@ -439,6 +439,52 @@ public class Cell implements Externalizable {
 		if (entityBlocksLos (oldEntity) != entityBlocksLos (newEntity)) {
 			cache.onWallChanged (x, y, z);
 		}
+
+		// (C) Building add/remove: a Building entity is anchored at one origin cell, but its
+		// LOS-blocking footprint can span many cells. setEntity fires only at the origin, so
+		// for the other footprint cells we must explicitly fire onWallChanged. Mirrors the
+		// per-cell predicate used in LivingEntity.isCellAllowed (operative + non-transitable
+		// ground data char).
+		fireBuildingFootprintHooks (cache, oldEntity, newEntity, x, y, z);
+	}
+
+
+	/**
+	 * For Building entities being added or removed at this cell, fires onWallChanged for
+	 * every cell in the footprint that would change LOS-blocking state under the predicate
+	 * mirrored from {@link xaos.tiles.entities.buildings.Building#blocksLosAt(int, int)}.
+	 * The origin cell is intentionally skipped here because the (B) wall-change branch above
+	 * already covers it via {@link #entityBlocksLos(xaos.tiles.entities.Entity)}.
+	 */
+	private static void fireBuildingFootprintHooks (xaos.main.HappinessCache cache, Entity oldEntity, Entity newEntity, int originX, int originY, int z) {
+		xaos.tiles.entities.buildings.Building b = null;
+		if (newEntity instanceof xaos.tiles.entities.buildings.Building) {
+			b = (xaos.tiles.entities.buildings.Building) newEntity;
+		} else if (oldEntity instanceof xaos.tiles.entities.buildings.Building) {
+			b = (xaos.tiles.entities.buildings.Building) oldEntity;
+		}
+		if (b == null) return;
+
+		xaos.tiles.entities.buildings.BuildingManagerItem bmi = xaos.tiles.entities.buildings.BuildingManager.getItem (b.getIniHeader ());
+		if (bmi == null) return;
+		String groundData = bmi.getGroundData ();
+		int width = bmi.getWidth ();
+		int height = bmi.getHeight ();
+		for (int dx = 0; dx < width; dx++) {
+			for (int dy = 0; dy < height; dy++) {
+				if (dx == 0 && dy == 0) continue; // origin handled by (B) above
+				char gd = groundData.charAt (dy * width + dx);
+				if (gd == xaos.tiles.entities.buildings.Building.GROUND_NON_BUILDING) continue;
+				if (gd == xaos.tiles.entities.buildings.Building.GROUND_TRANSITABLE) continue;
+				if (gd == xaos.tiles.entities.buildings.Building.GROUND_ENTRANCE) continue;
+				// Cell with a non-transitable ground char: blocks LOS iff building is operative.
+				// On add, building is typically not operative yet (operative=true happens later
+				// via setOperative, which has its own hook). On remove, the building may have
+				// been operative — fire conservatively: onWallChanged is idempotent w.r.t.
+				// neighborhood dirty-marking, so over-firing only costs unnecessary rebuilds.
+				cache.onWallChanged (originX + dx, originY + dy, z);
+			}
+		}
 	}
 
 
@@ -459,16 +505,22 @@ public class Cell implements Externalizable {
 	 * {@link xaos.tiles.entities.living.LivingEntity#isCellAllowed(Cell)} to reject
 	 * the cell on entity-related grounds (i.e., would block bresenham LOS scans
 	 * that consult isCellAllowed). Mirrors the item-side conditions in that method:
-	 * a locked, operative wall item, or a locked-and-closed door.
+	 * a locked, operative wall item, or a locked-and-closed door. Also covers
+	 * Building entities at the origin cell of their footprint via
+	 * {@link xaos.tiles.entities.buildings.Building#blocksLosAt(int, int)}.
 	 *
-	 * <p>Building-related blocking is intentionally ignored here: building presence
-	 * does not change inside setEntity (buildings are placed via Building lifecycle,
-	 * not via setEntity). Terrain-related blocking (mined/discovered/fluids) is
-	 * tracked by separate hooks (onMiningChanged, onDiscovered).
+	 * <p>Terrain-related blocking (mined/discovered/fluids) is tracked by separate
+	 * hooks (onMiningChanged, onDiscovered, onFluidChanged).
 	 */
 	private static boolean entityBlocksLos (Entity e) {
-		if (!(e instanceof Item)) return false;
-		return ((Item) e).blocksLos ();
+		if (e instanceof Item) {
+			return ((Item) e).blocksLos ();
+		}
+		if (e instanceof xaos.tiles.entities.buildings.Building) {
+			xaos.tiles.entities.buildings.Building b = (xaos.tiles.entities.buildings.Building) e;
+			return b.blocksLosAt (b.getX (), b.getY ());
+		}
+		return false;
 	}
 
 
@@ -1720,6 +1772,51 @@ public class Cell implements Externalizable {
 
 	public boolean isMined () {
 		return (getFlags () & FLAG_MINED) > 0;
+	}
+
+
+	/**
+	 * Sets this cell's terrain fluid type and fires a HappinessCache.onFluidChanged
+	 * hook if {@code hasFluids()} flipped value. Fluid cells block bresenham LOS
+	 * via {@link xaos.tiles.entities.living.LivingEntity#isCellAllowed(Cell)}, so
+	 * flood/drain events must invalidate the surrounding LOS-cache neighborhood.
+	 *
+	 * <p>Wraps {@link xaos.tiles.terrain.Terrain#setFluidType(int)}. Call this
+	 * instead of going through Terrain directly when the change is happening at
+	 * runtime in a Cell-aware context. Pure type swaps that keep the cell
+	 * non-fluid (or keep it fluid) don't fire the hook.
+	 */
+	public void setFluidType (int fluidType) {
+		boolean wasFluid = getTerrain ().hasFluids ();
+		getTerrain ().setFluidType (fluidType);
+		boolean nowFluid = getTerrain ().hasFluids ();
+		fireHappinessCacheFluidHookIfChanged (wasFluid, nowFluid);
+	}
+
+
+	/**
+	 * Sets this cell's terrain fluid count and fires a HappinessCache.onFluidChanged
+	 * hook if {@code hasFluids()} flipped value (i.e., crossed the zero boundary).
+	 * See {@link #setFluidType(int)} for the rationale.
+	 *
+	 * <p>Wraps {@link xaos.tiles.terrain.Terrain#setFluidCount(int)}.
+	 */
+	public void setFluidCount (int fluidCount) {
+		boolean wasFluid = getTerrain ().hasFluids ();
+		getTerrain ().setFluidCount (fluidCount);
+		boolean nowFluid = getTerrain ().hasFluids ();
+		fireHappinessCacheFluidHookIfChanged (wasFluid, nowFluid);
+	}
+
+
+	private void fireHappinessCacheFluidHookIfChanged (boolean wasFluid, boolean nowFluid) {
+		if (wasFluid == nowFluid) return;
+		if (Game.getWorld () == null) return;
+		xaos.main.HappinessCache cache = Game.getWorld ().getHappinessCache ();
+		if (cache == null) return;
+		Point3DShort coord = getCoordinates ();
+		if (coord == null) return;
+		cache.onFluidChanged (coord.x, coord.y, coord.z);
 	}
 
 
