@@ -205,6 +205,53 @@ class HappinessCacheTest {
         }
     }
 
+    @org.junit.jupiter.api.Test
+    void onItemPlaced_addsEntryToVisibleTilesAfterCacheBuilt() {
+        try (HappinessFixtures fx = new HappinessFixtures(100, 100, 1)) {
+            HappinessCache cache = new HappinessCache(fx.w, fx.h, fx.d);
+            // Force the (5,5,0) tile to be built (currently empty).
+            cache.getVisibleHappyItems(5, 5, 0);
+            assertEquals(0, cache.getVisibleHappyItems(5, 5, 0).size());
+
+            // Now place a happy item adjacent and notify cache.
+            fx.placeHappyItem(5, 7, 0, happyItemH1);
+            cache.onItemPlaced(5, 7, 0, happyItemH1.getHappiness());
+
+            // Tile (5,5,0) should now see the item.
+            List<int[]> result = cache.getVisibleHappyItems(5, 5, 0);
+            assertEquals(1, result.size());
+            assertEquals(happyItemH1.getHappiness(), result.get(0)[0]);
+            assertEquals(2, result.get(0)[1]);
+        }
+    }
+
+    @org.junit.jupiter.api.Test
+    void onItemRemoved_removesEntryFromAffectedTiles() {
+        try (HappinessFixtures fx = new HappinessFixtures(100, 100, 1)) {
+            fx.placeHappyItem(5, 7, 0, happyItemH1);
+            HappinessCache cache = new HappinessCache(fx.w, fx.h, fx.d);
+            // Force build so the entry is in the cache.
+            assertEquals(1, cache.getVisibleHappyItems(5, 5, 0).size());
+
+            cache.onItemRemoved(5, 7, 0, happyItemH1.getHappiness());
+
+            assertEquals(0, cache.getVisibleHappyItems(5, 5, 0).size());
+        }
+    }
+
+    @org.junit.jupiter.api.Test
+    void onItemPlaced_skipsZeroHappinessItems() {
+        try (HappinessFixtures fx = new HappinessFixtures(100, 100, 1)) {
+            HappinessCache cache = new HappinessCache(fx.w, fx.h, fx.d);
+            cache.getVisibleHappyItems(5, 5, 0); // force build
+
+            cache.onItemPlaced(5, 7, 0, 0);
+
+            assertEquals(0, cache.getVisibleHappyItems(5, 5, 0).size(),
+                "happiness=0 must be a no-op");
+        }
+    }
+
     /** Compares two lists ignoring order. Entries are int[]{happiness, distance}. */
     static void assertEqualEntrySets(List<int[]> expected, List<int[]> actual, int x, int y, int z) {
         assertEquals(expected.size(), actual.size(),

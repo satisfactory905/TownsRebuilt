@@ -75,12 +75,53 @@ public final class HappinessCache {
 
     /** See spec; called when a happy item is placed at (x, y, z). */
     public void onItemPlaced(int x, int y, int z, int happiness) {
-        throw new UnsupportedOperationException("not yet implemented");
+        if (happiness == 0) return;
+        for (int tx = x - MAX_LOS; tx <= x + MAX_LOS; tx++) {
+            for (int ty = y - MAX_LOS; ty <= y + MAX_LOS; ty++) {
+                if (!xaos.utils.Utils.isInsideMap(tx, ty, z)) continue;
+                // If the tile is currently dirty (cache will be rebuilt on next read),
+                // there's no list to update — skip the bresenham + add.
+                if (dirty[tx][ty][z]) continue;
+                // If the tile has never been built, no entry exists; skip.
+                if (cells[tx][ty][z] == null) continue;
+                boolean visible = (tx == x && ty == y)
+                        || xaos.utils.Utils.bresenhamLineExists(tx, ty, x, y, z)
+                        || xaos.utils.Utils.bresenhamLineExists(x, y, tx, ty, z);
+                if (visible) {
+                    int distance = Math.max(Math.abs(tx - x), Math.abs(ty - y));
+                    cells[tx][ty][z].add(new int[]{ happiness, distance });
+                }
+            }
+        }
     }
 
     /** See spec; called when a happy item is removed from (x, y, z). */
     public void onItemRemoved(int x, int y, int z, int happiness) {
-        throw new UnsupportedOperationException("not yet implemented");
+        if (happiness == 0) return;
+        for (int tx = x - MAX_LOS; tx <= x + MAX_LOS; tx++) {
+            for (int ty = y - MAX_LOS; ty <= y + MAX_LOS; ty++) {
+                if (!xaos.utils.Utils.isInsideMap(tx, ty, z)) continue;
+                if (dirty[tx][ty][z]) continue;
+                if (cells[tx][ty][z] == null) continue;
+                boolean visible = (tx == x && ty == y)
+                        || xaos.utils.Utils.bresenhamLineExists(tx, ty, x, y, z)
+                        || xaos.utils.Utils.bresenhamLineExists(x, y, tx, ty, z);
+                if (visible) {
+                    int distance = Math.max(Math.abs(tx - x), Math.abs(ty - y));
+                    // Remove the first matching entry. If multiple identical happy
+                    // items overlap (rare), removing one is correct since each item
+                    // contributes one entry.
+                    java.util.List<int[]> list = cells[tx][ty][z];
+                    for (int i = 0; i < list.size(); i++) {
+                        int[] entry = list.get(i);
+                        if (entry[0] == happiness && entry[1] == distance) {
+                            list.remove(i);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /** See spec; called when a wall is built/destroyed/locked-changed at (x, y, z). */
