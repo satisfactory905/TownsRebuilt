@@ -329,6 +329,97 @@ class HappinessCacheTest {
         }
     }
 
+    /**
+     * Save/load equivalence: the HappinessCache is a transient field on World
+     * (not serialized). On save, the cache is dropped; on load, World.readExternal
+     * constructs a fresh HappinessCache(w,h,d) at the end (all tiles dirty), and
+     * the next read lazily rebuilds.
+     *
+     * Doing a true Externalizable byte-level round-trip would require constructing
+     * a complete World with Game dependencies (out of scope for the synthetic
+     * fixture infrastructure). Instead, we verify the *logical equivalent*:
+     * a cache that arrives at a state via incremental hooks must produce the
+     * same visibility as a freshly-constructed cache against the same final
+     * world state. If this holds, save/load is trivially correct (load is just
+     * "discard old cache, build fresh").
+     */
+    @org.junit.jupiter.api.Test
+    void saveLoadEquivalence_freshCacheMatchesCacheBuiltViaHooks() {
+        try (HappinessFixtures fx = HappinessFixtures.buildVariedWorld(happyItemsMap())) {
+            // cache_A: built against the initial varied world. Force build at a
+            // few sample positions so any later hook calls operate on already-
+            // populated tiles (the dirty-marking incremental code paths).
+            HappinessCache cacheA = new HappinessCache(fx.w, fx.h, fx.d);
+
+            // Sample positions chosen to exercise distinct scenarios:
+            //   (4, 4, 0)   - open ground; sees multiple items (h1@(2,2), h2@(5,6), h1@(8,8))
+            //   (12, 4, 0)  - near the wall column at x=10 / fluid moat at y=5
+            //   (5, 13, 0)  - near the unmined hill cluster at (3,15)/(4,15)
+            //   (16, 16, 0) - near the undiscovered patch at (17,17)
+            //   (6, 6, 0)   - near the upcoming mutation site at (6, 7) so the
+            //                 dirty-mark neighborhood actually overlaps it
+            int[][] samples = {
+                { 4, 4, 0 },
+                { 12, 4, 0 },
+                { 5, 13, 0 },
+                { 16, 16, 0 },
+                { 6, 6, 0 },
+            };
+
+            // Force-build the sample tiles (ensures incremental updates have
+            // populated state to mutate, not just dirty stubs).
+            for (int[] s : samples) cacheA.getVisibleHappyItems(s[0], s[1], s[2]);
+
+            // ---- Mutate the world AND fire matching hooks on cache_A ----
+
+            // (a) Place an additional happy item near sample (6,6).
+            //     Hits the onItemPlaced incremental insertion path.
+            fx.placeHappyItem(6, 7, 0, happyItemH1);
+            cacheA.onItemPlaced(6, 7, 0, happyItemH1.getHappiness());
+
+            // (b) Remove an existing happy item (the one at (8, 8) from the
+            //     varied world). buildVariedWorld placed an h1 there.
+            //     Cell.setEntity(null) calls Game.getWorld() and NPEs in tests
+            //     (same reason the fixture uses raw field writes for placement);
+            //     mirror the fixture's reflective bypass to clear the entity.
+            //     Hits the onItemRemoved incremental removal path.
+            try {
+                java.lang.reflect.Field entityField = xaos.tiles.Cell.class.getDeclaredField("entity");
+                entityField.setAccessible(true);
+                entityField.set(fx.cells[8][8][0], null);
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                throw new IllegalStateException("Cannot clear cell entity reflectively", e);
+            }
+            cacheA.onItemRemoved(8, 8, 0, happyItemH1.getHappiness());
+
+            // (c) Change wall state: add a new unmined cell that wasn't there
+            //     before. Exercises onWallChanged dirty-marking radius.
+            fx.setUnmined(7, 7, 0);
+            cacheA.onWallChanged(7, 7, 0);
+
+            // (d) Change mining state at a different cell. Exercises
+            //     onMiningChanged dirty-marking.
+            fx.setUnmined(13, 4, 0);
+            cacheA.onMiningChanged(13, 4, 0);
+
+            // (e) Change discovery state: mark a cell undiscovered.
+            //     Exercises onDiscovered dirty-marking.
+            fx.setUndiscovered(15, 15, 0);
+            cacheA.onDiscovered(15, 15, 0);
+
+            // ---- cache_B: build fresh against the post-mutation world ----
+            // This simulates exactly what happens at load time.
+            HappinessCache cacheB = new HappinessCache(fx.w, fx.h, fx.d);
+
+            // ---- Compare visibility at each sample position ----
+            for (int[] s : samples) {
+                List<int[]> a = cacheA.getVisibleHappyItems(s[0], s[1], s[2]);
+                List<int[]> b = cacheB.getVisibleHappyItems(s[0], s[1], s[2]);
+                assertEqualEntrySets(a, b, s[0], s[1], s[2]);
+            }
+        }
+    }
+
     // Radius-coverage test (verifying 2*MAX_LOS vs MAX_LOS) was evaluated and deferred.
     // Rationale: radius `2 * MAX_LOS` is established by code review of the
     // `markNeighborhoodDirty` helper itself. A behavioral test would need a tile T at
