@@ -124,19 +124,66 @@ public final class HappinessCache {
         }
     }
 
-    /** See spec; called when a wall is built/destroyed/locked-changed at (x, y, z). */
+    /**
+     * Notifies the cache that a wall was built, destroyed, or had its lock state
+     * changed at (x, y, z). Marks every tile within {@code 2 * MAX_LOS} of the
+     * change as dirty for lazy rebuild on next read.
+     *
+     * <p>Caller should only invoke when the world state actually changed.
+     * Redundant calls are safe but cost a {@code 2 * MAX_LOS} neighborhood
+     * dirty-mark for nothing.
+     */
     public void onWallChanged(int x, int y, int z) {
-        throw new UnsupportedOperationException("not yet implemented");
+        markNeighborhoodDirty(x, y, z);
     }
 
-    /** See spec; called when a cell's mined state changes at (x, y, z). */
+    /**
+     * Notifies the cache that a cell's mined state changed at (x, y, z)
+     * (e.g., a tile was mined out or a new rock deposit appeared). Marks
+     * every tile within {@code 2 * MAX_LOS} of the change as dirty for
+     * lazy rebuild on next read.
+     *
+     * <p>Caller should only invoke when the world state actually changed.
+     * Redundant calls are safe but cost a {@code 2 * MAX_LOS} neighborhood
+     * dirty-mark for nothing.
+     */
     public void onMiningChanged(int x, int y, int z) {
-        throw new UnsupportedOperationException("not yet implemented");
+        markNeighborhoodDirty(x, y, z);
     }
 
-    /** See spec; called when a cell at (x, y, z) is discovered for the first time. */
+    /**
+     * Notifies the cache that a cell at (x, y, z) had its discovery state
+     * change (e.g., a tile was first revealed by a citizen). Marks every
+     * tile within {@code 2 * MAX_LOS} of the change as dirty for lazy
+     * rebuild on next read.
+     *
+     * <p>Caller should only invoke when the world state actually changed.
+     * Redundant calls are safe but cost a {@code 2 * MAX_LOS} neighborhood
+     * dirty-mark for nothing.
+     */
     public void onDiscovered(int x, int y, int z) {
-        throw new UnsupportedOperationException("not yet implemented");
+        markNeighborhoodDirty(x, y, z);
+    }
+
+    /**
+     * Marks every tile within a 2*MAX_LOS radius of (x, y, z) as dirty.
+     * X and Y are clamped to [0, w-1] and [0, h-1] to avoid array-bounds
+     * exceptions when the changed cell is near the map edge. Z is not clamped
+     * because Z layers are independent in the current model.
+     */
+    private void markNeighborhoodDirty(int x, int y, int z) {
+        // 2*MAX_LOS: a wall at W can affect lines passing through W from any pair
+        // (A, B) where each is up to MAX_LOS from W.
+        int radius = 2 * MAX_LOS;
+        int xMin = Math.max(0, x - radius);
+        int xMax = Math.min(w - 1, x + radius);
+        int yMin = Math.max(0, y - radius);
+        int yMax = Math.min(h - 1, y + radius);
+        for (int tx = xMin; tx <= xMax; tx++) {
+            for (int ty = yMin; ty <= yMax; ty++) {
+                dirty[tx][ty][z] = true;
+            }
+        }
     }
 
     private void buildCacheForTile(int x, int y, int z) {

@@ -252,6 +252,89 @@ class HappinessCacheTest {
         }
     }
 
+    @org.junit.jupiter.api.Test
+    void onWallChanged_marksAffectedTilesDirtyForLazyRebuild() {
+        try (HappinessFixtures fx = new HappinessFixtures(100, 100, 1)) {
+            fx.placeHappyItem(7, 10, 0, happyItemH2);
+            HappinessCache cache = new HappinessCache(fx.w, fx.h, fx.d);
+
+            // Build (7, 5, 0) — citizen tile sees item across open ground.
+            List<int[]> beforeWall = cache.getVisibleHappyItems(7, 5, 0);
+            assertEquals(1, beforeWall.size(), "before wall, item should be visible");
+
+            // Build a wall blocking the bresenham line.
+            fx.setUnmined(7, 8, 0);
+            cache.onWallChanged(7, 8, 0);
+
+            // Cache should rebuild on next read; item should no longer be visible.
+            List<int[]> afterWall = cache.getVisibleHappyItems(7, 5, 0);
+            // Verify against reference for ground truth:
+            List<int[]> reference = HappinessReference.referenceVisibleHappyItems(7, 5, 0, HappinessCache.MAX_LOS);
+            assertEqualEntrySets(reference, afterWall, 7, 5, 0);
+        }
+    }
+
+    @org.junit.jupiter.api.Test
+    void onMiningChanged_marksAffectedTilesDirtyForLazyRebuild() {
+        try (HappinessFixtures fx = new HappinessFixtures(100, 100, 1)) {
+            fx.placeHappyItem(7, 10, 0, happyItemH2);
+            HappinessCache cache = new HappinessCache(fx.w, fx.h, fx.d);
+
+            // Before mining change: item visible across open ground.
+            List<int[]> before = cache.getVisibleHappyItems(7, 5, 0);
+            assertEquals(1, before.size(), "before mining change, item should be visible");
+
+            // Cell at (7, 8) becomes unmined (a freshly-deposited blocker).
+            // This is the mining-state-changed event the cache must respond to.
+            fx.setUnmined(7, 8, 0);
+            cache.onMiningChanged(7, 8, 0);
+
+            // Cache should rebuild on next read; item should no longer be visible.
+            List<int[]> after = cache.getVisibleHappyItems(7, 5, 0);
+            List<int[]> reference = HappinessReference.referenceVisibleHappyItems(7, 5, 0, HappinessCache.MAX_LOS);
+            assertEqualEntrySets(reference, after, 7, 5, 0);
+            assertEquals(0, after.size(),
+                "item must no longer be visible after mining change blocks the line");
+        }
+    }
+
+    @org.junit.jupiter.api.Test
+    void onDiscovered_marksAffectedTilesDirtyForLazyRebuild() {
+        try (HappinessFixtures fx = new HappinessFixtures(100, 100, 1)) {
+            fx.placeHappyItem(7, 10, 0, happyItemH1);
+            HappinessCache cache = new HappinessCache(fx.w, fx.h, fx.d);
+
+            // Before discovery change: item visible across open (discovered) ground.
+            List<int[]> before = cache.getVisibleHappyItems(7, 5, 0);
+            assertEquals(1, before.size(), "before discovery change, item should be visible");
+
+            // Set (7, 8) undiscovered — this models the inverse of a discovery
+            // event for testing purposes, since `Cell.setDiscovered(true)` NPEs
+            // in test contexts (it calls Game.getWorld().discoverFloor()). The
+            // cache's dirty-marking behavior is symmetric: it doesn't care
+            // which direction the discovery flag flipped, only that something
+            // changed. We invoke onDiscovered after the change to verify it
+            // marks the neighborhood dirty for rebuild.
+            fx.setUndiscovered(7, 8, 0);
+            cache.onDiscovered(7, 8, 0);
+
+            // Cache should rebuild on next read; item should no longer be visible
+            // (line passes through an undiscovered cell, which isCellAllowed treats
+            // as a blocker).
+            List<int[]> after = cache.getVisibleHappyItems(7, 5, 0);
+            List<int[]> reference = HappinessReference.referenceVisibleHappyItems(7, 5, 0, HappinessCache.MAX_LOS);
+            assertEqualEntrySets(reference, after, 7, 5, 0);
+            assertEquals(0, after.size(),
+                "item must no longer be visible after discovery state change blocks the line");
+        }
+    }
+
+    // Radius-coverage test (verifying 2*MAX_LOS vs MAX_LOS) was evaluated and deferred.
+    // Rationale: radius `2 * MAX_LOS` is established by code review of the
+    // `markNeighborhoodDirty` helper itself. A behavioral test would need a tile T at
+    // distance >MAX_LOS+1 from a wall W but with W within MAX_LOS of an item, requiring
+    // careful coordinate setup. Deferred to Task 12 cleanup if needed.
+
     /** Compares two lists ignoring order. Entries are int[]{happiness, distance}. */
     static void assertEqualEntrySets(List<int[]> expected, List<int[]> actual, int x, int y, int z) {
         assertEquals(expected.size(), actual.size(),
