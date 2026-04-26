@@ -167,6 +167,9 @@ public final class World implements Externalizable {
 
 	private TaskManager taskManager;
 
+	// Per-tile happiness LOS cache (transient — rebuilt at end of generateAll/readExternal). Not serialized.
+	private transient HappinessCache happinessCache;
+
 	// ID Maximo (current) de los entities (livingentities, items, edificios, special)
 	private static int maxEntityID;
 
@@ -372,6 +375,17 @@ public final class World implements Externalizable {
 		}
 
 		setTurnsPerSecond ();
+
+		// Initialize HappinessCache after world is fully populated. All tiles start dirty so
+		// the first read forces a build. See HappinessCache for invariants.
+		this.happinessCache = new HappinessCache (cells.length, cells[0].length, cells[0][0].length);
+		Log.log (Log.LEVEL_DEBUG, "HappinessCache initialized at end of generateAll: " + cells.length + "x" + cells[0].length + "x" + cells[0][0].length, getClass ().toString ()); //$NON-NLS-1$  //$NON-NLS-2$  //$NON-NLS-3$  //$NON-NLS-4$
+	}
+
+
+	/** Returns the per-tile happiness LOS cache. May be null before generateAll/readExternal completes. */
+	public HappinessCache getHappinessCache () {
+		return happinessCache;
 	}
 
 
@@ -4591,6 +4605,13 @@ public final class World implements Externalizable {
 			events = new ArrayList<EventData> ();
 			globalEvents = new GlobalEventData ();
 			// gods = new ArrayList<GodData> ();
+		}
+
+		// Initialize HappinessCache after all state has been read. Cache is transient (not serialized);
+		// all tiles start dirty so first read forces a build.
+		if (cells != null && cells.length > 0 && cells[0].length > 0 && cells[0][0].length > 0) {
+			this.happinessCache = new HappinessCache (cells.length, cells[0].length, cells[0][0].length);
+			Log.log (Log.LEVEL_DEBUG, "HappinessCache initialized at end of readExternal", getClass ().toString ()); //$NON-NLS-1$  //$NON-NLS-2$
 		}
 	}
 

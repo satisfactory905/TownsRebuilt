@@ -202,8 +202,28 @@ public class Item extends Entity implements Externalizable {
 	}
 
 
+	/**
+	 * Returns true if this item, in its current state, blocks line of sight for purposes
+	 * of {@link xaos.tiles.entities.living.LivingEntity#isCellAllowed} bresenham scans.
+	 *
+	 * <p>Mirrors the predicate in {@link xaos.tiles.Cell#entityBlocksLos(xaos.tiles.entities.Entity)}
+	 * (which delegates here): the item must be locked, operative, and either a wall or a
+	 * door currently in LOCKED_AND_CLOSED status. Used by HappinessCache invalidation hooks
+	 * in setLocked/setOperative/setWallConnectorStatus to detect LOS-semantic flips.
+	 */
+	public boolean blocksLos () {
+		if (!isLocked () || !isOperative ()) return false;
+		ItemManagerItem imi = ItemManager.getItem (getIniHeader ());
+		if (imi == null) return false;
+		if (imi.isWall ()) return true;
+		if (imi.isDoor () && isDoorStatus (FLAG_WALL_CONNECTOR_STATUS_LOCKED_AND_CLOSED)) return true;
+		return false;
+	}
+
+
 	public void setOperative (boolean operative) {
 		boolean bOperativeRemoved = (isOperative () && !operative);
+		boolean wasBlocking = blocksLos ();
 
 		if (operative) {
 			setFlags ((byte) (getFlags () | FLAG_OPERATIVE));
@@ -213,6 +233,22 @@ public class Item extends Entity implements Externalizable {
 
 		if (bOperativeRemoved) {
 			checkConnectors (ItemManager.getItem (getIniHeader ()));
+		}
+
+		// HappinessCache: an operative flip on a wall or locked-closed door changes LOS-blocking
+		// semantics, so neighborhood happiness must be invalidated. Most call sites already
+		// bracket via setEntity(null) -> setOperative -> setEntity(entity) (Zone.java pattern),
+		// but a few (TaskManager: TASK_CREATE_IN_A_BUILDING etc.) call setOperative bare; this
+		// hook closes that gap. See entityBlocksLos in Cell.java for the matching predicate.
+		boolean nowBlocking = blocksLos ();
+		if (wasBlocking != nowBlocking) {
+			Log.log (Log.LEVEL_DEBUG, "setOperative: LOS blocking flipped at " + getX () + "," + getY () + "," + getZ () + " (was=" + wasBlocking + " now=" + nowBlocking + ")", "Item"); //$NON-NLS-1$
+			if (Game.getWorld () != null) {
+				xaos.main.HappinessCache cache = Game.getWorld ().getHappinessCache ();
+				if (cache != null) {
+					cache.onWallChanged (getX (), getY (), getZ ());
+				}
+			}
 		}
 	}
 
@@ -238,6 +274,22 @@ public class Item extends Entity implements Externalizable {
 
 		if (swap) {
 			Item.removeItem (UtilsIniHeaders.getIntIniHeader (getIniHeader ()), getID (), beforeLocked);
+		}
+
+		// HappinessCache: locked-state flip can change LOS-blocking semantics for walls and
+		// closed doors (see entityBlocksLos in Cell.java / isCellAllowed in LivingEntity.java).
+		// Only fires when the value actually flipped (swap), and only when the item is operative
+		// and is a wall or door — for non-LOS-blocking items, locked state is irrelevant to LOS.
+		if (swap && isOperative ()) {
+			ItemManagerItem imi = ItemManager.getItem (getIniHeader ());
+			if (imi != null && (imi.isWall () || imi.isDoor ())) {
+				if (Game.getWorld () != null) {
+					xaos.main.HappinessCache cache = Game.getWorld ().getHappinessCache ();
+					if (cache != null) {
+						cache.onWallChanged (getX (), getY (), getZ ());
+					}
+				}
+			}
 		}
 	}
 
@@ -654,6 +706,7 @@ public class Item extends Entity implements Externalizable {
 
 	public void setWallConnectorStatus (byte doorStatus, boolean setZoneIDs) {
 		byte iAnterior = this.flags;
+		boolean wasBlocking = blocksLos ();
 
 		if (doorStatus == FLAG_WALL_CONNECTOR_STATUS_LOCKED_AND_CLOSED) {
 			setFlags ((byte) (flags | FLAG_WALL_CONNECTOR_STATUS_LOCKED_AND_CLOSED));
@@ -669,6 +722,22 @@ public class Item extends Entity implements Externalizable {
 			setFlags ((byte) (flags & ~FLAG_WALL_CONNECTOR_STATUS_LOCKED_AND_CLOSED));
 		}
 		// this.doorStatus = doorStatus;
+
+		// HappinessCache: door open/close (and lock/unlock via this path) flips LOS-blocking
+		// semantics for doors; TaskManager TASK_LOCK / TASK_UNLOCK_OPEN / TASK_UNLOCK_CLOSE
+		// route through here without touching setLocked, so this hook is the only place to
+		// catch those transitions. Fire BEFORE the early return so even no-op fast paths are
+		// safe (the wasBlocking == nowBlocking guard makes the no-op case a true no-op).
+		boolean nowBlocking = blocksLos ();
+		if (wasBlocking != nowBlocking) {
+			Log.log (Log.LEVEL_DEBUG, "setWallConnectorStatus: LOS blocking flipped at " + getX () + "," + getY () + "," + getZ () + " (was=" + wasBlocking + " now=" + nowBlocking + " doorStatus=" + doorStatus + ")", "Item"); //$NON-NLS-1$
+			if (Game.getWorld () != null) {
+				xaos.main.HappinessCache cache = Game.getWorld ().getHappinessCache ();
+				if (cache != null) {
+					cache.onWallChanged (getX (), getY (), getZ ());
+				}
+			}
+		}
 
 		if ((iAnterior & doorStatus) > 0) {
 			return;

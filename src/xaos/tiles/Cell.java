@@ -215,6 +215,9 @@ public class Cell implements Externalizable {
 	public void setEntity (Entity entity) {
 		boolean bCheckFluids = false;
 
+		// Capture old entity for HappinessCache hook firing at the end of this method.
+		Entity oldEntityForCacheHook = this.entity;
+
 		Stockpile stockpile = null;
 		if (hasStockPile ()) {
 			stockpile = Stockpile.getStockpile (getCoordinates ());
@@ -384,6 +387,88 @@ public class Cell implements Externalizable {
 				Game.getWorld ().addFluidCellToProcess (getCoordinates ().x, getCoordinates ().y, getCoordinates ().z, true);
 			}
 		}
+
+		// HappinessCache hooks — fire after all state mutations are complete.
+		fireHappinessCacheHooksForEntityChange (oldEntityForCacheHook, entity);
+	}
+
+
+	/**
+	 * Fires HappinessCache hooks corresponding to an entity replacement at this cell.
+	 * Invoked at the very end of {@link #setEntity(Entity)} once all other state is settled.
+	 * Guarded by null checks: world / cache / coordinates can each be null during early
+	 * world generation, before save data is loaded, or in test fixtures.
+	 *
+	 * <p>Hooks fired:
+	 * <ul>
+	 *   <li>{@code onItemRemoved} when an item with non-zero happiness leaves the cell.</li>
+	 *   <li>{@code onItemPlaced} when an item with non-zero happiness arrives in the cell.</li>
+	 *   <li>{@code onWallChanged} when the LOS-blocking-by-entity status flips between
+	 *       old and new entity (mirrors the item portion of
+	 *       {@link xaos.tiles.entities.living.LivingEntity#isCellAllowed(Cell)}).</li>
+	 * </ul>
+	 *
+	 * <p>"Same item still happy" no-ops correctly: removed-then-added cancel out at the
+	 * cache level when called for two different positions, but here both happiness deltas
+	 * fire, which is intentional — this is a real change of identity even if happiness
+	 * value matches.
+	 */
+	private void fireHappinessCacheHooksForEntityChange (Entity oldEntity, Entity newEntity) {
+		xaos.main.World world = Game.getWorld ();
+		if (world == null) return;
+		xaos.main.HappinessCache cache = world.getHappinessCache ();
+		if (cache == null) return;
+		Point3DShort coord = getCoordinates ();
+		if (coord == null) return;
+
+		int x = coord.x;
+		int y = coord.y;
+		int z = coord.z;
+
+		// (A) Happy-item incremental updates.
+		int oldHappy = happinessOfEntity (oldEntity);
+		int newHappy = happinessOfEntity (newEntity);
+		if (oldHappy != 0 && oldEntity != newEntity) {
+			cache.onItemRemoved (x, y, z, oldHappy);
+		}
+		if (newHappy != 0 && oldEntity != newEntity) {
+			cache.onItemPlaced (x, y, z, newHappy);
+		}
+
+		// (B) Wall change — full neighborhood dirty if LOS-blocking semantics flipped.
+		if (entityBlocksLos (oldEntity) != entityBlocksLos (newEntity)) {
+			cache.onWallChanged (x, y, z);
+		}
+	}
+
+
+	/**
+	 * Returns the happiness contribution of an entity, or 0 if the entity is null,
+	 * not an Item, or has no blueprint registered.
+	 */
+	private static int happinessOfEntity (Entity e) {
+		if (!(e instanceof Item)) return 0;
+		ItemManagerItem imi = ItemManager.getItem (((Item) e).getIniHeader ());
+		if (imi == null) return 0;
+		return imi.getHappiness ();
+	}
+
+
+	/**
+	 * Returns true if the given entity, in its current state, would cause
+	 * {@link xaos.tiles.entities.living.LivingEntity#isCellAllowed(Cell)} to reject
+	 * the cell on entity-related grounds (i.e., would block bresenham LOS scans
+	 * that consult isCellAllowed). Mirrors the item-side conditions in that method:
+	 * a locked, operative wall item, or a locked-and-closed door.
+	 *
+	 * <p>Building-related blocking is intentionally ignored here: building presence
+	 * does not change inside setEntity (buildings are placed via Building lifecycle,
+	 * not via setEntity). Terrain-related blocking (mined/discovered/fluids) is
+	 * tracked by separate hooks (onMiningChanged, onDiscovered).
+	 */
+	private static boolean entityBlocksLos (Entity e) {
+		if (!(e instanceof Item)) return false;
+		return ((Item) e).blocksLos ();
 	}
 
 
@@ -877,6 +962,20 @@ public class Cell implements Externalizable {
 		Point3DShort p3dCell = getCoordinates ();
 		if (p3dCell.z < (World.MAP_DEPTH - 1)) {
 			setDigged (World.getCell (p3dCell.x, p3dCell.y, p3dCell.z + 1).isMined ());
+		}
+
+		// HappinessCache: discovery flips affect bresenham LOS via isCellAllowed (returns
+		// false for undiscovered cells). bFromNonDiscoveredToDiscovered already captures the
+		// false→true transition (the only one with side-effects in this method's branch).
+		// We don't track true→false here because in practice setDiscovered(false) is rare
+		// and the cascade in setDiscovered's other branches doesn't run for it; if a regression
+		// later requires it, fire here gated on (!discovered && !bFromNonDiscoveredToDiscovered)
+		// after capturing the prior state.
+		if (bFromNonDiscoveredToDiscovered && Game.getWorld () != null && p3dCell != null) {
+			xaos.main.HappinessCache cache = Game.getWorld ().getHappinessCache ();
+			if (cache != null) {
+				cache.onDiscovered (p3dCell.x, p3dCell.y, p3dCell.z);
+			}
 		}
 	}
 
@@ -1600,10 +1699,21 @@ public class Cell implements Externalizable {
 
 
 	public void setMined (boolean bMined) {
+		boolean wasMined = isMined ();
 		if (bMined) {
 			setFlags (getFlags () | FLAG_MINED);
 		} else {
 			setFlags (getFlags () & ~FLAG_MINED);
+		}
+
+		// HappinessCache: mining state flips affect bresenham LOS via isCellAllowed (which
+		// returns false for non-mined cells). Only fire when the value actually changed.
+		if (wasMined != bMined && Game.getWorld () != null && getCoordinates () != null) {
+			xaos.main.HappinessCache cache = Game.getWorld ().getHappinessCache ();
+			if (cache != null) {
+				Point3DShort coord = getCoordinates ();
+				cache.onMiningChanged (coord.x, coord.y, coord.z);
+			}
 		}
 	}
 
