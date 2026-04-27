@@ -242,7 +242,7 @@ public class TypingPanel {
         } else if (key == GLFW_KEY_ESCAPE) {
             setNewText(getOldText());
             return true;
-        } else if (key == GLFW_KEY_ENTER) {
+        } else if (key == GLFW_KEY_ENTER || key == GLFW_KEY_KP_ENTER) {
             String sNewName = getNewText().trim();
             setNewText(sNewName);
 
