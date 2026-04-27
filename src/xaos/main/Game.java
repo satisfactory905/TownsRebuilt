@@ -126,8 +126,8 @@ public final class Game {
 	public static long getFrameNow () { return frameNowNanos; }
 
 	/** Test-only: directly set the frame clock so unit tests can drive
-	 *  pacing-dependent logic deterministically. Package-private. */
-	static void setFrameNowForTest (long nanos) { frameNowNanos = nanos; }
+	 *  pacing-dependent logic deterministically. */
+	public static void setFrameNowForTest (long nanos) { frameNowNanos = nanos; }
 
 	public static int FPS_MAINMENU = 30;
 	public static int FPS_INGAME = 30;

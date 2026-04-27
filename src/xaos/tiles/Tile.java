@@ -59,7 +59,7 @@ public class Tile implements Externalizable {
     private transient short animationTiles; // Numero de tiles de los que se compone la animacion (0 o 1 es lo mismo)
     private transient short animationFrameDelay; // Numero de frames que deben pasar entre un tile y el siguiente
     private transient short currentAnimationTile;
-    private transient short currentFrameDelay;
+    private transient long lastAnimationFrameNanos = 0L;
     private transient float currentTileTexX0; // Coordenada X0 de la textura
     private transient float currentTileTexY0; // Coordenada Y0 de la textura
     private transient float currentTileTexX1; // Coordenada X1 de la textura
@@ -100,7 +100,6 @@ public class Tile implements Externalizable {
         setAnimationTiles(Towns.getPropertiesInt(PropertyFile.PROPERTY_FILE_GRAPHICS, "[" + getIniHeader() + "]ANIMATION_TILES")); //$NON-NLS-1$ //$NON-NLS-2$
         setAnimationFrameDelay(Towns.getPropertiesInt(PropertyFile.PROPERTY_FILE_GRAPHICS, "[" + getIniHeader() + "]ANIMATION_FRAME_DELAY", Game.REFERENCE_FPS)); //$NON-NLS-1$ //$NON-NLS-2$
         setCurrentAnimationTile(0);
-        setCurrentFrameDelay(Utils.getRandomBetween(0, getAnimationFrameDelay() - 1));
     }
 
     public void setID(int ID) {
@@ -388,46 +387,63 @@ public class Tile implements Externalizable {
         this.currentTileTexX1 = this.tileTexX1;
     }
 
-    public void updateAnimation(boolean bRotated) {
-        if (getAnimationTiles() > 1 && !Game.isPaused()) {
-            setCurrentFrameDelay(getCurrentFrameDelay() + 1);
-            if (getCurrentFrameDelay() == 0) {
-                currentAnimationTile++;
-                if (currentAnimationTile >= animationTiles) {
-                    currentAnimationTile = 0;
-                }
+    /** Pacing decision extracted for testability. Returns true if the
+     *  animation should advance one step now; false otherwise. Bootstraps
+     *  on first call (returns false, sets lastAnimationFrameNanos to a
+     *  randomized phase so different tiles desynchronize). */
+    boolean tryAdvanceAnimation (long frameNow, long durationNanos) {
+        if (lastAnimationFrameNanos == 0L) {
+            int phaseCap = (int) Math.min (durationNanos, Integer.MAX_VALUE);
+            int phase = phaseCap > 0 ? Utils.getRandomBetween (0, phaseCap) : 0;
+            lastAnimationFrameNanos = frameNow - phase;
+            return false;
+        }
+        if ((frameNow - lastAnimationFrameNanos) < durationNanos) {
+            return false;
+        }
+        lastAnimationFrameNanos = frameNow;
+        return true;
+    }
 
-                if (this.currentAnimationTile == 0) {
-                    if (bRotated) {
-                        this.currentTileTexX0 = this.tileTexX0Rot;
-                        this.currentTileTexX1 = this.tileTexX1Rot;
-                    } else {
-                        this.currentTileTexX0 = this.tileTexX0;
-                        this.currentTileTexX1 = this.tileTexX1;
-                    }
-                } else {
-                    if (bRotated) {
-                        this.currentTileTexX0 = this.currentTileTexX1;
-                        this.currentTileTexX1 += (this.tileTexX1Rot - this.tileTexX0Rot);
-                    } else {
-                        this.currentTileTexX0 = this.currentTileTexX1;
-                        this.currentTileTexX1 += (this.tileTexX1 - this.tileTexX0);
-                    }
-                }
+    /** Test-only accessor; package-private. */
+    long getLastAnimationFrameNanosForTest () {
+        return lastAnimationFrameNanos;
+    }
+
+    /** Test-only setter; package-private. */
+    void setLastAnimationFrameNanosForTest (long nanos) {
+        lastAnimationFrameNanos = nanos;
+    }
+
+    public void updateAnimation (boolean bRotated) {
+        if (getAnimationTiles () <= 1 || Game.isPaused ()) {
+            return;
+        }
+        long durationNanos = (long) animationFrameDelay * Game.REFERENCE_FRAME_NANOS;
+        if (!tryAdvanceAnimation (Game.getFrameNow (), durationNanos)) {
+            return;
+        }
+        currentAnimationTile++;
+        if (currentAnimationTile >= animationTiles) {
+            currentAnimationTile = 0;
+        }
+        if (this.currentAnimationTile == 0) {
+            if (bRotated) {
+                this.currentTileTexX0 = this.tileTexX0Rot;
+                this.currentTileTexX1 = this.tileTexX1Rot;
+            } else {
+                this.currentTileTexX0 = this.tileTexX0;
+                this.currentTileTexX1 = this.tileTexX1;
+            }
+        } else {
+            if (bRotated) {
+                this.currentTileTexX0 = this.currentTileTexX1;
+                this.currentTileTexX1 += (this.tileTexX1Rot - this.tileTexX0Rot);
+            } else {
+                this.currentTileTexX0 = this.currentTileTexX1;
+                this.currentTileTexX1 += (this.tileTexX1 - this.tileTexX0);
             }
         }
-    }
-
-    public void setCurrentFrameDelay(int currentFrameDelay) {
-        if (currentFrameDelay >= getAnimationFrameDelay()) {
-            this.currentFrameDelay = 0;
-        } else {
-            this.currentFrameDelay = (short) currentFrameDelay;
-        }
-    }
-
-    public int getCurrentFrameDelay() {
-        return currentFrameDelay;
     }
 
     public void setIniHeader(String iniHeader) {
@@ -454,7 +470,7 @@ public class Tile implements Externalizable {
         setAnimationTiles(Towns.getPropertiesInt(PropertyFile.PROPERTY_FILE_GRAPHICS, "[" + sNewIniHeader + "]ANIMATION_TILES")); //$NON-NLS-1$ //$NON-NLS-2$
         setAnimationFrameDelay(Towns.getPropertiesInt(PropertyFile.PROPERTY_FILE_GRAPHICS, "[" + sNewIniHeader + "]ANIMATION_FRAME_DELAY", Game.REFERENCE_FPS)); //$NON-NLS-1$ //$NON-NLS-2$
         setCurrentAnimationTile(0);
-        setCurrentFrameDelay(Utils.getRandomBetween(0, getAnimationFrameDelay() - 1));
+        lastAnimationFrameNanos = 0L;
     }
 
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {

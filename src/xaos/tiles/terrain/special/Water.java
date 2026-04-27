@@ -21,7 +21,6 @@ public class Water {
             TERRAIN_WATER[i].setAnimationTiles(TERRAIN_WATER[0].getAnimationTiles());
             TERRAIN_WATER[i].setAnimationFrameDelay(TERRAIN_WATER[0].getAnimationFrameDelay());
             TERRAIN_WATER[i].setCurrentAnimationTile(TERRAIN_WATER[0].getCurrentAnimationTile());
-            TERRAIN_WATER[i].setCurrentFrameDelay(TERRAIN_WATER[0].getCurrentFrameDelay());
         }
     }
 

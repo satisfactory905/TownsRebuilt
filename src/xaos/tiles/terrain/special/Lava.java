@@ -21,7 +21,6 @@ public class Lava {
             TERRAIN_LAVA[i].setAnimationTiles(TERRAIN_LAVA[0].getAnimationTiles());
             TERRAIN_LAVA[i].setAnimationFrameDelay(TERRAIN_LAVA[0].getAnimationFrameDelay());
             TERRAIN_LAVA[i].setCurrentAnimationTile(TERRAIN_LAVA[0].getCurrentAnimationTile());
-            TERRAIN_LAVA[i].setCurrentFrameDelay(TERRAIN_LAVA[0].getCurrentFrameDelay());
         }
     }
 
