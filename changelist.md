@@ -339,12 +339,15 @@ optimization genuinely requires it.
 - **`towns.ini`: `FPS_INGAME` + `FPS_MAINMENU` replaced by `FPS_CAP` +
   `VSYNC`.** New default `FPS_CAP = 0` means no artificial sleep cap;
   VSync (default `VSYNC = true`) is the natural ceiling at the
-  monitor's refresh rate. `FPS_MAINMENU` becomes a hardcoded 30 (main
-  menu has no animation worth uncapping; the constant remains
-  `public static final` so external callers — `World`,
-  `MainMenuPanel`, `CommandPanel` — that pace their in-render-thread
-  save / loading message screen continue to read `Game.FPS_MAINMENU`
-  symbolically). VSync is applied via the new
+  monitor's refresh rate. **Menu and in-game both follow `FPS_CAP`;
+  there is no menu-specific cap.** The 3 loading-screen sync sites
+  (autosave, game-load, menu's intermittent render) call
+  `Game.getEffectiveFpsCap()`, which resolves `FPS_CAP = 0` to a 240
+  fallback so `DisplayManager.sync` never divides by zero — these are
+  tight inner loops where a sentinel "uncapped" call would otherwise
+  spin. The main `Game.run` loop uses `if (FPS_CAP > 0) sync(FPS_CAP)`
+  directly, so truly-uncapped in-game stays truly uncapped (no sleep,
+  VSync gates if enabled). VSync is applied via the new
   `DisplayManager.setSwapInterval(boolean)` called from `Game.<init>`
   after `UtilsGL.initGL`.
 
