@@ -214,11 +214,24 @@ public final class Game {
 		// Perf telemetry. Init before any other game-initialization work so that
 		// static SpanHandle / CounterHandle fields declared anywhere in the codebase
 		// resolve against this registry on their very first call.
+		//
+		// Default path is timestamped (perf-YYYYMMDD-HHMMSS.csv) so each launch gets
+		// a fresh, uniquely-named file -- prevents the Windows file-locking surprise
+		// where a stale lock on a previous session's perf.csv (held by Explorer
+		// preview, a tail process, or an unclean shutdown) blocks the new session
+		// from opening the file with TRUNCATE_EXISTING. Lexical sort = chronological
+		// sort, so analysis scripts can grab the latest with `ls perf-*.csv | tail -1`.
+		// An explicit PERF_LOG_PATH in towns.ini bypasses the timestamp -- user
+		// owns their own naming when they set that.
 		String sPerfPath = Towns.getPropertiesString ("PERF_LOG_PATH"); //$NON-NLS-1$
-		java.nio.file.Path defaultPerfPath = java.nio.file.Path.of (userFolder + File.separator + "perf.csv"); //$NON-NLS-1$
-		java.nio.file.Path perfPath = (sPerfPath == null || sPerfPath.trim ().length () == 0)
-			? defaultPerfPath
-			: java.nio.file.Path.of (sPerfPath.trim ());
+		java.nio.file.Path perfPath;
+		if (sPerfPath == null || sPerfPath.trim ().length () == 0) {
+			String stamp = java.time.LocalDateTime.now ()
+				.format (java.time.format.DateTimeFormatter.ofPattern ("yyyyMMdd-HHmmss"));
+			perfPath = java.nio.file.Path.of (userFolder + File.separator + "perf-" + stamp + ".csv");
+		} else {
+			perfPath = java.nio.file.Path.of (sPerfPath.trim ());
+		}
 		Log.log (Log.LEVEL_DEBUG, "Resolving PerfStats csv path: " + perfPath, "Game"); //$NON-NLS-1$ //$NON-NLS-2$
 		PerfStatsConfig perfConfig = PerfStatsConfig.fromProperties (Towns.propertiesMain, perfPath);
 		PerfStats.init (perfConfig);

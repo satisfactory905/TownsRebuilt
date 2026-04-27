@@ -72,9 +72,25 @@ that silently disables the dumper, and that gets logged).
    default schema.
 4. Quit cleanly (main menu → exit, or close the window). The shutdown hook
    flushes the partial-second tail row.
-5. The CSV is at `~/.towns/perf.csv` (Windows: `C:/Users/<name>/.towns/perf.csv`).
-   The file is **truncated on each launch** — copy or rename it before
-   re-launching if you want to keep it.
+5. The CSV is at `~/.towns/perf-YYYYMMDD-HHMMSS.csv` (Windows:
+   `C:/Users/<name>/.towns/perf-YYYYMMDD-HHMMSS.csv`). **Each launch
+   creates a new file** named with the launch timestamp, so prior runs
+   are preserved automatically — no rename step needed. Lexical sort
+   matches chronological sort, so the latest file is the lexically
+   last one. To grab the most recent run programmatically:
+
+   ```bash
+   # bash / git-bash / WSL
+   ls -1 ~/.towns/perf-*.csv | tail -1
+
+   # PowerShell
+   Get-ChildItem $env:USERPROFILE\.towns\perf-*.csv |
+       Sort-Object Name | Select-Object -Last 1
+   ```
+
+   To override the default location, set `PERF_LOG_PATH` in
+   `towns.ini` to an absolute path. With an explicit path no
+   timestamp is appended — you own the naming.
 
 ### A/B comparison between two builds
 
@@ -84,14 +100,15 @@ Standard workflow when measuring an optimization:
 # 1. Capture baseline on the unchanged branch.
 git -C Towns checkout main
 mvn -f Towns/pom.xml exec:exec
-# play, exit
-cp ~/.towns/perf.csv ~/.towns/perf.baseline.csv
+# play, exit. Note the new perf-YYYYMMDD-HHMMSS.csv that just appeared
+# in ~/.towns/. Optionally rename for clarity:
+mv ~/.towns/perf-2026*.csv ~/.towns/perf.baseline.csv
 
 # 2. Switch to the optimization branch and re-run with matching playstyle.
 git -C Towns checkout the-optimization-branch
 mvn -f Towns/pom.xml exec:exec
 # play similarly, exit
-cp ~/.towns/perf.csv ~/.towns/perf.optimized.csv
+mv ~/.towns/perf-2026*.csv ~/.towns/perf.optimized.csv
 
 # 3. Compare. Until the analyzer in todo.md ships, a per-A/B 50-line
 #    Python or jq script is sufficient. Useful summaries:
@@ -255,10 +272,20 @@ heavy GC pressure or thread starvation the actual period may stretch. The
 nominal cadence — use it (not `timestamp_iso`) for delta calculations
 between rows.
 
-### File is truncated on each launch
+### Each launch writes a new timestamped file
 
-`~/.towns/perf.csv` starts fresh each time the game launches. Copy /
-rename before re-launching if you need to preserve a session's data.
+`~/.towns/perf-YYYYMMDD-HHMMSS.csv` is created fresh on every launch with
+a per-second-resolution timestamp suffix. Old files are preserved
+indefinitely; clean them up manually when they accumulate
+(`rm ~/.towns/perf-*.csv` to wipe everything; `ls -1 ~/.towns/perf-*.csv
+| head -n -10 | xargs rm` to keep the 10 most recent).
+
+The earlier "truncated on each launch" semantic was a usability trap on
+Windows: a stale OS-level lock on `perf.csv` (held by Explorer preview,
+a tail process, or a JVM that didn't shut down cleanly) would block the
+next launch's `TRUNCATE_EXISTING` open and silently disable telemetry.
+Timestamped filenames sidestep this entirely — every launch writes to a
+file that didn't exist a second ago.
 
 ### Game-speed and pause are recorded but not normalized
 

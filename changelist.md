@@ -301,3 +301,19 @@ optimization genuinely requires it.
   implications under "Game-speed and pause are recorded but not
   normalized".
 
+- **Timestamped perf CSV filenames** (`perf-YYYYMMDD-HHMMSS.csv`).
+  The original "truncate `perf.csv` on each launch" semantic hit a
+  Windows file-lock issue: a stale lock on the existing `perf.csv`
+  (Explorer preview pane, a tail process, an unclean previous JVM
+  shutdown) would block the next launch's `TRUNCATE_EXISTING` open
+  and silently disable telemetry — exactly what happened on the
+  100-citizen baseline attempt that motivated this fix. Default
+  path now incorporates a per-second launch timestamp, so each
+  launch writes to a unique file that didn't exist a second ago.
+  Side benefit: no manual rename step to preserve baselines across
+  optimization A/B runs — every session is kept automatically.
+  Explicit `PERF_LOG_PATH` in `towns.ini` bypasses the timestamp
+  (user owns their naming when they set that). Lexical sort of
+  filenames matches chronological order, so analysis scripts grab
+  the latest with `ls -1 ~/.towns/perf-*.csv | tail -1`.
+
