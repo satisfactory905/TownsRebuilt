@@ -99,4 +99,41 @@ class WorldNextTurnPacingTest {
 		long fast = World.getTurnIntervalNanosForTest ();
 		assertTrue (slow > fast, "speed 1 interval (" + slow + ") must be larger than speed 5 (" + fast + ")");
 	}
+
+	@Test
+	void nextTurn_whenPausedAndIntervalElapsed_advancesClock () throws Exception {
+		// On the paused path, World.nextTurn must still call markTickComplete
+		// so the next interval is measured from work-end. If this regresses
+		// (e.g., the markTickComplete call gets removed from the paused
+		// branch), the tick would fire on every render frame during pause —
+		// orders would queue uselessly and the tick clock would drift.
+		//
+		// We can't verify "tick body didn't run" cheaply at unit-test level
+		// without mocking subsystems, but we CAN verify the clock advanced,
+		// which is the load-bearing post-condition for the no-catch-up rule
+		// to hold across pause transitions.
+		//
+		// The paused branch calls getTaskManager().executeAll(true), so we
+		// install a fresh empty TaskManager via reflection — World only
+		// constructs one inside generateAll(), which we don't want to run
+		// here. executeAll(true) on an empty TaskManager is a no-op.
+		java.lang.reflect.Field tmField = World.class.getDeclaredField ("taskManager");
+		tmField.setAccessible (true);
+		tmField.set (world, new xaos.tasks.TaskManager ());
+
+		world.setLastTurnTimeNanosForTest (1_000L);
+		Game.setFrameNowForTest (1_000L + 33_333_333L * 2);
+		boolean wasPaused = Game.isPaused ();
+		Game.setPaused (true);
+		try {
+			long before = world.getLastTurnTimeNanosForTest ();
+			world.nextTurn ();
+			long after = world.getLastTurnTimeNanosForTest ();
+			assertTrue (after > before,
+				"paused path must advance the clock via markTickComplete; before="
+					+ before + " after=" + after);
+		} finally {
+			Game.setPaused (wasPaused);
+		}
+	}
 }
