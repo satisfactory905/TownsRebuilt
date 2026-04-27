@@ -87,6 +87,11 @@ public final class PerfStats {
 		MetricSpec.counter ("gl.clear",                                   Category.RENDERING_GL),
 		// ENGINE_SIM
 		MetricSpec.span    ("sim.tick",                                   Category.ENGINE_SIM),
+		MetricSpec.span    ("sim.tick.daily",                             Category.ENGINE_SIM),
+		MetricSpec.span    ("sim.tick.hourly",                            Category.ENGINE_SIM),
+		MetricSpec.span    ("sim.tick.items",                             Category.ENGINE_SIM),
+		MetricSpec.span    ("sim.tick.livings",                           Category.ENGINE_SIM),
+		MetricSpec.span    ("sim.tick.fluids",                            Category.ENGINE_SIM),
 		MetricSpec.span    ("sim.tasks",                                  Category.ENGINE_SIM),
 		MetricSpec.counter ("sim.entities_iterated",                      Category.ENGINE_SIM),
 		// ENGINE_PATH

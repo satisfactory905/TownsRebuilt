@@ -114,6 +114,20 @@ public final class World implements Externalizable {
 	// here even though World may be loaded before PerfStats.init() runs.
 	private static final SpanHandle SPAN_SIM_TICK =
 		PerfStats.span ("sim.tick", Category.ENGINE_SIM); //$NON-NLS-1$
+	// Sub-spans inside nextTurn so we can attribute sim.tick spikes (200-640ms
+	// events seen in the 100-citizen baseline) to a specific block. Each only
+	// records when its enclosing conditional runs, so the histograms reflect
+	// per-event work cost rather than tick-rate-diluted averages.
+	private static final SpanHandle SPAN_SIM_TICK_DAILY =
+		PerfStats.span ("sim.tick.daily", Category.ENGINE_SIM); //$NON-NLS-1$
+	private static final SpanHandle SPAN_SIM_TICK_HOURLY =
+		PerfStats.span ("sim.tick.hourly", Category.ENGINE_SIM); //$NON-NLS-1$
+	private static final SpanHandle SPAN_SIM_TICK_ITEMS =
+		PerfStats.span ("sim.tick.items", Category.ENGINE_SIM); //$NON-NLS-1$
+	private static final SpanHandle SPAN_SIM_TICK_LIVINGS =
+		PerfStats.span ("sim.tick.livings", Category.ENGINE_SIM); //$NON-NLS-1$
+	private static final SpanHandle SPAN_SIM_TICK_FLUIDS =
+		PerfStats.span ("sim.tick.fluids", Category.ENGINE_SIM); //$NON-NLS-1$
 	private static final CounterHandle CNT_SIM_ENTITIES_ITERATED =
 		PerfStats.counter ("sim.entities_iterated", Category.ENGINE_SIM); //$NON-NLS-1$
 	private static final SpanHandle SPAN_HAPPINESS_RECALC_CITIZEN =
@@ -1617,78 +1631,84 @@ public final class World implements Externalizable {
 		// Fecha
 		turn++;
 		if (turn >= TIME_MODIFIER_DAY) {
-			turn = 0;
-			date.addDay ();
+			try (Span sDaily = SPAN_SIM_TICK_DAILY.start ()) {
+				turn = 0;
+				date.addDay ();
 
-			// Autosave?
-			int iSave = Game.getAutosaveDays ();
-			if (iSave > 0) {
-				currentAutosaveDays++;
-				if ((currentAutosaveDays % iSave) == 0) {
-					String sText = Messages.getString ("World.18"); //$NON-NLS-1$
-					MessagesPanel.addMessage (MessagesPanel.TYPE_SYSTEM, sText, ColorGL.YELLOW);
+				// Autosave?
+				int iSave = Game.getAutosaveDays ();
+				if (iSave > 0) {
+					currentAutosaveDays++;
+					if ((currentAutosaveDays % iSave) == 0) {
+						String sText = Messages.getString ("World.18"); //$NON-NLS-1$
+						MessagesPanel.addMessage (MessagesPanel.TYPE_SYSTEM, sText, ColorGL.YELLOW);
 
-					// Text on top
-					// Para que no parezca que el juego se lagea
-					Game.render ();
-					GL11.glBindTexture (GL11.GL_TEXTURE_2D, Game.TEXTURE_FONT_ID);
-					GL11.glTexEnvf (GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_MODE, GL11.GL_MODULATE);
-					UtilsGL.glBegin (GL11.GL_QUADS);
-					UtilsGL.drawStringWithBorder (sText, MainPanel.renderWidth / 2 - UtilFont.getWidth (sText) / 2, MainPanel.renderHeight / 2 - UtilFont.MAX_HEIGHT / 2, ColorGL.YELLOW, ColorGL.BLACK);
-					UtilsGL.glEnd ();
-					DisplayManager.swapAndPoll ();
-					DisplayManager.sync (Game.FPS_MAINMENU); // Para "capear" a 30 fps
+						// Text on top
+						// Para que no parezca que el juego se lagea
+						Game.render ();
+						GL11.glBindTexture (GL11.GL_TEXTURE_2D, Game.TEXTURE_FONT_ID);
+						GL11.glTexEnvf (GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_MODE, GL11.GL_MODULATE);
+						UtilsGL.glBegin (GL11.GL_QUADS);
+						UtilsGL.drawStringWithBorder (sText, MainPanel.renderWidth / 2 - UtilFont.getWidth (sText) / 2, MainPanel.renderHeight / 2 - UtilFont.MAX_HEIGHT / 2, ColorGL.YELLOW, ColorGL.BLACK);
+						UtilsGL.glEnd ();
+						DisplayManager.swapAndPoll ();
+						DisplayManager.sync (Game.FPS_MAINMENU); // Para "capear" a 30 fps
 
-					CommandPanel.executeCommand (CommandPanel.COMMAND_SAVE, null, null, null, null, 0);
-					currentAutosaveDays = 0;
+						CommandPanel.executeCommand (CommandPanel.COMMAND_SAVE, null, null, null, null, 0);
+						currentAutosaveDays = 0;
+					}
 				}
 			}
 		}
 
 		// Eventos (se refiere a cosa, no a los events)
 		if (turn % TIME_MODIFIER_HOUR == 0) {
-			// Happiness
-			modifyHappiness ();
+			try (Span sHourly = SPAN_SIM_TICK_HOURLY.start ()) {
+				// Happiness
+				modifyHappiness ();
 
-			// Immigrants
-			if (turn % (TIME_MODIFIER_HOUR * 3) == 0) {
-				checkImmigrants ();
-			}
-
-			// Heroes
-			if (date.getDay () > 1 || date.getMonth () > 1 || date.getYear () > 1) {
-				if (turn % (TIME_MODIFIER_HOUR * 2) == 0) {
-					checkHeroesLeave ();
-					checkHeroesCome ();
+				// Immigrants
+				if (turn % (TIME_MODIFIER_HOUR * 3) == 0) {
+					checkImmigrants ();
 				}
-				if (turn % (TIME_MODIFIER_DAY) == 0) {
-					// Cada dia miramos si pilla nuevos amigos
-					checkHeroesFriendships ();
+
+				// Heroes
+				if (date.getDay () > 1 || date.getMonth () > 1 || date.getYear () > 1) {
+					if (turn % (TIME_MODIFIER_HOUR * 2) == 0) {
+						checkHeroesLeave ();
+						checkHeroesCome ();
+					}
+					if (turn % (TIME_MODIFIER_DAY) == 0) {
+						// Cada dia miramos si pilla nuevos amigos
+						checkHeroesFriendships ();
+					}
 				}
-			}
 
-			// Caravans
-			if (date.getDay () > 7 || date.getMonth () > 1 || date.getYear () > 1) {
-				if (turn % (TIME_MODIFIER_HOUR * 7) == 0) {
-					checkCaravansCome ();
+				// Caravans
+				if (date.getDay () > 7 || date.getMonth () > 1 || date.getYear () > 1) {
+					if (turn % (TIME_MODIFIER_HOUR * 7) == 0) {
+						checkCaravansCome ();
+					}
 				}
+
+				// Siege?
+				checkSiege (null);
+
+				// Events
+				checkEvents ();
 			}
-
-			// Siege?
-			checkSiege (null);
-
-			// Events
-			checkEvents ();
 		}
 
 		// Recorremos los items lanzando el nextTurn en cada uno.
 		// Snapshot-based iteration because Item.delete() mutates the items map.
-		itemsIterationBuffer = forEachSnapshotReversed (items, itemsIterationBuffer, (id, oItem) -> {
-			if (oItem.nextTurn ()) {
-				// Borrar item
-				oItem.delete ();
-			}
-		});
+		try (Span sItems = SPAN_SIM_TICK_ITEMS.start ()) {
+			itemsIterationBuffer = forEachSnapshotReversed (items, itemsIterationBuffer, (id, oItem) -> {
+				if (oItem.nextTurn ()) {
+					// Borrar item
+					oItem.delete ();
+				}
+			});
+		}
 
 		// Recorremos los edificios lanzando el nextTurn en cada uno
 		int iIndex = getBuildings ().size () - 1;
@@ -1700,15 +1720,17 @@ public final class World implements Externalizable {
 		}
 
 		// Livings. Snapshot-based iteration because LivingEntity.delete() mutates livingsDiscovered.
-		livingsIterationBuffer = forEachSnapshotReversed (livingsDiscovered, livingsIterationBuffer, (id, oLiving) -> {
-			if (oLiving.nextTurn ()) {
-				// Borrar living
-				oLiving.delete ();
+		try (Span sLivings = SPAN_SIM_TICK_LIVINGS.start ()) {
+			livingsIterationBuffer = forEachSnapshotReversed (livingsDiscovered, livingsIterationBuffer, (id, oLiving) -> {
+				if (oLiving.nextTurn ()) {
+					// Borrar living
+					oLiving.delete ();
 
-				// Tutorial flow
-				Game.updateTutorialFlow (TutorialTrigger.TYPE_INT_KILL, oLiving.getNumericIniHeader (), null);
-			}
-		});
+					// Tutorial flow
+					Game.updateTutorialFlow (TutorialTrigger.TYPE_INT_KILL, oLiving.getNumericIniHeader (), null);
+				}
+			});
+		}
 
 		// Llamamos al nextTurn de los proyectiles
 		// Primero borramos los que toque
@@ -1763,9 +1785,11 @@ public final class World implements Externalizable {
 		}
 
 		// Movimiento de los fluidos (agua, lava, ...)
-		moveFluids (false);
-		if (turn % 128 == 0) {
-			evaporateFluids ();
+		try (Span sFluids = SPAN_SIM_TICK_FLUIDS.start ()) {
+			moveFluids (false);
+			if (turn % 128 == 0) {
+				evaporateFluids ();
+			}
 		}
 
 		// Perf: report total entities iterated this tick (items + buildings + livings + projectiles).

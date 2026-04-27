@@ -301,6 +301,23 @@ optimization genuinely requires it.
   implications under "Game-speed and pause are recorded but not
   normalized".
 
+- **Sub-spans inside `World.nextTurn` for spike attribution.** The
+  100-citizen baseline showed `sim.tick` p99 spiking to 200–640 ms in
+  isolated frames (61% of all observed stutter events), but the
+  top-level `sim.tick` span couldn't say *which* part of `nextTurn`
+  was responsible. Adds five sub-spans under `PERF_ENGINE_SIM` that
+  decompose the body:
+  - `sim.tick.daily` — daily-tick block (date rollover, autosave-if-enabled). Only records when the daily conditional fires.
+  - `sim.tick.hourly` — hourly-tick block (modifyHappiness + checkImmigrants + checkHeroesLeave/Come/Friendships + checkCaravansCome + checkSiege + checkEvents). Only records on hourly ticks.
+  - `sim.tick.items` — items snapshot iteration.
+  - `sim.tick.livings` — livingsDiscovered snapshot iteration.
+  - `sim.tick.fluids` — moveFluids + evaporateFluids.
+
+  Each sub-span's histogram captures per-event work cost rather than a
+  diluted average across all ticks, so a single-frame spike in one
+  block stands out cleanly in p99. Pre-registered in
+  `PerfStats.KNOWN_METRICS` so the CSV schema stays stable from row 1.
+
 - **Timestamped perf CSV filenames** (`perf-YYYYMMDD-HHMMSS.csv`).
   The original "truncate `perf.csv` on each launch" semantic hit a
   Windows file-lock issue: a stale lock on the existing `perf.csv`

@@ -183,6 +183,11 @@ metric still works, just messier to parse).
 | `RENDERING_GL` | `gl.begin_quads` | counter | `UtilsGL.glBegin()` | gated on `mode == GL_QUADS` |
 | `RENDERING_GL` | `gl.clear` | counter | `Game.run()` near `glClear` | |
 | `ENGINE_SIM` | `sim.tick` | span | `World.nextTurn()` | full body |
+| `ENGINE_SIM` | `sim.tick.daily` | span | `World.nextTurn()` daily block | only records on daily ticks (date rollover + autosave-if-enabled) |
+| `ENGINE_SIM` | `sim.tick.hourly` | span | `World.nextTurn()` hourly block | only records on hourly ticks (modifyHappiness + checkImmigrants + checkHeroes* + checkSiege + checkEvents) |
+| `ENGINE_SIM` | `sim.tick.items` | span | `World.nextTurn()` items iteration | every tick |
+| `ENGINE_SIM` | `sim.tick.livings` | span | `World.nextTurn()` livingsDiscovered iteration | every tick |
+| `ENGINE_SIM` | `sim.tick.fluids` | span | `World.nextTurn()` moveFluids + evaporateFluids | every tick |
 | `ENGINE_SIM` | `sim.tasks` | span | `TaskManager.executeAll()` | |
 | `ENGINE_SIM` | `sim.entities_iterated` | counter | `World.nextTurn()` | items + buildings + livings + projectiles per tick |
 | `ENGINE_SIM` | `game.speed` | gauge | `Game.<init>` | latest `World.SPEED` value (1..`SPEED_MAX`, default 3) at dump tick |
