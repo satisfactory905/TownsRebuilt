@@ -1719,10 +1719,17 @@ public final class Game {
 	 */
 	private void handleResize () {
 		if (DisplayManager.wasResized () || DisplayManager.isFullscreen () != displayFullscreen) {
-			// GLFW enforces the minimum via glfwSetWindowSizeLimits (installed in DisplayManager.init),
-			// so the window can never arrive here smaller than MIN_DISPLAY_WIDTH/HEIGHT. No re-init needed.
 			int iWidth = DisplayManager.getWidth ();
 			int iHeight = DisplayManager.getHeight ();
+			// glfwSetWindowSizeLimits only constrains user-driven drag-resizes; it does NOT block
+			// iconification. Alt-tabbing a fullscreen window on Windows fires 0x0 size events.
+			// DisplayManager already filters those, but we defend here too: any degenerate size that
+			// reaches this point would propagate through createMessagesPanel() and similar layout code,
+			// producing negative panel widths and downstream substring crashes.
+			if (iWidth < MIN_DISPLAY_WIDTH || iHeight < MIN_DISPLAY_HEIGHT) {
+				Log.log (Log.LEVEL_DEBUG, "handleResize(): ignoring degenerate size " + iWidth + "x" + iHeight, "Game");
+				return;
+			}
 			Log.log (Log.LEVEL_DEBUG, "handleResize(): " + iWidth + "x" + iHeight + " fullscreen=" + DisplayManager.isFullscreen (), "Game");
 
 			MainPanel.resize (iWidth, iHeight);

@@ -90,6 +90,15 @@ public final class DisplayManager {
         }
 
         glfwSetWindowSizeCallback(window, (win, nw, nh) -> {
+            // Iconified/minimized windows fire 0x0 size events on Windows (alt-tab from
+            // fullscreen, minimize button). glfwSetWindowSizeLimits only constrains user-driven
+            // drag-resizes — it does not block iconification — so degenerate sizes must be filtered
+            // here. Otherwise downstream resize chains derive negative panel widths and string-
+            // splitting code throws (see MessagesPanel.addMessageRender / UtilFont.getMaxCharsByWidth).
+            if (nw <= 0 || nh <= 0) {
+                Log.log(Log.LEVEL_DEBUG, "size callback ignored: " + nw + "x" + nh + " (likely iconified)", "DisplayManager");
+                return;
+            }
             width = nw; height = nh; resized = true;
         });
 
@@ -108,6 +117,12 @@ public final class DisplayManager {
         }
 
         glfwSetFramebufferSizeCallback(window, (win, nw, nh) -> {
+            // Same iconification guard as the window size callback above: 0x0 framebuffer sizes
+            // would later flow into glViewport and break rendering.
+            if (nw <= 0 || nh <= 0) {
+                Log.log(Log.LEVEL_DEBUG, "framebuffer callback ignored: " + nw + "x" + nh + " (likely iconified)", "DisplayManager");
+                return;
+            }
             fbWidth = nw; fbHeight = nh;
         });
 
