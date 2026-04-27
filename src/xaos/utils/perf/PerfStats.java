@@ -54,6 +54,92 @@ public final class PerfStats {
 	static final AtomicLong DISABLED_COUNTER = new AtomicLong (0L);
 
 	/**
+	 * Catalog of every span and counter that v1 instrumentation declares.
+	 * Walked once in {@link #init(PerfStatsConfig)} so that the registry
+	 * pre-creates every Histogram / AtomicLong in enabled categories before
+	 * the dumper writes its first CSV row -- otherwise the schema grows row
+	 * by row as classes load and handles fire for the first time, and the
+	 * resulting CSV has multiple header lines that confuse spreadsheet
+	 * imports.
+	 *
+	 * <p>Samples (gauges) don't appear here -- {@link #sample(String,
+	 * Category, java.util.function.LongSupplier)} already pre-registers
+	 * eagerly because the supplier is provided at declaration time.
+	 *
+	 * <p>Adding a new instrumented metric: append a row to this list. The
+	 * unit tests verify catalog-vs-spec coverage. Forgetting to add a row
+	 * is *not* a crash -- the metric still works via lazy registration --
+	 * but late-registered metrics trigger a header re-emit mid-CSV which
+	 * is the exact thing this catalog exists to prevent.
+	 */
+	static final List<MetricSpec> KNOWN_METRICS = List.of (
+		// RENDERING_FRAME
+		MetricSpec.span    ("frame.total",                                Category.RENDERING_FRAME),
+		MetricSpec.span    ("frame.render.world",                         Category.RENDERING_FRAME),
+		MetricSpec.span    ("frame.render.mouse",                         Category.RENDERING_FRAME),
+		MetricSpec.span    ("frame.render.ui",                            Category.RENDERING_FRAME),
+		MetricSpec.span    ("frame.render.minimap",                       Category.RENDERING_FRAME),
+		MetricSpec.span    ("frame.swap",                                 Category.RENDERING_FRAME),
+		// RENDERING_GL
+		MetricSpec.counter ("gl.bind_texture",                            Category.RENDERING_GL),
+		MetricSpec.counter ("gl.draw_texture",                            Category.RENDERING_GL),
+		MetricSpec.counter ("gl.begin_quads",                             Category.RENDERING_GL),
+		MetricSpec.counter ("gl.clear",                                   Category.RENDERING_GL),
+		// ENGINE_SIM
+		MetricSpec.span    ("sim.tick",                                   Category.ENGINE_SIM),
+		MetricSpec.span    ("sim.tasks",                                  Category.ENGINE_SIM),
+		MetricSpec.counter ("sim.entities_iterated",                      Category.ENGINE_SIM),
+		// ENGINE_PATH
+		MetricSpec.span    ("path.search",                                Category.ENGINE_PATH),
+		MetricSpec.counter ("path.search.count",                          Category.ENGINE_PATH),
+		MetricSpec.counter ("path.queue.depth",                           Category.ENGINE_PATH),
+		// ENGINE_HAPPINESS
+		MetricSpec.span    ("happiness.cache.build.full",                 Category.ENGINE_HAPPINESS),
+		MetricSpec.counter ("happiness.cache.build.tile",                 Category.ENGINE_HAPPINESS),
+		MetricSpec.counter ("happiness.cache.invalidate.item_added",      Category.ENGINE_HAPPINESS),
+		MetricSpec.counter ("happiness.cache.invalidate.item_removed",    Category.ENGINE_HAPPINESS),
+		MetricSpec.counter ("happiness.cache.invalidate.wall_changed",    Category.ENGINE_HAPPINESS),
+		MetricSpec.counter ("happiness.cache.invalidate.mined",           Category.ENGINE_HAPPINESS),
+		MetricSpec.counter ("happiness.cache.invalidate.discovered",      Category.ENGINE_HAPPINESS),
+		MetricSpec.counter ("happiness.cache.tiles_dirtied",              Category.ENGINE_HAPPINESS),
+		MetricSpec.span    ("happiness.recalc.citizen",                   Category.ENGINE_HAPPINESS),
+		// ENGINE_GC
+		MetricSpec.span    ("gc.minor.duration",                          Category.ENGINE_GC),
+		MetricSpec.counter ("gc.minor.count",                             Category.ENGINE_GC),
+		MetricSpec.counter ("gc.minor.freed_mb",                          Category.ENGINE_GC),
+		MetricSpec.span    ("gc.major.duration",                          Category.ENGINE_GC),
+		MetricSpec.counter ("gc.major.count",                             Category.ENGINE_GC),
+		MetricSpec.counter ("gc.major.freed_mb",                          Category.ENGINE_GC)
+	);
+
+	/**
+	 * Spec for one entry in {@link #KNOWN_METRICS}: name + category + which
+	 * registry slot it occupies (span vs counter).
+	 */
+	static final class MetricSpec {
+
+		enum Type { SPAN, COUNTER }
+
+		final String name;
+		final Category category;
+		final Type type;
+
+		private MetricSpec (String name, Category category, Type type) {
+			this.name = name;
+			this.category = category;
+			this.type = type;
+		}
+
+		static MetricSpec span (String name, Category category) {
+			return new MetricSpec (name, category, Type.SPAN);
+		}
+
+		static MetricSpec counter (String name, Category category) {
+			return new MetricSpec (name, category, Type.COUNTER);
+		}
+	}
+
+	/**
 	 * The single live registry. Volatile so handles see init/shutdown
 	 * transitions promptly. {@code null} before init / after shutdown.
 	 */
@@ -91,6 +177,20 @@ public final class PerfStats {
 			Registry r = new Registry (config);
 			registry = r;
 			invalidateAllHandles ();
+
+			// Pre-register every known metric in enabled categories so the
+			// dumper's first CSV row carries the full schema. Without this,
+			// classes that load later (MainPanel, UIPanel, ...) lazy-register
+			// their handles only on first use, which causes the dumper to
+			// re-emit the header line mid-CSV every time a new metric appears.
+			// Disabled categories are skipped (resolveSpan/Counter null-out).
+			for (MetricSpec ms : KNOWN_METRICS) {
+				if (ms.type == MetricSpec.Type.SPAN) {
+					r.resolveSpan (ms.name, ms.category);
+				} else {
+					r.resolveCounter (ms.name, ms.category);
+				}
+			}
 
 			if (!config.isMasterEnabled ()) {
 				Log.log (Log.LEVEL_DEBUG,

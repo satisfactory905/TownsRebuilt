@@ -273,3 +273,31 @@ optimization genuinely requires it.
   tool deferred to `todo.md` until real baseline data exists to inform
   threshold design.
 
+- **Stable CSV schema via known-metrics catalog.** The first baseline
+  capture revealed a usability bug: handles register lazily on first
+  use, so the dumper re-emits the CSV header line every time a new
+  metric fires for the first time (~7 mid-file re-emits across a
+  typical session — `gl.bind_texture` first, then world-load triggers
+  `happiness.cache.*`, then in-game render triggers `frame.render.*`,
+  etc.). This breaks naive spreadsheet imports because the column
+  count changes mid-file. Fixed by adding a `KNOWN_METRICS` catalog
+  inside `PerfStats.java` listing every span and counter from v1
+  instrumentation; `PerfStats.init()` walks the catalog and pre-creates
+  the registry entries for enabled categories, so the dumper's first
+  CSV row carries the full schema with zero counts for not-yet-fired
+  metrics. Late-registered metrics still work via lazy registration —
+  the catalog is just an optimization for known cases. Documented in
+  `perf-testing.md`'s "Adding a new metric" section as step 4.
+
+- **`game.speed` and `game.paused` gauges.** Two new sampled gauges
+  under `PERF_ENGINE_SIM` capture the current `World.SPEED` value
+  (1..`SPEED_MAX`, default 3) and `Game.isPaused()` (0 or 1) at each
+  CSV tick. Lets the analyst attribute a stutter row to the speed
+  setting active at the time, distinguish "paused frame" from
+  "running but very fast", and filter rows by speed when comparing
+  runs. The harness still measures wall-clock time, not game-time, so
+  per-call durations (`p50`/`p99` on `sim.tick` etc.) are unaffected
+  by speed; only counts scale. `perf-testing.md` covers the analysis
+  implications under "Game-speed and pause are recorded but not
+  normalized".
+

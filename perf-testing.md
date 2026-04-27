@@ -145,8 +145,13 @@ average without surprises.
 
 ## Metric reference (v1)
 
-13 spans + 19 counters + 3 gauges = 35 metrics, ~102 CSV columns when all
-categories are on.
+13 spans + 18 counters + 5 gauges = 36 metrics, ~107 CSV columns when all
+categories are on. Schema is **stable from row 1** — every metric in an
+enabled category appears in the header on the first dump tick, with zero
+counts until the metric first fires. This is enforced by a `KNOWN_METRICS`
+catalog inside `PerfStats.java`; adding a new instrumented metric requires
+appending one row there or you'll get a mid-CSV header re-emit (the
+metric still works, just messier to parse).
 
 | Category | Metric | Type | Where it lives | Notes |
 |---|---|---|---|---|
@@ -163,6 +168,8 @@ categories are on.
 | `ENGINE_SIM` | `sim.tick` | span | `World.nextTurn()` | full body |
 | `ENGINE_SIM` | `sim.tasks` | span | `TaskManager.executeAll()` | |
 | `ENGINE_SIM` | `sim.entities_iterated` | counter | `World.nextTurn()` | items + buildings + livings + projectiles per tick |
+| `ENGINE_SIM` | `game.speed` | gauge | `Game.<init>` | latest `World.SPEED` value (1..`SPEED_MAX`, default 3) at dump tick |
+| `ENGINE_SIM` | `game.paused` | gauge | `Game.<init>` | 1 if `Game.isPaused()` at dump tick, else 0 |
 | `ENGINE_PATH` | `path.search` | span | `AStarQueue` | per `item.search(...)` call |
 | `ENGINE_PATH` | `path.search.count` | counter | `AStarQueue` | per `search()` call |
 | `ENGINE_PATH` | `path.queue.depth` | counter | `AStarQueue` | sampled once per outer cycle |
@@ -253,11 +260,31 @@ between rows.
 `~/.towns/perf.csv` starts fresh each time the game launches. Copy /
 rename before re-launching if you need to preserve a session's data.
 
+### Game-speed and pause are recorded but not normalized
+
+`game.speed` and `game.paused` capture the *current* speed multiplier
+and pause state at dump time. The harness measures **wall-clock** time,
+not game-time, so:
+
+- At 4× speed, `sim.tick.count` per real second is ~4× higher (more
+  ticks fire per real second), but per-call duration (`p50`/`p99` of
+  `sim.tick`) is unchanged — same code, same cost per call.
+- During pause, `sim.*` counts and `path.*` activity drop to ~0, but
+  `frame.*` and `gl.*` keep ticking at full rate (rendering continues).
+- Two CSV runs at different speeds will look very different in *total*
+  counts even if per-call performance is identical. To compare runs
+  apples-to-apples, either play both at 1× speed and 0 pause, or
+  filter rows by `game.speed` / `game.paused` in post-processing.
+
+For the renderer A/B specifically, speed doesn't matter — rendering is
+pinned to 30 FPS regardless. Just play both runs at any consistent
+speed.
+
 ---
 
 ## Adding a new metric
 
-Three steps:
+Four steps:
 
 1. **Pick a category.** `Category.java` has six values; reuse one if it
    fits, or add a new enum value. New categories also need a new
@@ -292,8 +319,17 @@ Three steps:
    PerfStats.sample("foo.bar.gauge", Category.ENGINE_FOO, () -> someCurrentValue());
    ```
 
-The CSV schema regenerates automatically — adding a metric mid-session
-re-emits the header line so the new columns appear.
+4. **Append a row to `KNOWN_METRICS` in `PerfStats.java`** so the dumper
+   pre-registers the metric at init time and the CSV schema is stable
+   from row 1. Forgetting this isn't a crash — the metric still works
+   via lazy registration — but late-registered metrics trigger a
+   header re-emit mid-CSV, which is exactly what the catalog exists
+   to prevent.
+
+   Samples (gauges) are exempt — `PerfStats.sample(...)` registers
+   eagerly because the supplier is supplied at declaration time, so
+   long as that call happens before the first dump tick the schema
+   stays stable.
 
 ---
 

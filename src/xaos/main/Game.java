@@ -223,6 +223,14 @@ public final class Game {
 		PerfStatsConfig perfConfig = PerfStatsConfig.fromProperties (Towns.propertiesMain, perfPath);
 		PerfStats.init (perfConfig);
 
+		// Game-state sampled gauges, written once per CSV tick. Lets the
+		// analyst attribute a stutter row to the speed setting active at
+		// the time, and distinguish "paused" from "running but very fast".
+		// World.SPEED is 1..SPEED_MAX (default 3); Game.isPaused() is
+		// 0 or 1 in the gauge column.
+		PerfStats.sample ("game.speed", Category.ENGINE_SIM, () -> World.SPEED);
+		PerfStats.sample ("game.paused", Category.ENGINE_SIM, () -> Game.isPaused () ? 1L : 0L);
+
 		// Musica?
 		musicON = Boolean.parseBoolean (Towns.getPropertiesString ("MUSIC")); //$NON-NLS-1$
 		FXON = Boolean.parseBoolean (Towns.getPropertiesString ("FX")); //$NON-NLS-1$
