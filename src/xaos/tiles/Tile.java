@@ -98,7 +98,7 @@ public class Tile implements Externalizable {
         // ANIMATION
         // Guardamos el numero de tiles para la animacion
         setAnimationTiles(Towns.getPropertiesInt(PropertyFile.PROPERTY_FILE_GRAPHICS, "[" + getIniHeader() + "]ANIMATION_TILES")); //$NON-NLS-1$ //$NON-NLS-2$
-        setAnimationFrameDelay(Towns.getPropertiesInt(PropertyFile.PROPERTY_FILE_GRAPHICS, "[" + getIniHeader() + "]ANIMATION_FRAME_DELAY", Game.FPS_INGAME)); //$NON-NLS-1$ //$NON-NLS-2$
+        setAnimationFrameDelay(Towns.getPropertiesInt(PropertyFile.PROPERTY_FILE_GRAPHICS, "[" + getIniHeader() + "]ANIMATION_FRAME_DELAY", Game.REFERENCE_FPS)); //$NON-NLS-1$ //$NON-NLS-2$
         setCurrentAnimationTile(0);
         setCurrentFrameDelay(Utils.getRandomBetween(0, getAnimationFrameDelay() - 1));
     }
@@ -452,7 +452,7 @@ public class Tile implements Externalizable {
         setTileSize(sNewIniHeader, getIniHeader());
         setTileSetTexCoordinates();
         setAnimationTiles(Towns.getPropertiesInt(PropertyFile.PROPERTY_FILE_GRAPHICS, "[" + sNewIniHeader + "]ANIMATION_TILES")); //$NON-NLS-1$ //$NON-NLS-2$
-        setAnimationFrameDelay(Towns.getPropertiesInt(PropertyFile.PROPERTY_FILE_GRAPHICS, "[" + sNewIniHeader + "]ANIMATION_FRAME_DELAY", Game.FPS_INGAME)); //$NON-NLS-1$ //$NON-NLS-2$
+        setAnimationFrameDelay(Towns.getPropertiesInt(PropertyFile.PROPERTY_FILE_GRAPHICS, "[" + sNewIniHeader + "]ANIMATION_FRAME_DELAY", Game.REFERENCE_FPS)); //$NON-NLS-1$ //$NON-NLS-2$
         setCurrentAnimationTile(0);
         setCurrentFrameDelay(Utils.getRandomBetween(0, getAnimationFrameDelay() - 1));
     }

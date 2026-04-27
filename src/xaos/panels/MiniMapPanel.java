@@ -46,7 +46,7 @@ public final class MiniMapPanel {
         renderY = y;
         renderWidth = width;
         renderHeight = height;
-        textureRefreshRate = Game.FPS_INGAME;
+        textureRefreshRate = Game.REFERENCE_FPS;
 
         if (minimapTextures != null) {
             for (TextureData textureData : minimapTextures) {
@@ -73,7 +73,7 @@ public final class MiniMapPanel {
 
             textureRefreshRate--;
             if (textureRefreshRate < 0) {
-                textureRefreshRate = Game.FPS_INGAME; // Cada segundo refresh
+                textureRefreshRate = Game.REFERENCE_FPS; // Cada segundo refresh
             }
 
             // Pintamos la textura

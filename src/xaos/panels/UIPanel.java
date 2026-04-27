@@ -5436,7 +5436,7 @@ public final class UIPanel {
 				return MOUSE_PRODUCTION_PANEL;
 			}
 			if (doEdgeMenusStuff) {
-				if (delayTime > (Game.FPS_INGAME / 8) * 6) {
+				if (delayTime > (Game.REFERENCE_FPS / 8) * 6) {
 					if (!isProductionPanelLocked () && !isMouseOnAnIcon (x, y, tileOpenCloseProductionPanelPoint, tileOpenProductionPanel, tileOpenProductionPanelAlpha)) {
 						delayTime = 0;
 						setProductionPanelActive (false);
@@ -5520,7 +5520,7 @@ public final class UIPanel {
 			}
 
 			if (doEdgeMenusStuff) {
-				if (delayTime > (Game.FPS_INGAME / 8) * 6) {
+				if (delayTime > (Game.REFERENCE_FPS / 8) * 6) {
 					if (!isBottomMenuPanelLocked () && !isMouseOnAnIcon (x, y, tileOpenCloseBottomMenuPoint, tileOpenBottomMenu, tileOpenBottomMenuAlpha)) {
 						delayTime = 0;
 						setBottomMenuPanelActive (false);
@@ -5568,7 +5568,7 @@ public final class UIPanel {
 			}
 
 			if (doEdgeMenusStuff) {
-				if (delayTime > (Game.FPS_INGAME / 8) * 6) {
+				if (delayTime > (Game.REFERENCE_FPS / 8) * 6) {
 					if (!isMenuPanelLocked () && !isMouseOnAnIcon (x, y, tileOpenCloseRightMenuPoint, tileOpenRightMenu, tileOpenRightMenuAlpha)) {
 						delayTime = 0;
 						setMenuPanelActive (false);
