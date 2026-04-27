@@ -111,6 +111,13 @@ public final class Game {
 	public final static String BURY_FOLDER1 = "bury"; //$NON-NLS-1$
 	public final static String SCREENSHOTS_FOLDER1 = "screenshots"; //$NON-NLS-1$
 
+	/** Historical reference frame rate. Used by legacy frame-counted timers
+	 *  that predate wall-clock pacing — animation defaults, minimap refresh
+	 *  cadence, hover/repeat delays. New code paces from wall-clock using
+	 *  {@link #REFERENCE_FRAME_NANOS} instead. */
+	public static final int REFERENCE_FPS = 30;
+	public static final long REFERENCE_FRAME_NANOS = 1_000_000_000L / REFERENCE_FPS;
+
 	public static int FPS_MAINMENU = 30;
 	public static int FPS_INGAME = 30;
 
