@@ -68,13 +68,15 @@ public final class UIPanel {
 
 	public static int PIXELS_TO_BORDER = 16;
 	private static final int CLOSE_PIXELS = 20;
-	public static final int MAX_BLINK_TURNS = Game.FPS_INGAME;
+	public static final int MAX_BLINK_TURNS = 30;                    // step count — kept at 30 so divide-by-2 stays integer-clean
+	private static final long BLINK_CYCLE_NANOS = 1_000_000_000L;    // 1 second wall-clock cycle
+	private static long blinkCycleStartNanos = Long.MIN_VALUE;    // Long.MIN_VALUE = uninitialized
 
-	private static Tile BACK_TILE = new Tile ("ui_back"); //$NON-NLS-1$
-	public static Tile BLACK_TILE = new Tile ("ui_black"); //$NON-NLS-1$
-	public static Tile BIG_RED_CROSS_TILE = new Tile ("iconredcross"); //$NON-NLS-1$
-	public static Tile ENABLE_ALL_TILE = new Tile ("iconenableall"); //$NON-NLS-1$
-	public static Tile DISABLE_ALL_TILE = new Tile ("icondisableall"); //$NON-NLS-1$
+	private static Tile BACK_TILE; // initialized in generateTiles()
+	public static Tile BLACK_TILE; // initialized in generateTiles()
+	public static Tile BIG_RED_CROSS_TILE; // initialized in generateTiles()
+	public static Tile ENABLE_ALL_TILE; // initialized in generateTiles()
+	public static Tile DISABLE_ALL_TILE; // initialized in generateTiles()
 
 	public final static int MOUSE_NONE = 0;
 	public final static int MOUSE_BOTTOM_PANEL = 1;
@@ -437,6 +439,31 @@ public final class UIPanel {
 
 	private static int delayTime;
 	public static int blinkTurns;
+
+	/** Update {@link #blinkTurns} from a wall-clock time. Cycle is exactly
+	 *  {@link #BLINK_CYCLE_NANOS} (1 second) regardless of render rate.
+	 *  Called once at the top of {@link #render()}. */
+	public static void advanceBlinkTurns (long frameNow) {
+		if (blinkCycleStartNanos == Long.MIN_VALUE) {
+			blinkCycleStartNanos = frameNow;
+			blinkTurns = 0;
+			return;
+		}
+		long elapsed = frameNow - blinkCycleStartNanos;
+		if (elapsed >= BLINK_CYCLE_NANOS) {
+			blinkCycleStartNanos += BLINK_CYCLE_NANOS;    // advance by exactly one cycle so position stays correct
+			blinkTurns = 0;
+			return;
+		}
+		blinkTurns = (int) ((elapsed * MAX_BLINK_TURNS) / BLINK_CYCLE_NANOS);
+	}
+
+	/** Test-only: reset cycle state so each test starts from a clean slate. */
+	static void resetBlinkStateForTest () {
+		blinkCycleStartNanos = Long.MIN_VALUE;
+		blinkTurns = 0;
+	}
+
 	private static SmartMenu currentMenu;
 	private static boolean bottomMenuPanelActive = true;
 	private static boolean bottomMenuPanelLocked = true;
@@ -518,12 +545,12 @@ public final class UIPanel {
 	private static TradePanel tradePanel;
 	private static boolean tradePanelActive = false;
 	private static boolean tradePanelActivePausedBefore = false;
-	public static Tile tileScrollUp = new Tile ("scrollup"); //$NON-NLS-1$
-	public static Tile tileScrollUpDisabled = new Tile ("scrollup_disabled"); //$NON-NLS-1$
-	public static final boolean tileScrollUpButtonAlpha[][] = UtilsGL.generateAlpha (tileScrollUp);
-	public static Tile tileScrollDown = new Tile ("scrolldown"); //$NON-NLS-1$
-	public static Tile tileScrollDownDisabled = new Tile ("scrolldown_disabled"); //$NON-NLS-1$
-	public static final boolean tileScrollDownButtonAlpha[][] = UtilsGL.generateAlpha (tileScrollDown);
+	public static Tile tileScrollUp; // initialized in generateTiles()
+	public static Tile tileScrollUpDisabled; // initialized in generateTiles()
+	public static boolean tileScrollUpButtonAlpha[][]; // initialized in generateTiles()
+	public static Tile tileScrollDown; // initialized in generateTiles()
+	public static Tile tileScrollDownDisabled; // initialized in generateTiles()
+	public static boolean tileScrollDownButtonAlpha[][]; // initialized in generateTiles()
 
 	// PRIORITIES panel
 	private static Tile[] tilePrioritiesPanel;
@@ -573,16 +600,16 @@ public final class UIPanel {
 	private static SmartMenu menuPile = null;
 	private static int pilePanelPageIndex = -1;
 	private static int pilePanelMaxPages = -1;
-	public static Tile tileConfigCopy = new Tile ("configcopy"); //$NON-NLS-1$
-	public static final boolean tileConfigCopyButtonAlpha[][] = UtilsGL.generateAlpha (tileConfigCopy);
-	public static Tile tileConfigLock = new Tile ("configlock"); //$NON-NLS-1$
-	public static final boolean tileConfigLockButtonAlpha[][] = UtilsGL.generateAlpha (tileConfigLock);
-	public static Tile tileConfigLockLocked = new Tile ("configlocklocked"); //$NON-NLS-1$
-	public static final boolean tileConfigLockLockedButtonAlpha[][] = UtilsGL.generateAlpha (tileConfigLockLocked);
-	public static Tile tileConfigLockAll = new Tile ("configlockall"); //$NON-NLS-1$
-	public static final boolean tileConfigLockAllButtonAlpha[][] = UtilsGL.generateAlpha (tileConfigLockAll);
-	public static Tile tileConfigUnlockAll = new Tile ("configunlockall"); //$NON-NLS-1$
-	public static final boolean tileConfigUnlockAllButtonAlpha[][] = UtilsGL.generateAlpha (tileConfigUnlockAll);
+	public static Tile tileConfigCopy; // initialized in generateTiles()
+	public static boolean tileConfigCopyButtonAlpha[][]; // initialized in generateTiles()
+	public static Tile tileConfigLock; // initialized in generateTiles()
+	public static boolean tileConfigLockButtonAlpha[][]; // initialized in generateTiles()
+	public static Tile tileConfigLockLocked; // initialized in generateTiles()
+	public static boolean tileConfigLockLockedButtonAlpha[][]; // initialized in generateTiles()
+	public static Tile tileConfigLockAll; // initialized in generateTiles()
+	public static boolean tileConfigLockAllButtonAlpha[][]; // initialized in generateTiles()
+	public static Tile tileConfigUnlockAll; // initialized in generateTiles()
+	public static boolean tileConfigUnlockAllButtonAlpha[][]; // initialized in generateTiles()
 
 	// PROFESSIONS panel
 	private static Point professionsPanelPoint = new Point (0, 0);
@@ -759,9 +786,9 @@ public final class UIPanel {
 	private static Point tileOpenCloseRightMenuPoint = new Point (0, 0);
 
 	// Close panels
-	public static Tile tileButtonClose = new Tile ("panel_close"); //$NON-NLS-1$
-	public static Tile tileButtonCloseDisabled = new Tile ("panel_close_disabled"); //$NON-NLS-1$
-	public static final boolean tileButtonCloseAlpha[][] = UtilsGL.generateAlpha (tileButtonClose);
+	public static Tile tileButtonClose; // initialized in generateTiles()
+	public static Tile tileButtonCloseDisabled; // initialized in generateTiles()
+	public static boolean tileButtonCloseAlpha[][]; // initialized in generateTiles()
 
 	// MINI-ICONS
 	private static boolean tileIconNextMiniAlpha[][];
@@ -958,6 +985,34 @@ public final class UIPanel {
 	 * Genera los tiles de la UI con su alpha y tal
 	 */
 	private static void generateTiles () {
+		BACK_TILE = new Tile ("ui_back"); //$NON-NLS-1$
+		BLACK_TILE = new Tile ("ui_black"); //$NON-NLS-1$
+		BIG_RED_CROSS_TILE = new Tile ("iconredcross"); //$NON-NLS-1$
+		ENABLE_ALL_TILE = new Tile ("iconenableall"); //$NON-NLS-1$
+		DISABLE_ALL_TILE = new Tile ("icondisableall"); //$NON-NLS-1$
+
+		tileScrollUp = new Tile ("scrollup"); //$NON-NLS-1$
+		tileScrollUpDisabled = new Tile ("scrollup_disabled"); //$NON-NLS-1$
+		tileScrollUpButtonAlpha = UtilsGL.generateAlpha (tileScrollUp);
+		tileScrollDown = new Tile ("scrolldown"); //$NON-NLS-1$
+		tileScrollDownDisabled = new Tile ("scrolldown_disabled"); //$NON-NLS-1$
+		tileScrollDownButtonAlpha = UtilsGL.generateAlpha (tileScrollDown);
+
+		tileConfigCopy = new Tile ("configcopy"); //$NON-NLS-1$
+		tileConfigCopyButtonAlpha = UtilsGL.generateAlpha (tileConfigCopy);
+		tileConfigLock = new Tile ("configlock"); //$NON-NLS-1$
+		tileConfigLockButtonAlpha = UtilsGL.generateAlpha (tileConfigLock);
+		tileConfigLockLocked = new Tile ("configlocklocked"); //$NON-NLS-1$
+		tileConfigLockLockedButtonAlpha = UtilsGL.generateAlpha (tileConfigLockLocked);
+		tileConfigLockAll = new Tile ("configlockall"); //$NON-NLS-1$
+		tileConfigLockAllButtonAlpha = UtilsGL.generateAlpha (tileConfigLockAll);
+		tileConfigUnlockAll = new Tile ("configunlockall"); //$NON-NLS-1$
+		tileConfigUnlockAllButtonAlpha = UtilsGL.generateAlpha (tileConfigUnlockAll);
+
+		tileButtonClose = new Tile ("panel_close"); //$NON-NLS-1$
+		tileButtonCloseDisabled = new Tile ("panel_close_disabled"); //$NON-NLS-1$
+		tileButtonCloseAlpha = UtilsGL.generateAlpha (tileButtonClose);
+
 		/*
 		 * BOTTOM
 		 */
@@ -1517,10 +1572,7 @@ public final class UIPanel {
 		int mouseX = InputState.getMouseX ();
 		int mouseY = InputState.getMouseY ();
 		delayTime++;
-		blinkTurns++;
-		if (blinkTurns >= MAX_BLINK_TURNS) {
-			blinkTurns = 0;
-		}
+		advanceBlinkTurns (Game.getFrameNow ());
 
 		int mousePanel = isMouseOnAPanel (mouseX, mouseY, true);
 
