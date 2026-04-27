@@ -118,6 +118,17 @@ public final class Game {
 	public static final int REFERENCE_FPS = 30;
 	public static final long REFERENCE_FRAME_NANOS = 1_000_000_000L / REFERENCE_FPS;
 
+	/** Wall-clock time at the start of the current Game.run() iteration.
+	 *  Captured once per frame and read by every consumer in that iteration
+	 *  via {@link #getFrameNow()} so they all see the same time reference. */
+	private static long frameNowNanos;
+
+	public static long getFrameNow () { return frameNowNanos; }
+
+	/** Test-only: directly set the frame clock so unit tests can drive
+	 *  pacing-dependent logic deterministically. Package-private. */
+	static void setFrameNowForTest (long nanos) { frameNowNanos = nanos; }
+
 	public static int FPS_MAINMENU = 30;
 	public static int FPS_INGAME = 30;
 
@@ -1394,6 +1405,7 @@ public final class Game {
 		UtilsAL.play (UtilsAL.SOURCE_MUSIC_MAINMENU);
 		while (!DisplayManager.isCloseRequested ()) {
 			try (Span frameSpan = SPAN_FRAME_TOTAL.start ()) {
+				frameNowNanos = System.nanoTime ();
 				handleResize ();
 
 				// Tratamos los eventos del mouse
