@@ -156,6 +156,13 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 
 	private transient int checkLOSCounter;
 	private transient int skillAnimationCounter;
+	/** Wall-clock time of the most recent {@link #advanceSkillAnimationIfDue(long, int)}
+	 *  advance. Throttles the per-render skill-effect-icon blink cycle to
+	 *  ~30 FPS regardless of actual render rate. Same pattern as
+	 *  {@link #lastPathOffsetUpdateNanos}: under uncapped renders the
+	 *  per-frame counter would cycle far faster than the original 30 FPS
+	 *  engine, making the icon flicker. Transient — bootstraps on first call. */
+	private transient long lastSkillAnimationUpdateNanos = 0L;
 
 	// Food
 	private int foodNeededTurns;
@@ -1060,6 +1067,40 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 
 	public int getSkillAnimationCounter () {
 		return skillAnimationCounter;
+	}
+
+
+	/**
+	 * Advance the per-entity skill-effect-icon blink counter, throttled to
+	 * ~30 FPS cadence regardless of render rate. Returns the post-advance
+	 * value so the caller can use the same value the local cycle of the
+	 * original code used (the original incremented a local copy, then both
+	 * stored and read from that local). When the throttle skips (interval
+	 * not yet elapsed), returns the current stored value so visual output
+	 * stays consistent across multiple renders within one tick.
+	 *
+	 * <p>Called from {@code MainPanel.renderEntities} once per render per
+	 * affected entity; replaces the previous unthrottled increment that
+	 * caused the icon to flicker far faster than intended at uncapped FPS.
+	 *
+	 * @param frameNow {@link Game#getFrameNow()} at the call site
+	 * @param numEffects number of effects on this entity (>= 1); the cycle
+	 *                   length is {@code numEffects * 16}
+	 * @return the counter value the caller should use for display this frame
+	 */
+	public int advanceSkillAnimationIfDue (long frameNow, int numEffects) {
+		if (lastSkillAnimationUpdateNanos != 0L
+			&& (frameNow - lastSkillAnimationUpdateNanos) < Game.REFERENCE_FRAME_NANOS) {
+			return skillAnimationCounter;
+		}
+		lastSkillAnimationUpdateNanos = frameNow;
+		int next = skillAnimationCounter + 1;
+		if (next >= numEffects * 16) {
+			skillAnimationCounter = 0;
+		} else {
+			skillAnimationCounter = next;
+		}
+		return next;
 	}
 
 

@@ -1421,13 +1421,7 @@ public final class MainPanel {
 			// Haremos 8 turnos mostrando, 8 sin mostrar, 8 mostrando ..... alternando entre efectos
 			int iNumEffects = le.getLivingEntityData ().getEffects ().size ();
 			if (iNumEffects > 0) {
-				int iCurrentCounter = le.getSkillAnimationCounter ();
-				iCurrentCounter++;
-				if (iCurrentCounter >= (iNumEffects * 2 * 8)) { // El x2 es para el mostrar / no mostrar
-					le.setSkillAnimationCounter (0);
-				} else {
-					le.setSkillAnimationCounter (iCurrentCounter);
-				}
+				int iCurrentCounter = le.advanceSkillAnimationIfDue (Game.getFrameNow (), iNumEffects);
 
 				// Usamos la misma variable para ver que skill mirar
 				int iIndexSkill = iCurrentCounter / 16;
