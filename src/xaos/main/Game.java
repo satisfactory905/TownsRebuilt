@@ -129,7 +129,7 @@ public final class Game {
 	 *  pacing-dependent logic deterministically. */
 	public static void setFrameNowForTest (long nanos) { frameNowNanos = nanos; }
 
-	public static final int FPS_MAINMENU = 30;      // hardcoded — main menu light, no animation worth uncapping
+	public static final int FPS_MAINMENU = 60;      // hardcoded — menu / loading-screen cap; bumped from 30 for smoother cursor and menu transitions
 	public static int FPS_CAP = 0;                  // user-configurable; 0 = unlimited
 	private static boolean vsync = true;            // user-configurable
 
@@ -1432,7 +1432,7 @@ public final class Game {
 				}
 
 				if (getPanelMainMenu ().isActive ()) {
-					DisplayManager.sync (FPS_MAINMENU); // Para "capear" a 30 fps
+					DisplayManager.sync (FPS_MAINMENU); // Para "capear" a 60 fps
 				} else if (FPS_CAP > 0) {
 					DisplayManager.sync (FPS_CAP); // user-configured cap
 				}

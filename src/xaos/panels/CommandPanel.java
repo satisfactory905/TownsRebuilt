@@ -1043,7 +1043,7 @@ public final class CommandPanel {
                     MainMenuPanel.loadingGame = true;
                     Game.getPanelMainMenu().render();
                     DisplayManager.swapAndPoll();
-                    DisplayManager.sync(Game.FPS_MAINMENU); // Para "capear" a 30 fps
+                    DisplayManager.sync(Game.FPS_MAINMENU); // Para "capear" a 60 fps
                     GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_ACCUM_BUFFER_BIT | GL11.GL_STENCIL_BUFFER_BIT);
                     Game.startGame(sParameter, sParameter2);
             	}
