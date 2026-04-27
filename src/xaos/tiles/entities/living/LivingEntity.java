@@ -144,6 +144,16 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 	private Point2D.Float positionOffset = new Point2D.Float (0, 0); // Se usa en el dibujado, para ir moviendo poco a poco a la living (en vez de celda a celda)
 	private Point2D.Float positionOffsetConstants = new Point2D.Float (0, 0); // Se usa en el dibujado, es lo que hay que anadir al offset a cada frame
 
+	/** Wall-clock time of the most recent {@link #updatePathOffsets()} accumulation.
+	 *  Throttles the per-render walk-interpolation accumulator to the original
+	 *  ~30 FPS cadence (one accumulation per {@link Game#REFERENCE_FRAME_NANOS}),
+	 *  so the visual sprite advances at the same rate as it did under the
+	 *  pre-decoupling 30 FPS engine regardless of actual render rate. Without
+	 *  this throttle, uncapped renders would accumulate the offset many times
+	 *  per sim tick, causing the sprite to overshoot the destination cell
+	 *  before the sim tick resets it. Transient — bootstraps on first call. */
+	private transient long lastPathOffsetUpdateNanos = 0L;
+
 	private transient int checkLOSCounter;
 	private transient int skillAnimationCounter;
 
@@ -525,15 +535,29 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 
 
 	/**
-	 * Actualiza el offset segun la constante
+	 * Actualiza el offset segun la constante. Throttled to fire at most once
+	 * per {@link Game#REFERENCE_FRAME_NANOS} (~33ms) — at uncapped render rates
+	 * the per-render accumulation would otherwise overshoot the destination
+	 * cell before the sim tick resets the offset. positionOffsetConstants is
+	 * sized assuming 30 FPS pacing (see updatePathConstantOffsets, which uses
+	 * World.FRAMES_PER_TURN to derive the per-update increment), so firing at
+	 * the original 30-frames-per-second cadence preserves the pre-decoupling
+	 * visual behavior exactly.
 	 */
 	public void updatePathOffsets () {
-		if (!Game.isPaused ()) {
-			Point2D.Float pTMP = getPositionOffset ();
-			Point2D.Float pTMP2 = getPositionOffsetConstants ();
-			pTMP.x += pTMP2.x;
-			pTMP.y += pTMP2.y;
+		if (Game.isPaused ()) {
+			return;
 		}
+		long frameNow = Game.getFrameNow ();
+		if (lastPathOffsetUpdateNanos != 0L
+			&& (frameNow - lastPathOffsetUpdateNanos) < Game.REFERENCE_FRAME_NANOS) {
+			return;
+		}
+		lastPathOffsetUpdateNanos = frameNow;
+		Point2D.Float pTMP = getPositionOffset ();
+		Point2D.Float pTMP2 = getPositionOffsetConstants ();
+		pTMP.x += pTMP2.x;
+		pTMP.y += pTMP2.y;
 	}
 
 
@@ -541,6 +565,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 		Point2D.Float pTMP = getPositionOffset ();
 		pTMP.x = 0;
 		pTMP.y = 0;
+		lastPathOffsetUpdateNanos = 0L;
 	}
 
 
