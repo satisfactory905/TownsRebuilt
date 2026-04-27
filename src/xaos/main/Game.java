@@ -129,7 +129,21 @@ public final class Game {
 	 *  pacing-dependent logic deterministically. */
 	public static void setFrameNowForTest (long nanos) { frameNowNanos = nanos; }
 
-	public static final int FPS_MAINMENU = 60;      // hardcoded — menu / loading-screen cap; bumped from 30 for smoother cursor and menu transitions
+	/** Used by the loading-screen sync sites (autosave, game-load, menu's
+	 *  intermittent render) where {@code DisplayManager.sync} is called inside
+	 *  a tight loop and a finite cap is required to avoid dividing by zero
+	 *  when the user has set {@code FPS_CAP = 0} (= truly uncapped). 240 is
+	 *  above any common monitor refresh rate; VSync caps lower if enabled. */
+	private static final int FPS_CAP_FALLBACK = 240;
+
+	/** Returns the cap to pass to {@link DisplayManager#sync(int)}. Resolves
+	 *  the {@code FPS_CAP = 0} (= truly uncapped) sentinel to the loading-screen
+	 *  fallback so callers don't divide by zero. The main {@link #run()} loop
+	 *  uses {@code FPS_CAP} directly with a {@code > 0} guard instead, so
+	 *  truly-uncapped in-game stays truly uncapped. */
+	public static int getEffectiveFpsCap () {
+		return FPS_CAP > 0 ? FPS_CAP : FPS_CAP_FALLBACK;
+	}
 	public static int FPS_CAP = 0;                  // user-configurable; 0 = unlimited
 	private static boolean vsync = true;            // user-configurable
 
@@ -1431,12 +1445,10 @@ public final class Game {
 					takeScreenshot ();
 				}
 
-				if (getPanelMainMenu ().isActive ()) {
-					DisplayManager.sync (FPS_MAINMENU); // Para "capear" a 60 fps
-				} else if (FPS_CAP > 0) {
-					DisplayManager.sync (FPS_CAP); // user-configured cap
+				if (FPS_CAP > 0) {
+					DisplayManager.sync (FPS_CAP); // user-configured cap, applies to menu and in-game alike
 				}
-				// else: FPS_CAP = 0 means uncapped; VSync (if enabled) handles the ceiling.
+				// else: FPS_CAP = 0 means truly uncapped; VSync (if enabled) handles the ceiling.
 
 				// Borramos buffers
 				CNT_GL_CLEAR.inc ();

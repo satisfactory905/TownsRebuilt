@@ -1681,7 +1681,7 @@ public final class World implements Externalizable {
 						UtilsGL.drawStringWithBorder (sText, MainPanel.renderWidth / 2 - UtilFont.getWidth (sText) / 2, MainPanel.renderHeight / 2 - UtilFont.MAX_HEIGHT / 2, ColorGL.YELLOW, ColorGL.BLACK);
 						UtilsGL.glEnd ();
 						DisplayManager.swapAndPoll ();
-						DisplayManager.sync (Game.FPS_MAINMENU); // Para "capear" a 60 fps
+						DisplayManager.sync (Game.getEffectiveFpsCap ()); // loading-screen cap (FPS_CAP, with 240 fallback when 0)
 
 						CommandPanel.executeCommand (CommandPanel.COMMAND_SAVE, null, null, null, null, 0);
 						currentAutosaveDays = 0;
