@@ -301,6 +301,83 @@ optimization genuinely requires it.
   implications under "Game-speed and pause are recorded but not
   normalized".
 
+## Engine pacing
+
+- **Sim, animations, and UI blink decoupled from FPS.** The render rate
+  no longer dictates simulation speed. Three frame-counted consumers
+  moved to wall-clock-paced timestamps using a single
+  `Game.frameNowNanos` captured once per `Game.run()` iteration:
+  - `World.nextTurn` (the simulation tick) — `World.SPEED` 1..5 maps
+    to nanosecond intervals (233 ms / 167 ms / 100 ms / 67 ms / 33 ms
+    per turn) instead of the prior frame counts (7/5/3/2/1 frames per
+    turn at 30 FPS). The post-work timestamp is captured *after*
+    `nextTurn` body completes, so a slow tick never double-fires on
+    the next render iteration. Pause behavior preserved exactly:
+    when paused, tasks still run at tick cadence, but the world body
+    doesn't advance. `World.updateNextFrameTurn()` deleted; the
+    save-state fields `readyForNextTurnFrameCounter` and
+    `readyForNextTurn` retained for binary save-format
+    compatibility but no longer read by pacing logic.
+  - `Tile.updateAnimation` (the single entry point for every
+    animation in the game — citizens, heroes, buildings, items,
+    special tiles via `World.updateSpecialTilesAnimation`) — replaces
+    the per-tile `currentFrameDelay` short counter with a per-tile
+    `lastAnimationFrameNanos` timestamp. Each tile bootstraps with a
+    randomized phase on first call, preserving the desync-on-load
+    behavior previously seeded by `refreshTransients`.
+  - `UIPanel.blinkTurns` — derived once per render from a fixed
+    1-second cycle (`BLINK_CYCLE_NANOS`). The 15+ existing call sites
+    that test `blinkTurns >= MAX_BLINK_TURNS / 2` work unchanged;
+    `MAX_BLINK_TURNS` is now hardcoded at 30 instead of pinned to
+    `Game.FPS_INGAME`.
+  Each consumer advances at most once per render iteration (no
+  catch-up rule). A single slow render frame freezes the affected
+  pacing state for that duration and resumes one tick at a time
+  rather than triggering a flood of catch-up ticks. Walking
+  animations never warp, sim never double-fires, blink stays at 1 Hz.
+
+- **`towns.ini`: `FPS_INGAME` + `FPS_MAINMENU` replaced by `FPS_CAP` +
+  `VSYNC`.** New default `FPS_CAP = 0` means no artificial sleep cap;
+  VSync (default `VSYNC = true`) is the natural ceiling at the
+  monitor's refresh rate. `FPS_MAINMENU` becomes a hardcoded 30 (main
+  menu has no animation worth uncapping; the constant remains
+  `public static final` so external callers — `World`,
+  `MainMenuPanel`, `CommandPanel` — that pace their in-render-thread
+  save / loading message screen continue to read `Game.FPS_MAINMENU`
+  symbolically). VSync is applied via the new
+  `DisplayManager.setSwapInterval(boolean)` called from `Game.<init>`
+  after `UtilsGL.initGL`.
+
+  **Migration note for users with explicit `FPS_INGAME = 30` in their
+  `towns.ini`:** after this change they'll launch with `FPS_CAP = 0`
+  (unlimited) on next run. For most setups on a 60-144 Hz monitor with
+  VSync this just means smoother visuals at correct gameplay speed.
+  Re-add `FPS_CAP = 30` if you specifically want the prior cap (e.g.
+  for laptop battery life or deterministic-looking gameplay capture).
+
+- **`Game.REFERENCE_FPS = 30` constant.** Introduced for legacy
+  frame-counted timers that aren't being converted in this pass —
+  `Tile`'s `ANIMATION_FRAME_DELAY` default, `MiniMapPanel.textureRefreshRate`,
+  `UIPanel`'s hover/repeat delay thresholds, and `TaskManager`'s
+  automated-production interval. These continue to count frames but
+  now reference an explicit "30 frames per reference second" constant
+  rather than misusing the renamed render-cap value. The minimap one
+  is tracked in `todo.md` for proper event-driven conversion later
+  (it should fire on `Cell.setDiscovered` / level change / building
+  add-remove, not poll every 30 frames). The hover-delay timers will
+  trigger slightly earlier at high render rates as a known
+  cosmetic-only side effect.
+
+- **`Game.frameNowNanos` shared frame clock.** Captured once per
+  `Game.run()` iteration via `System.nanoTime()` and read by all
+  pacing consumers in that iteration via `Game.getFrameNow()`. Avoids
+  redundant `nanoTime()` calls per frame and gives every consumer the
+  same time reference within a frame. Package-public
+  `Game.setFrameNowForTest(long)` lets cross-package unit tests drive
+  pacing-dependent logic deterministically.
+
+## Performance instrumentation
+
 - **Sub-spans inside `World.nextTurn` for spike attribution.** The
   100-citizen baseline showed `sim.tick` p99 spiking to 200–640 ms in
   isolated frames (61% of all observed stutter events), but the
