@@ -603,7 +603,7 @@ public final class TaskManager implements Externalizable {
     public void executeAll(boolean bOnlyDirect) {
         try (Span sTasks = SPAN_SIM_TASKS.start ()) {
 		// System.out.println (customActions.size () + ", " + customActionsTemp.size () + ", " + customActionsWait.size ());
-        // Miramos si tenemos tareas automaticas del panel de produccion, solo lo hacemos cada FPS_INGAME turnos
+        // Miramos si tenemos tareas automaticas del panel de produccion, solo lo hacemos cada FPS_CAP turnos
         if (automatedQueueTurns < 32) {
             automatedQueueTurns++;
         } else {

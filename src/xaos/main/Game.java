@@ -129,8 +129,9 @@ public final class Game {
 	 *  pacing-dependent logic deterministically. */
 	public static void setFrameNowForTest (long nanos) { frameNowNanos = nanos; }
 
-	public static int FPS_MAINMENU = 30;
-	public static int FPS_INGAME = 30;
+	private static final int FPS_MAINMENU = 30;     // hardcoded — main menu light, no animation worth uncapping
+	public static int FPS_CAP = 0;                  // user-configurable; 0 = unlimited
+	private static boolean vsync = true;            // user-configurable
 
 	public static final int MIN_DISPLAY_WIDTH = 1024;
 	public static final int MIN_DISPLAY_HEIGHT = 600;
@@ -291,9 +292,10 @@ public final class Game {
 		// Shortcuts
 		UtilsKeyboard.loadShortcuts ();
 
-		// FPS
-		FPS_MAINMENU = Towns.getPropertiesInt ("FPS_MAINMENU", FPS_MAINMENU); //$NON-NLS-1$
-		FPS_INGAME = Towns.getPropertiesInt ("FPS_INGAME", FPS_INGAME); //$NON-NLS-1$
+		// FPS cap (0 = unlimited; VSync still applies as soft cap)
+		FPS_CAP = Towns.getPropertiesInt ("FPS_CAP", 0); //$NON-NLS-1$
+		String sVSync = Towns.getPropertiesString ("VSYNC"); //$NON-NLS-1$
+		vsync = (sVSync == null) ? true : Boolean.parseBoolean (sVSync.trim ());
 
 		// window size
 		int desktopWidth = DisplayManager.getDesktopWidth ();
@@ -308,6 +310,7 @@ public final class Game {
 
 		// Inicializamos OpenGL
 		UtilsGL.initGL (width, height, fullscreen);
+		DisplayManager.setSwapInterval (vsync);
 		InputState.installCallbacks (DisplayManager.getWindowHandle ());
 		UtilsAL.initAL (Game.getVolumeMusic (), Game.getVolumeFX ());
 
@@ -1430,9 +1433,10 @@ public final class Game {
 
 				if (getPanelMainMenu ().isActive ()) {
 					DisplayManager.sync (FPS_MAINMENU); // Para "capear" a 30 fps
-				} else {
-					DisplayManager.sync (FPS_INGAME); // Para "capear" a 30 fps
+				} else if (FPS_CAP > 0) {
+					DisplayManager.sync (FPS_CAP); // user-configured cap
 				}
+				// else: FPS_CAP = 0 means uncapped; VSync (if enabled) handles the ceiling.
 
 				// Borramos buffers
 				CNT_GL_CLEAR.inc ();

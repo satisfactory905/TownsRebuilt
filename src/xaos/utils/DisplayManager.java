@@ -144,6 +144,11 @@ public final class DisplayManager {
         }
     }
 
+    /** Sets VSync. true → glfwSwapInterval(1); false → glfwSwapInterval(0). Safe to call after init. */
+    public static void setSwapInterval (boolean enabled) {
+        glfwSwapInterval (enabled ? 1 : 0);
+    }
+
     public static void sync(int fps) {
         long targetNanos = 1_000_000_000L / fps;
         long sleepNanos = targetNanos - (System.nanoTime() - lastSyncTime);
