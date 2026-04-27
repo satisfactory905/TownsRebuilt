@@ -1030,7 +1030,7 @@ public final class MainMenuPanel implements Runnable {
                 Game.getPanelMainMenu().render();
                 // Updateamos la pantalla / ventana
                 DisplayManager.swapAndPoll();
-                DisplayManager.sync(30); // Para "capear" a 30 fps
+                DisplayManager.sync(Game.FPS_MAINMENU); // Para "capear" a 30 fps
                 GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_ACCUM_BUFFER_BIT | GL11.GL_STENCIL_BUFFER_BIT);
             }
         }

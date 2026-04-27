@@ -129,7 +129,7 @@ public final class Game {
 	 *  pacing-dependent logic deterministically. */
 	public static void setFrameNowForTest (long nanos) { frameNowNanos = nanos; }
 
-	private static final int FPS_MAINMENU = 30;     // hardcoded — main menu light, no animation worth uncapping
+	public static final int FPS_MAINMENU = 30;      // hardcoded — main menu light, no animation worth uncapping
 	public static int FPS_CAP = 0;                  // user-configurable; 0 = unlimited
 	private static boolean vsync = true;            // user-configurable
 
