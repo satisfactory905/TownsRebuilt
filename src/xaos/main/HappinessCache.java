@@ -3,6 +3,12 @@ package xaos.main;
 import java.util.ArrayList;
 import java.util.List;
 
+import xaos.utils.perf.Category;
+import xaos.utils.perf.CounterHandle;
+import xaos.utils.perf.PerfStats;
+import xaos.utils.perf.Span;
+import xaos.utils.perf.SpanHandle;
+
 /**
  * Per-tile cache of happy items visible from each cell. See
  * docs/superpowers/specs/2026-04-24-happiness-cache-design.md for the full
@@ -12,6 +18,28 @@ import java.util.List;
  * cache. No synchronization.
  */
 public final class HappinessCache {
+
+    // Perf telemetry handles. The "build.full" span wraps the constructor's
+    // dirty-init pass (which is the only "build everything" point in this
+    // class -- per-tile cache content is built lazily on first read in
+    // buildCacheForTile). Invalidation counters fire from the on*Changed
+    // hooks so the dumper can correlate cache pressure with game events.
+    private static final SpanHandle SPAN_HAPPINESS_BUILD_FULL =
+        PerfStats.span ("happiness.cache.build.full", Category.ENGINE_HAPPINESS); //$NON-NLS-1$
+    private static final CounterHandle CNT_HAPPINESS_BUILD_TILE =
+        PerfStats.counter ("happiness.cache.build.tile", Category.ENGINE_HAPPINESS); //$NON-NLS-1$
+    private static final CounterHandle CNT_HAPPINESS_INV_ITEM_ADDED =
+        PerfStats.counter ("happiness.cache.invalidate.item_added", Category.ENGINE_HAPPINESS); //$NON-NLS-1$
+    private static final CounterHandle CNT_HAPPINESS_INV_ITEM_REMOVED =
+        PerfStats.counter ("happiness.cache.invalidate.item_removed", Category.ENGINE_HAPPINESS); //$NON-NLS-1$
+    private static final CounterHandle CNT_HAPPINESS_INV_WALL_CHANGED =
+        PerfStats.counter ("happiness.cache.invalidate.wall_changed", Category.ENGINE_HAPPINESS); //$NON-NLS-1$
+    private static final CounterHandle CNT_HAPPINESS_INV_MINED =
+        PerfStats.counter ("happiness.cache.invalidate.mined", Category.ENGINE_HAPPINESS); //$NON-NLS-1$
+    private static final CounterHandle CNT_HAPPINESS_INV_DISCOVERED =
+        PerfStats.counter ("happiness.cache.invalidate.discovered", Category.ENGINE_HAPPINESS); //$NON-NLS-1$
+    private static final CounterHandle CNT_HAPPINESS_TILES_DIRTIED =
+        PerfStats.counter ("happiness.cache.tiles_dirtied", Category.ENGINE_HAPPINESS); //$NON-NLS-1$
 
     /**
      * Maximum LOSCurrent value supported. Citizens with LOSCurrent > MAX_LOS
@@ -42,16 +70,18 @@ public final class HappinessCache {
 
     @SuppressWarnings("unchecked")
     public HappinessCache(int w, int h, int d) {
-        this.w = w;
-        this.h = h;
-        this.d = d;
-        this.cells = (List<int[]>[][][]) new List<?>[w][h][d];
-        this.dirty = new boolean[w][h][d];
-        // All tiles start dirty so the first read forces a build.
-        for (int x = 0; x < w; x++) {
-            for (int y = 0; y < h; y++) {
-                for (int z = 0; z < d; z++) {
-                    dirty[x][y][z] = true;
+        try (Span sBuild = SPAN_HAPPINESS_BUILD_FULL.start ()) {
+            this.w = w;
+            this.h = h;
+            this.d = d;
+            this.cells = (List<int[]>[][][]) new List<?>[w][h][d];
+            this.dirty = new boolean[w][h][d];
+            // All tiles start dirty so the first read forces a build.
+            for (int x = 0; x < w; x++) {
+                for (int y = 0; y < h; y++) {
+                    for (int z = 0; z < d; z++) {
+                        dirty[x][y][z] = true;
+                    }
                 }
             }
         }
@@ -82,6 +112,7 @@ public final class HappinessCache {
 
     /** See spec; called when a happy item is placed at (x, y, z). */
     public void onItemPlaced(int x, int y, int z, int happiness) {
+        CNT_HAPPINESS_INV_ITEM_ADDED.inc ();
         if (happiness == 0) return;
         for (int tx = x - MAX_LOS; tx <= x + MAX_LOS; tx++) {
             for (int ty = y - MAX_LOS; ty <= y + MAX_LOS; ty++) {
@@ -104,6 +135,7 @@ public final class HappinessCache {
 
     /** See spec; called when a happy item is removed from (x, y, z). */
     public void onItemRemoved(int x, int y, int z, int happiness) {
+        CNT_HAPPINESS_INV_ITEM_REMOVED.inc ();
         if (happiness == 0) return;
         for (int tx = x - MAX_LOS; tx <= x + MAX_LOS; tx++) {
             for (int ty = y - MAX_LOS; ty <= y + MAX_LOS; ty++) {
@@ -141,6 +173,7 @@ public final class HappinessCache {
      * dirty-mark for nothing.
      */
     public void onWallChanged(int x, int y, int z) {
+        CNT_HAPPINESS_INV_WALL_CHANGED.inc ();
         markNeighborhoodDirty(x, y, z);
     }
 
@@ -155,6 +188,7 @@ public final class HappinessCache {
      * dirty-mark for nothing.
      */
     public void onMiningChanged(int x, int y, int z) {
+        CNT_HAPPINESS_INV_MINED.inc ();
         markNeighborhoodDirty(x, y, z);
     }
 
@@ -169,6 +203,7 @@ public final class HappinessCache {
      * dirty-mark for nothing.
      */
     public void onDiscovered(int x, int y, int z) {
+        CNT_HAPPINESS_INV_DISCOVERED.inc ();
         markNeighborhoodDirty(x, y, z);
     }
 
@@ -208,9 +243,13 @@ public final class HappinessCache {
                 dirty[tx][ty][z] = true;
             }
         }
+        // Perf: count tiles dirtied this batch. Cheap multiplication; the inner loop
+        // unconditionally writes the same value so per-tile counting would be wasteful.
+        CNT_HAPPINESS_TILES_DIRTIED.add ((long) (xMax - xMin + 1) * (long) (yMax - yMin + 1));
     }
 
     private void buildCacheForTile(int x, int y, int z) {
+        CNT_HAPPINESS_BUILD_TILE.inc ();
         List<int[]> list = new ArrayList<>();
         for (int ix = x - MAX_LOS; ix <= x + MAX_LOS; ix++) {
             for (int iy = y - MAX_LOS; iy <= y + MAX_LOS; iy++) {

@@ -81,6 +81,12 @@ import xaos.utils.UtilsGL;
 import xaos.utils.UtilsIniHeaders;
 import xaos.utils.UtilsKeyboard;
 import xaos.utils.UtilsServer;
+import xaos.utils.perf.Category;
+import xaos.utils.perf.CounterHandle;
+import xaos.utils.perf.PerfStats;
+import xaos.utils.perf.PerfStatsConfig;
+import xaos.utils.perf.Span;
+import xaos.utils.perf.SpanHandle;
 import xaos.zones.ZoneManager;
 
 
@@ -179,6 +185,14 @@ public final class Game {
 
 	private boolean displayFullscreen = false;
 
+	// Perf telemetry handles -- declared here, lazily resolved on first use so
+	// they bind to whatever PerfStats registry is live at call time. Safe even
+	// though this class is loaded before PerfStats.init() runs.
+	private static final SpanHandle SPAN_FRAME_TOTAL =
+		PerfStats.span ("frame.total", Category.RENDERING_FRAME); //$NON-NLS-1$
+	private static final CounterHandle CNT_GL_CLEAR =
+		PerfStats.counter ("gl.clear", Category.RENDERING_GL); //$NON-NLS-1$
+
 
 	public Game () {
 
@@ -196,6 +210,18 @@ public final class Game {
 			exit ();
 		}
 		userFolder = fUserFolder.getAbsolutePath ();
+
+		// Perf telemetry. Init before any other game-initialization work so that
+		// static SpanHandle / CounterHandle fields declared anywhere in the codebase
+		// resolve against this registry on their very first call.
+		String sPerfPath = Towns.getPropertiesString ("PERF_LOG_PATH"); //$NON-NLS-1$
+		java.nio.file.Path defaultPerfPath = java.nio.file.Path.of (userFolder + File.separator + "perf.csv"); //$NON-NLS-1$
+		java.nio.file.Path perfPath = (sPerfPath == null || sPerfPath.trim ().length () == 0)
+			? defaultPerfPath
+			: java.nio.file.Path.of (sPerfPath.trim ());
+		Log.log (Log.LEVEL_DEBUG, "Resolving PerfStats csv path: " + perfPath, "Game"); //$NON-NLS-1$ //$NON-NLS-2$
+		PerfStatsConfig perfConfig = PerfStatsConfig.fromProperties (Towns.propertiesMain, perfPath);
+		PerfStats.init (perfConfig);
 
 		// Musica?
 		musicON = Boolean.parseBoolean (Towns.getPropertiesString ("MUSIC")); //$NON-NLS-1$
@@ -1339,48 +1365,51 @@ public final class Game {
 		// Hacemos sonar la musica del main menu
 		UtilsAL.play (UtilsAL.SOURCE_MUSIC_MAINMENU);
 		while (!DisplayManager.isCloseRequested ()) {
-			handleResize ();
+			try (Span frameSpan = SPAN_FRAME_TOTAL.start ()) {
+				handleResize ();
 
-			// Tratamos los eventos del mouse
-			checkMouseEvents ();
-			// Tratamos los eventos del teclado
-			checkKeyboardEvents ();
+				// Tratamos los eventos del mouse
+				checkMouseEvents ();
+				// Tratamos los eventos del teclado
+				checkKeyboardEvents ();
 
-			// Game logic
-			if (!getPanelMainMenu ().isActive ()) {
-				world.nextTurn ();
+				// Game logic
+				if (!getPanelMainMenu ().isActive ()) {
+					world.nextTurn ();
+				}
+
+				// Render
+				render ();
+
+				// Updateamos la pantalla / ventana
+				DisplayManager.swapAndPoll ();
+
+				if (takeScreenshot) {
+					takeScreenshot ();
+				}
+
+				if (getPanelMainMenu ().isActive ()) {
+					DisplayManager.sync (FPS_MAINMENU); // Para "capear" a 30 fps
+				} else {
+					DisplayManager.sync (FPS_INGAME); // Para "capear" a 30 fps
+				}
+
+				// Borramos buffers
+				CNT_GL_CLEAR.inc ();
+				GL11.glClear (GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_ACCUM_BUFFER_BIT | GL11.GL_STENCIL_BUFFER_BIT);
+				// GL11.glClear (GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+
+				// if (getMainFrame ().isWantsToResize ()) {
+				// getMainFrame ().setWantsToResize (false);
+				// getMainFrame ().resize ();
+				//
+				// deleteCurrentContextMenu ();
+				// if (getCurrentInfoPanel () != null) {
+				// closeInfoPanel ();
+				// }
+				// }
+				// }
 			}
-
-			// Render
-			render ();
-
-			// Updateamos la pantalla / ventana
-			DisplayManager.swapAndPoll ();
-
-			if (takeScreenshot) {
-				takeScreenshot ();
-			}
-
-			if (getPanelMainMenu ().isActive ()) {
-				DisplayManager.sync (FPS_MAINMENU); // Para "capear" a 30 fps
-			} else {
-				DisplayManager.sync (FPS_INGAME); // Para "capear" a 30 fps
-			}
-
-			// Borramos buffers
-			GL11.glClear (GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_ACCUM_BUFFER_BIT | GL11.GL_STENCIL_BUFFER_BIT);
-			// GL11.glClear (GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-
-			// if (getMainFrame ().isWantsToResize ()) {
-			// getMainFrame ().setWantsToResize (false);
-			// getMainFrame ().resize ();
-			//
-			// deleteCurrentContextMenu ();
-			// if (getCurrentInfoPanel () != null) {
-			// closeInfoPanel ();
-			// }
-			// }
-			// }
 		}
 
 		// Exit
@@ -2236,6 +2265,7 @@ public final class Game {
 	public static void exit () {
 		UtilsGL.destroy ();
 		UtilsAL.destroy ();
+		PerfStats.shutdown ();
 		System.exit (0);
 	}
 }

@@ -94,6 +94,11 @@ import xaos.utils.UtilsAL;
 import xaos.utils.UtilsGL;
 import xaos.utils.UtilsIniHeaders;
 import xaos.utils.UtilsKeyboard;
+import xaos.utils.perf.Category;
+import xaos.utils.perf.CounterHandle;
+import xaos.utils.perf.PerfStats;
+import xaos.utils.perf.Span;
+import xaos.utils.perf.SpanHandle;
 import xaos.zones.Zone;
 import xaos.zones.ZoneHeroRoom;
 import xaos.zones.ZoneManager;
@@ -104,6 +109,15 @@ import xaos.zones.ZonePersonal;
 public final class World implements Externalizable {
 
 	private static final long serialVersionUID = -6414576448033818136L;
+
+	// Perf telemetry handles. Lazily resolved on first use; safe to declare
+	// here even though World may be loaded before PerfStats.init() runs.
+	private static final SpanHandle SPAN_SIM_TICK =
+		PerfStats.span ("sim.tick", Category.ENGINE_SIM); //$NON-NLS-1$
+	private static final CounterHandle CNT_SIM_ENTITIES_ITERATED =
+		PerfStats.counter ("sim.entities_iterated", Category.ENGINE_SIM); //$NON-NLS-1$
+	private static final SpanHandle SPAN_HAPPINESS_RECALC_CITIZEN =
+		PerfStats.span ("happiness.recalc.citizen", Category.ENGINE_HAPPINESS); //$NON-NLS-1$
 
 	public final static int FLUIDS_MOVED_PER_INVOCATION = 64; // Max fluidos a procesar por turno (tambien se usa para la evaporacion)
 	public final static int FLUIDS_NOT_MOVED_PER_INVOCATION = 64;
@@ -1555,6 +1569,7 @@ public final class World implements Externalizable {
 	 * Next turn
 	 */
 	public void nextTurn () {
+		try (Span sTick = SPAN_SIM_TICK.start ()) {
 		// Cursores (si no esta sacando el panel de typing)
 		if (UIPanel.typingPanel == null) {
 			if (UtilsKeyboard.isFNKeyDown (UtilsKeyboard.FN_UP)) {
@@ -1752,6 +1767,15 @@ public final class World implements Externalizable {
 		if (turn % 128 == 0) {
 			evaporateFluids ();
 		}
+
+		// Perf: report total entities iterated this tick (items + buildings + livings + projectiles).
+		// Cheap counter add to give the dumper a sense of simulation pressure per second.
+		CNT_SIM_ENTITIES_ITERATED.add (
+			(long) items.size ()
+			+ (long) getBuildings ().size ()
+			+ (long) livingsDiscovered.size ()
+			+ (long) projectiles.size ());
+		} // close try (Span sTick)
 	}
 
 
@@ -1839,6 +1863,7 @@ public final class World implements Externalizable {
 
 
 	private void modifyHappiness (Citizen citizen) {
+		try (Span sRecalc = SPAN_HAPPINESS_RECALC_CITIZEN.start ()) {
 		// Modificador por tarea
 		// POPO citizen.getCitizenData ().setHappiness (citizen.getCitizenData ().getHappiness () + Task.getHappiness (citizen.getCurrentTask ()));
 
@@ -1884,6 +1909,7 @@ public final class World implements Externalizable {
 				citizen.getCitizenData ().setHappiness (citizen.getCitizenData ().getHappiness () + selectedHappiness);
 			}
 		}
+		} // close try (Span sRecalc)
 	}
 
 

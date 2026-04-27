@@ -17,8 +17,16 @@ import xaos.utils.Point3D;
 import xaos.utils.Point3DShort;
 import xaos.utils.TextureData;
 import xaos.utils.UtilsGL;
+import xaos.utils.perf.Category;
+import xaos.utils.perf.PerfStats;
+import xaos.utils.perf.Span;
+import xaos.utils.perf.SpanHandle;
 
 public final class MiniMapPanel {
+
+    // Perf telemetry handle for the minimap render pass.
+    private static final SpanHandle SPAN_FRAME_RENDER_MINIMAP =
+        PerfStats.span ("frame.render.minimap", Category.RENDERING_FRAME); //$NON-NLS-1$
 
 //    public static int TEXTURE_MINIMAPS_INDEX = 32;
     private static TextureData[] minimapTextures;
@@ -50,53 +58,55 @@ public final class MiniMapPanel {
     }
 
     public static void render () {
-        if (texturesReload == null) {
-            loadTextures();
+        try (Span sMinimap = SPAN_FRAME_RENDER_MINIMAP.start ()) {
+            if (texturesReload == null) {
+                loadTextures();
+            }
+
+            // Paint minimap
+            Point3D pointView = Game.getWorld().getView();
+
+            if (texturesReload[pointView.z] && textureRefreshRate == 0) {
+                texturesReload[pointView.z] = false;
+                reloadTexture(pointView.z);
+            }
+
+            textureRefreshRate--;
+            if (textureRefreshRate < 0) {
+                textureRefreshRate = Game.FPS_INGAME; // Cada segundo refresh
+            }
+
+            // Pintamos la textura
+            GL11.glBindTexture(GL11.GL_TEXTURE_2D, minimapTextures[pointView.z].getTextureID());
+            GL11.glTexEnvf(GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_MODE, GL11.GL_MODULATE);
+            UtilsGL.glBegin(GL11.GL_QUADS);
+            UtilsGL.drawTexture(renderX, renderY + renderHeight / 2, renderX + renderWidth / 2, renderY + renderHeight, renderX + renderWidth, renderY + renderHeight / 2, renderX + renderWidth / 2, renderY, 0, 0, 1, 1);
+            UtilsGL.glEnd();
+
+            // Calculamos el tamano del cuadrado amarillo teniendo en cuenta el tamano del mainpanel y del minimapa
+            int iSquareX = (pointView.x + pointView.y - (World.MAP_WIDTH - World.MAP_HEIGHT) / 2) / 2;
+            int iSquareY = (pointView.y - pointView.x + (World.MAP_WIDTH + World.MAP_HEIGHT) / 2) / 2;
+            int iSquareWidth = ((MainPanel.renderWidth / Tile.TERRAIN_ICON_WIDTH) * renderWidth) / World.MAP_WIDTH;
+            int iSquareHeight = ((MainPanel.renderHeight / Tile.TERRAIN_ICON_HEIGHT) * renderHeight) / World.MAP_HEIGHT;
+
+            // Lo pasamos al tamano que toca
+            iSquareX = (iSquareX * renderWidth) / World.MAP_WIDTH;
+            iSquareY = (iSquareY * renderHeight) / World.MAP_HEIGHT;
+
+            // Lo posicionamos en la pantalla (restamos tambien la mitad del cuadradito amarillo para que quede centrado)
+            iSquareX += (renderX - iSquareWidth / 2);
+            iSquareY += (renderY - iSquareHeight / 2);
+
+            GL11.glBindTexture(GL11.GL_TEXTURE_2D, YELLOW_TILE.getTextureID());
+            GL11.glTexEnvf(GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_MODE, GL11.GL_REPLACE);
+            UtilsGL.glBegin(GL11.GL_QUADS);
+            // Pintamos el cuadrado amarillo
+            UtilsGL.drawTexture(iSquareX, iSquareY, iSquareX + iSquareWidth, iSquareY + 1, YELLOW_TILE.getTileSetTexX0(), YELLOW_TILE.getTileSetTexY0(), YELLOW_TILE.getTileSetTexX1(), YELLOW_TILE.getTileSetTexY1());
+            UtilsGL.drawTexture(iSquareX, iSquareY + iSquareHeight, iSquareX + iSquareWidth, iSquareY + iSquareHeight + 1, YELLOW_TILE.getTileSetTexX0(), YELLOW_TILE.getTileSetTexY0(), YELLOW_TILE.getTileSetTexX1(), YELLOW_TILE.getTileSetTexY1());
+            UtilsGL.drawTexture(iSquareX, iSquareY, iSquareX + 1, iSquareY + iSquareHeight, YELLOW_TILE.getTileSetTexX0(), YELLOW_TILE.getTileSetTexY0(), YELLOW_TILE.getTileSetTexX1(), YELLOW_TILE.getTileSetTexY1());
+            UtilsGL.drawTexture(iSquareX + iSquareWidth, iSquareY, iSquareX + iSquareWidth + 1, iSquareY + iSquareHeight, YELLOW_TILE.getTileSetTexX0(), YELLOW_TILE.getTileSetTexY0(), YELLOW_TILE.getTileSetTexX1(), YELLOW_TILE.getTileSetTexY1());
+            UtilsGL.glEnd();
         }
-
-        // Paint minimap
-        Point3D pointView = Game.getWorld().getView();
-
-        if (texturesReload[pointView.z] && textureRefreshRate == 0) {
-            texturesReload[pointView.z] = false;
-            reloadTexture(pointView.z);
-        }
-
-        textureRefreshRate--;
-        if (textureRefreshRate < 0) {
-            textureRefreshRate = Game.FPS_INGAME; // Cada segundo refresh
-        }
-
-        // Pintamos la textura
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, minimapTextures[pointView.z].getTextureID());
-        GL11.glTexEnvf(GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_MODE, GL11.GL_MODULATE);
-        UtilsGL.glBegin(GL11.GL_QUADS);
-        UtilsGL.drawTexture(renderX, renderY + renderHeight / 2, renderX + renderWidth / 2, renderY + renderHeight, renderX + renderWidth, renderY + renderHeight / 2, renderX + renderWidth / 2, renderY, 0, 0, 1, 1);
-        UtilsGL.glEnd();
-
-        // Calculamos el tamano del cuadrado amarillo teniendo en cuenta el tamano del mainpanel y del minimapa
-        int iSquareX = (pointView.x + pointView.y - (World.MAP_WIDTH - World.MAP_HEIGHT) / 2) / 2;
-        int iSquareY = (pointView.y - pointView.x + (World.MAP_WIDTH + World.MAP_HEIGHT) / 2) / 2;
-        int iSquareWidth = ((MainPanel.renderWidth / Tile.TERRAIN_ICON_WIDTH) * renderWidth) / World.MAP_WIDTH;
-        int iSquareHeight = ((MainPanel.renderHeight / Tile.TERRAIN_ICON_HEIGHT) * renderHeight) / World.MAP_HEIGHT;
-
-        // Lo pasamos al tamano que toca
-        iSquareX = (iSquareX * renderWidth) / World.MAP_WIDTH;
-        iSquareY = (iSquareY * renderHeight) / World.MAP_HEIGHT;
-
-        // Lo posicionamos en la pantalla (restamos tambien la mitad del cuadradito amarillo para que quede centrado)
-        iSquareX += (renderX - iSquareWidth / 2);
-        iSquareY += (renderY - iSquareHeight / 2);
-
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, YELLOW_TILE.getTextureID());
-        GL11.glTexEnvf(GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_MODE, GL11.GL_REPLACE);
-        UtilsGL.glBegin(GL11.GL_QUADS);
-        // Pintamos el cuadrado amarillo
-        UtilsGL.drawTexture(iSquareX, iSquareY, iSquareX + iSquareWidth, iSquareY + 1, YELLOW_TILE.getTileSetTexX0(), YELLOW_TILE.getTileSetTexY0(), YELLOW_TILE.getTileSetTexX1(), YELLOW_TILE.getTileSetTexY1());
-        UtilsGL.drawTexture(iSquareX, iSquareY + iSquareHeight, iSquareX + iSquareWidth, iSquareY + iSquareHeight + 1, YELLOW_TILE.getTileSetTexX0(), YELLOW_TILE.getTileSetTexY0(), YELLOW_TILE.getTileSetTexX1(), YELLOW_TILE.getTileSetTexY1());
-        UtilsGL.drawTexture(iSquareX, iSquareY, iSquareX + 1, iSquareY + iSquareHeight, YELLOW_TILE.getTileSetTexX0(), YELLOW_TILE.getTileSetTexY0(), YELLOW_TILE.getTileSetTexX1(), YELLOW_TILE.getTileSetTexY1());
-        UtilsGL.drawTexture(iSquareX + iSquareWidth, iSquareY, iSquareX + iSquareWidth + 1, iSquareY + iSquareHeight, YELLOW_TILE.getTileSetTexX0(), YELLOW_TILE.getTileSetTexY0(), YELLOW_TILE.getTileSetTexX1(), YELLOW_TILE.getTileSetTexY1());
-        UtilsGL.glEnd();
 
     }
 

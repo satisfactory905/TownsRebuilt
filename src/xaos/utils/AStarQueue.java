@@ -4,11 +4,27 @@ import java.util.ArrayList;
 
 import xaos.main.World;
 import xaos.tiles.entities.living.LivingEntity;
+import xaos.utils.perf.Category;
+import xaos.utils.perf.CounterHandle;
+import xaos.utils.perf.PerfStats;
+import xaos.utils.perf.Span;
+import xaos.utils.perf.SpanHandle;
 
 public final class AStarQueue implements Runnable {
 
     // Numero de iteraciones a tratar en cada pasada del bucle principal
     public static int NUM_ITERATIONS = 2048 * 2;
+
+    // Perf telemetry: A* search timing and queue pressure.
+    // path.search wraps each item.search(...) call (one inner-loop iteration of work).
+    // path.search.count is incremented once per item.search() call (per batch of work).
+    // path.queue.depth samples the request queue size once per outer cycle.
+    private static final SpanHandle SPAN_PATH_SEARCH =
+        PerfStats.span ("path.search", Category.ENGINE_PATH); //$NON-NLS-1$
+    private static final CounterHandle CNT_PATH_SEARCH_COUNT =
+        PerfStats.counter ("path.search.count", Category.ENGINE_PATH); //$NON-NLS-1$
+    private static final CounterHandle CNT_PATH_QUEUE_DEPTH =
+        PerfStats.counter ("path.queue.depth", Category.ENGINE_PATH); //$NON-NLS-1$
 
     private static ArrayList<AStarQueueItem> requests;
     private static ArrayList<AStarQueueItem> finishedRequests;
@@ -153,9 +169,17 @@ public final class AStarQueue implements Runnable {
 //				long l = System.currentTimeMillis ();
 //				int finished = 0;
                 synchronized (requests) {
+                    // Perf: sample the queue depth once per cycle so the dumper sees
+                    // backpressure as a per-second sum (higher when the queue is busier).
+                    CNT_PATH_QUEUE_DEPTH.add (requests.size ());
                     while (iIterations > 0 && !requests.isEmpty()) {
                         item = requests.get(0);
-                        iIterations -= item.search(iIterations);
+                        CNT_PATH_SEARCH_COUNT.inc ();
+                        int consumed;
+                        try (Span sSearch = SPAN_PATH_SEARCH.start ()) {
+                            consumed = item.search(iIterations);
+                        }
+                        iIterations -= consumed;
 
                         if (item.isFinished()) {
 //							finished++;

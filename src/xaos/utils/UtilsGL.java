@@ -36,9 +36,22 @@ import xaos.panels.UIPanel;
 import xaos.property.PropertyFile;
 import xaos.tiles.Cell;
 import xaos.tiles.Tile;
+import xaos.utils.perf.Category;
+import xaos.utils.perf.CounterHandle;
+import xaos.utils.perf.PerfStats;
 
 
 public final class UtilsGL {
+
+	// Perf telemetry counters for GL hot-path operations. Each counter is a
+	// volatile-read + branch on the disabled path (~10 ns) and a single
+	// AtomicLong increment on the enabled path (~5 ns).
+	private static final CounterHandle CNT_GL_BIND_TEXTURE =
+		PerfStats.counter ("gl.bind_texture", Category.RENDERING_GL); //$NON-NLS-1$
+	private static final CounterHandle CNT_GL_DRAW_TEXTURE =
+		PerfStats.counter ("gl.draw_texture", Category.RENDERING_GL); //$NON-NLS-1$
+	private static final CounterHandle CNT_GL_BEGIN_QUADS =
+		PerfStats.counter ("gl.begin_quads", Category.RENDERING_GL); //$NON-NLS-1$
 
 	public static boolean ATI_begin = false;
 	public static boolean ATI_drawed = false;
@@ -236,6 +249,9 @@ public final class UtilsGL {
 	// }
 	// }
 	public static final void glBegin (final int mode) {
+		if (mode == GL11.GL_QUADS) {
+			CNT_GL_BEGIN_QUADS.inc ();
+		}
 		if (ATI_begin) {
 			glEnd ();
 		} else {
@@ -272,6 +288,7 @@ public final class UtilsGL {
 	// drawTextureZ (x0, y0, x1, y1, texX0, texY0, texX1, texY1, z);
 	// }
 	public static void drawTextureZ (int x0, int y0, int x1, int y1, float texX0, float texY0, float texX1, float texY1, int z) {
+		CNT_GL_DRAW_TEXTURE.inc ();
 		ATI_drawed = true;
 		GL11.glTexCoord2f (texX0, texY0);
 		GL11.glVertex3i (x0, y0, z);
@@ -308,6 +325,7 @@ public final class UtilsGL {
 
 
 	public static void drawTexture (int x0, int y0, int x1, int y1, float texX0, float texY0, float texX1, float texY1) {
+		CNT_GL_DRAW_TEXTURE.inc ();
 		ATI_drawed = true;
 		GL11.glTexCoord2f (texX0, texY0);
 		GL11.glVertex2i (x0, y0);
@@ -321,6 +339,7 @@ public final class UtilsGL {
 
 
 	public static void drawTexture (int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3, float texX0, float texY0, float texX1, float texY1) {
+		CNT_GL_DRAW_TEXTURE.inc ();
 		ATI_drawed = true;
 		GL11.glTexCoord2f (texX0, texY0);
 		GL11.glVertex2i (x0, y0);
@@ -994,6 +1013,7 @@ public final class UtilsGL {
 
 		if (iTexture != iCurrentTexture) {
 			UtilsGL.glEnd ();
+			CNT_GL_BIND_TEXTURE.inc ();
 			GL11.glBindTexture (GL11.GL_TEXTURE_2D, iTexture);
 			GL11.glTexEnvf (GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_MODE, GL11.GL_MODULATE);
 			UtilsGL.glBegin (GL11.GL_QUADS);
@@ -1006,6 +1026,7 @@ public final class UtilsGL {
 	public static int setTexture (int iCurrentTexture, int iNewTexture) {
 		if (iNewTexture != iCurrentTexture) {
 			UtilsGL.glEnd ();
+			CNT_GL_BIND_TEXTURE.inc ();
 			GL11.glBindTexture (GL11.GL_TEXTURE_2D, iNewTexture);
 			GL11.glTexEnvf (GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_MODE, GL11.GL_MODULATE);
 			UtilsGL.glBegin (GL11.GL_QUADS);
@@ -1050,6 +1071,7 @@ public final class UtilsGL {
 		}
 
 		UtilsGL.glEnd ();
+		CNT_GL_BIND_TEXTURE.inc ();
 		GL11.glBindTexture (GL11.GL_TEXTURE_2D, iTexture);
 		GL11.glTexEnvf (GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_MODE, GL13.GL_COMBINE);
 		GL11.glTexEnvf (GL11.GL_TEXTURE_ENV, GL13.GL_COMBINE_RGB, GL11.GL_ADD);
@@ -1103,6 +1125,7 @@ public final class UtilsGL {
 		}
 
 		UtilsGL.glEnd ();
+		CNT_GL_BIND_TEXTURE.inc ();
 		GL11.glBindTexture (GL11.GL_TEXTURE_2D, iTexture);
 		GL11.glTexEnvf (GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_MODE, GL13.GL_COMBINE);
 		GL11.glTexEnvf (GL11.GL_TEXTURE_ENV, GL13.GL_COMBINE_RGB, GL11.GL_ADD);
@@ -1187,6 +1210,7 @@ public final class UtilsGL {
 		}
 
 		UtilsGL.glEnd ();
+		CNT_GL_BIND_TEXTURE.inc ();
 		GL11.glBindTexture (GL11.GL_TEXTURE_2D, iTexture);
 		GL11.glTexEnvf (GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_MODE, GL13.GL_COMBINE);
 		GL11.glTexEnvf (GL11.GL_TEXTURE_ENV, GL13.GL_COMBINE_RGB, GL11.GL_ADD);

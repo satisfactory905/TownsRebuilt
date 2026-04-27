@@ -46,6 +46,10 @@ import xaos.utils.Point3D;
 import xaos.utils.Point3DShort;
 import xaos.utils.Utils;
 import xaos.utils.UtilsIniHeaders;
+import xaos.utils.perf.Category;
+import xaos.utils.perf.PerfStats;
+import xaos.utils.perf.Span;
+import xaos.utils.perf.SpanHandle;
 import xaos.zones.Zone;
 import xaos.zones.ZoneBarracks;
 import xaos.zones.ZonePersonal;
@@ -56,6 +60,10 @@ import xaos.zones.ZonePersonal;
 public final class TaskManager implements Externalizable {
 
     private static final long serialVersionUID = -1530236959590878316L;
+
+    // Perf telemetry: time spent in executeAll() each tick.
+    private static final SpanHandle SPAN_SIM_TASKS =
+        PerfStats.span ("sim.tasks", Category.ENGINE_SIM); //$NON-NLS-1$
 
     public static int MAX_CONTAINER_HAUL_PER_TURN = 64; // Numero de containers a chequear, para ver si hay items maols dentro
     public static int MAX_HAUL_PER_TURN = 64; // Numero de items a chequear cada turno
@@ -593,6 +601,7 @@ public final class TaskManager implements Externalizable {
      * directas, eliminar tareas vencidas, asignar nuevas tareas...
      */
     public void executeAll(boolean bOnlyDirect) {
+        try (Span sTasks = SPAN_SIM_TASKS.start ()) {
 		// System.out.println (customActions.size () + ", " + customActionsTemp.size () + ", " + customActionsWait.size ());
         // Miramos si tenemos tareas automaticas del panel de produccion, solo lo hacemos cada FPS_INGAME turnos
         if (automatedQueueTurns < 32) {
@@ -730,6 +739,7 @@ public final class TaskManager implements Externalizable {
             }
         }
 
+        } // close try (Span sTasks)
     }
 
     /**

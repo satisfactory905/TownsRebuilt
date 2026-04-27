@@ -55,6 +55,10 @@ import xaos.utils.Point3DShort;
 import xaos.utils.UtilFont;
 import xaos.utils.Utils;
 import xaos.utils.UtilsGL;
+import xaos.utils.perf.Category;
+import xaos.utils.perf.PerfStats;
+import xaos.utils.perf.Span;
+import xaos.utils.perf.SpanHandle;
 import xaos.zones.Zone;
 import xaos.zones.ZoneBarracks;
 import xaos.zones.ZoneHeroRoom;
@@ -106,6 +110,12 @@ public final class MainPanel {
 
 	// LOCKED WALLCONNECTOR
 	private static Tile lockedConnectorTile = new Tile ("lockedconnector"); //$NON-NLS-1$
+
+	// Perf telemetry handles
+	private static final SpanHandle SPAN_FRAME_RENDER_WORLD =
+		PerfStats.span ("frame.render.world", Category.RENDERING_FRAME); //$NON-NLS-1$
+	private static final SpanHandle SPAN_FRAME_RENDER_MOUSE =
+		PerfStats.span ("frame.render.mouse", Category.RENDERING_FRAME); //$NON-NLS-1$
 
 
 	public MainPanel () {
@@ -220,13 +230,21 @@ public final class MainPanel {
 		}
 
 		if (bMouseInMainArea) {
-			int iTextureID = renderAllTerrains (zView, cellXMin, cellXMax, cellYMin, cellYMax, iBaseXGeneral, iBaseYGeneral, pointTileMouse, 0, -1);
-			iTextureID = renderAllEntities (zView, cellXMin, cellXMax, cellYMin, cellYMax, iBaseXGeneral, iBaseYGeneral, pointTileMouse, 0, iTextureID);
-			iTextureID = renderMouse (iBaseXGeneral, iBaseYGeneral, zView, pointTileMouse, iTextureID);
-			renderTask (zView, iBaseXGeneral, iBaseYGeneral + Tile.TERRAIN_ICON_HEIGHT, pointTileMouse, iTextureID, cellXMin, cellYMin);
+			int iTextureID;
+			try (Span sWorld = SPAN_FRAME_RENDER_WORLD.start ()) {
+				iTextureID = renderAllTerrains (zView, cellXMin, cellXMax, cellYMin, cellYMax, iBaseXGeneral, iBaseYGeneral, pointTileMouse, 0, -1);
+				iTextureID = renderAllEntities (zView, cellXMin, cellXMax, cellYMin, cellYMax, iBaseXGeneral, iBaseYGeneral, pointTileMouse, 0, iTextureID);
+			}
+			try (Span sMouse = SPAN_FRAME_RENDER_MOUSE.start ()) {
+				iTextureID = renderMouse (iBaseXGeneral, iBaseYGeneral, zView, pointTileMouse, iTextureID);
+				renderTask (zView, iBaseXGeneral, iBaseYGeneral + Tile.TERRAIN_ICON_HEIGHT, pointTileMouse, iTextureID, cellXMin, cellYMin);
+			}
 		} else {
-			int iTextureID = renderAllTerrains (zView, cellXMin, cellXMax, cellYMin, cellYMax, iBaseXGeneral, iBaseYGeneral, null, 0, -1);
-			iTextureID = renderAllEntities (zView, cellXMin, cellXMax, cellYMin, cellYMax, iBaseXGeneral, iBaseYGeneral, null, 0, iTextureID);
+			int iTextureID;
+			try (Span sWorld = SPAN_FRAME_RENDER_WORLD.start ()) {
+				iTextureID = renderAllTerrains (zView, cellXMin, cellXMax, cellYMin, cellYMax, iBaseXGeneral, iBaseYGeneral, null, 0, -1);
+				iTextureID = renderAllEntities (zView, cellXMin, cellXMax, cellYMin, cellYMax, iBaseXGeneral, iBaseYGeneral, null, 0, iTextureID);
+			}
 			renderTask (zView, iBaseXGeneral, iBaseYGeneral + Tile.TERRAIN_ICON_HEIGHT, null, iTextureID, cellXMin, cellYMin);
 		}
 		GL11.glDisable (GL11.GL_DEPTH_TEST);

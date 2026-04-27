@@ -221,3 +221,55 @@ optimization genuinely requires it.
   is gone from the hot path. Cache memory is bounded by total visible-happy-
   item edges in the world.
 
+## Performance instrumentation
+
+- **`xaos.utils.perf` telemetry harness.** New foundational instrumentation
+  module (under `src/xaos/utils/perf/`) used to baseline upcoming
+  optimizations against measured numbers rather than code-reasoning. 11
+  source classes (~1,700 LoC) plus 4 unit-test files (~830 LoC, 34 tests)
+  cover histogram math, percentile estimation, lazy-resolution handle API,
+  thread-safe recording, daemon-thread CSV dumper, and JMX
+  `NotificationListener` wiring for GC events. Public API is a static
+  facade `PerfStats.span / counter / sample` that returns pre-resolved
+  handles; recording is lock-free (`AtomicLongArray` bucket histograms);
+  all file I/O happens on a 1 Hz daemon thread; disabled-handle hot-path
+  cost is one field load + one branch (under 10 ns). Memory budget is
+  ~7 KB total for thirteen span histograms.
+- **`towns.ini` performance flags.** New `PERF_LOG`, `PERF_LOG_PATH`,
+  `PERF_LOG_PERIOD_MS` and six per-category toggles
+  (`PERF_RENDERING_FRAME`, `PERF_RENDERING_GL`, `PERF_ENGINE_SIM`,
+  `PERF_ENGINE_PATH`, `PERF_ENGINE_HAPPINESS`, `PERF_ENGINE_GC`). Default
+  shipped state is everything on; categories that are off produce *no*
+  CSV columns and short-circuit recording at the call site.
+- **CSV output to `~/.towns/perf.csv`.** One row per second with
+  `timestamp_iso`, `seconds_since_start`, six columns per span
+  (`count, total_ns, min_ns, max_ns, p50_ns, p99_ns`) and one column per
+  counter / gauge. File truncates on each launch; final partial-second
+  row flushes via shutdown hook. ~102 columns when fully enabled.
+  Histogram covers 10 µs to ~655 ms with ~19% bucket width and ~10%
+  percentile accuracy.
+- **Instrumentation sites in v1.** Spans at `Game.run` (`frame.total`),
+  the four render passes (`frame.render.world / mouse / ui / minimap`),
+  `DisplayManager.swapAndPoll` (`frame.swap`), `World.nextTurn`
+  (`sim.tick`), `TaskManager.executeAll` (`sim.tasks`), `AStarQueue`
+  search dispatch (`path.search`), `HappinessCache` constructor
+  (`happiness.cache.build.full`) and `World.modifyHappiness(Citizen)`
+  (`happiness.recalc.citizen`). Counters at every `glBindTexture` /
+  `drawTexture*` / `glBegin(GL_QUADS)` / `glClear` site
+  (`gl.bind_texture / draw_texture / begin_quads / clear`), entity
+  iteration in `nextTurn` (`sim.entities_iterated`), A* search start
+  (`path.search.count`, `path.queue.depth`), and every cache-invalidation
+  hook in `HappinessCache` plus the lazy-rebuild path
+  (`happiness.cache.invalidate.* / build.tile / tiles_dirtied`). GC
+  category polls JMX `MemoryMXBean` and `GarbageCollectorMXBean`
+  per-period and registers `NotificationListener` on each collector for
+  per-event cycle durations (`gc.minor.* / gc.major.* / heap.*`).
+- **Operational guide at `perf-testing.md`** (tracked in git, alongside
+  `README.md` / `CHANGELOG.md` / `changelist.md`). Covers how to enable,
+  the metric reference, A/B comparison workflow, caveats (notably:
+  JMX `gc.*.duration` is cycle duration not stop-the-world pause; use
+  `frame.total` p99 spikes as the actual stutter signal), and how to add
+  / remove metrics. Future per-CSV analyzer / color-coded comparison
+  tool deferred to `todo.md` until real baseline data exists to inform
+  threshold design.
+

@@ -54,9 +54,17 @@ import xaos.utils.UtilsAL;
 import xaos.utils.UtilsGL;
 import xaos.utils.UtilsIniHeaders;
 import xaos.utils.UtilsKeyboard;
+import xaos.utils.perf.Category;
+import xaos.utils.perf.PerfStats;
+import xaos.utils.perf.Span;
+import xaos.utils.perf.SpanHandle;
 
 
 public final class UIPanel {
+
+	// Perf telemetry handle for the entire UI render pass.
+	private static final SpanHandle SPAN_FRAME_RENDER_UI =
+		PerfStats.span ("frame.render.ui", Category.RENDERING_FRAME); //$NON-NLS-1$
 
 	public static int PIXELS_TO_BORDER = 16;
 	private static final int CLOSE_PIXELS = 20;
@@ -1501,6 +1509,7 @@ public final class UIPanel {
 
 
 	public void render () {
+		try (Span sUI = SPAN_FRAME_RENDER_UI.start ()) {
 		if (MainPanel.bHideUION) {
 			return;
 		}
@@ -1933,6 +1942,7 @@ public final class UIPanel {
 
 		// Tooltip
 		renderTooltip (mouseX, mouseY, mousePanel);
+		} // close try (Span sUI)
 	}
 
 

@@ -8,7 +8,18 @@ import org.lwjgl.system.MemoryStack;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
+import xaos.utils.perf.Category;
+import xaos.utils.perf.PerfStats;
+import xaos.utils.perf.Span;
+import xaos.utils.perf.SpanHandle;
+
 public final class DisplayManager {
+
+    // Perf telemetry: total time spent in glfwSwapBuffers + glfwPollEvents.
+    // VSync stalls land here, so this span is what reveals "frames are being
+    // capped by display refresh" vs "frames are slow because rendering is".
+    private static final SpanHandle SPAN_FRAME_SWAP =
+        PerfStats.span ("frame.swap", Category.RENDERING_FRAME); //$NON-NLS-1$
 
     private static long window = NULL;
     private static int width;
@@ -112,8 +123,10 @@ public final class DisplayManager {
     public static boolean isCloseRequested() { return glfwWindowShouldClose(window); }
 
     public static void swapAndPoll() {
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+        try (Span sSwap = SPAN_FRAME_SWAP.start ()) {
+            glfwSwapBuffers(window);
+            glfwPollEvents();
+        }
     }
 
     public static void sync(int fps) {
