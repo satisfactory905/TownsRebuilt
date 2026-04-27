@@ -90,7 +90,13 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 	public final static byte FACING_DIRECTION_SOUTH_EAST = 7;
 	public final static byte FACING_DIRECTION_SOUTH_WEST = 8;
 
-	public final static int DAMAGE_ANIMATION_FPS = 8;
+	/** Number of sim ticks the damage-text "+/- N" floats above an entity
+	 *  after a hit. Pre-decoupling this was indirectly an FPS measure
+	 *  (because sim was tied to 30 FPS); post-decoupling the counter is
+	 *  decremented in {@code nextTurn} so the unit is unambiguously sim
+	 *  ticks. At SPEED 1 (sim interval ~233 ms) the text floats for ~1.9 s;
+	 *  at SPEED 5 (sim interval ~33 ms), ~265 ms. */
+	public final static int DAMAGE_ANIMATION_TICKS = 8;
 	public final static int ATTACK_ANIMATION_MAX_COUNTER = 8;
 
 
@@ -4457,7 +4463,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 
 		// Animacion de hit
 		if (bHitted && iDamage > 0) {
-			setDamageAnimationCounter (DAMAGE_ANIMATION_FPS);
+			setDamageAnimationCounter (DAMAGE_ANIMATION_TICKS);
 			setDamageAnimationText (Integer.toString (iDamage * -1));
 		}
 		

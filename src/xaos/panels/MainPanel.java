@@ -1649,7 +1649,7 @@ public final class MainPanel {
 						iXSpecific = iXGeneral;
 					}
 					iXSpecific = iXSpecific + (le.getTileWidth () / 2) - le.getDamageAnimationTextWidth () / 2;
-					iYSpecific = iYGeneral - (le.getTileHeight () - Tile.TERRAIN_ICON_HEIGHT) + (int) le.getPositionOffset ().y - 4 * (LivingEntity.DAMAGE_ANIMATION_FPS - le.getDamageAnimationCounter ());
+					iYSpecific = iYGeneral - (le.getTileHeight () - Tile.TERRAIN_ICON_HEIGHT) + (int) le.getPositionOffset ().y - 4 * (LivingEntity.DAMAGE_ANIMATION_TICKS - le.getDamageAnimationCounter ());
 
 					currentTextureID = UtilsGL.setTexture (-1, Game.TEXTURE_FONT_ID);
 					UtilsGL.drawStringZ (le.getDamageAnimationText (), iXSpecific, iYSpecific, ColorGL.RED, iDepth);
