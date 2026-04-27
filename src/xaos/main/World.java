@@ -238,6 +238,12 @@ public final class World implements Externalizable {
 	private int readyForNextTurnFrameCounter = 0;
 	private boolean readyForNextTurnTasks = false;
 
+	/** Wall-clock time of the most recent completed sim tick. Transient —
+	 *  bootstraps to the first frame's `Game.getFrameNow()` after launch /
+	 *  save load. Set to `System.nanoTime()` after each tick body completes
+	 *  (post-work timestamp, so a slow tick doesn't double-fire). */
+	private transient long lastTurnTimeNanos = 0L;
+
 	private ArrayList<Point3DShort> fluidCellsToProcess; // Fluidos a chequear
 	private transient boolean fluidsMoved;
 	private transient int fluidMovedCounter;
@@ -418,7 +424,25 @@ public final class World implements Externalizable {
 	}
 
 
+	/** Turn intervals in nanoseconds keyed by World.SPEED (1..5).
+	 *  Preserves the pre-decoupling rate: at 30 FPS, FRAMES_PER_TURN of
+	 *  7/5/3/2/1 produced 30/7 ≈ 4.3, 6, 10, 15, 30 turns/sec. */
+	private static final long[] TURN_INTERVAL_NANOS_BY_SPEED = {
+		0L,                       // index 0 unused (SPEED is 1..5)
+		233_333_333L,             // SPEED 1 → ~4.3 turns/sec
+		166_666_667L,             // SPEED 2 → ~6   turns/sec
+		100_000_000L,             // SPEED 3 → 10   turns/sec
+		 66_666_667L,             // SPEED 4 → 15   turns/sec
+		 33_333_333L,             // SPEED 5 → 30   turns/sec
+	};
+
+	private static long turnIntervalNanos = TURN_INTERVAL_NANOS_BY_SPEED[SPEED];
+
+
 	public static void setTurnsPerSecond () {
+		turnIntervalNanos = TURN_INTERVAL_NANOS_BY_SPEED[SPEED];
+		// FRAMES_PER_TURN kept in sync for any external readers, though
+		// pacing logic no longer consults it.
 		if (SPEED == 1) {
 			FRAMES_PER_TURN = 7;
 		} else if (SPEED == 2) {
@@ -430,6 +454,11 @@ public final class World implements Externalizable {
 		} else {
 			FRAMES_PER_TURN = 1;
 		}
+	}
+
+	/** Test-only: read the live interval. */
+	static long getTurnIntervalNanosForTest () {
+		return turnIntervalNanos;
 	}
 
 
@@ -1599,18 +1628,18 @@ public final class World implements Externalizable {
 			}
 		}
 
-		updateNextFrameTurn ();
-		// Preparado para el siguiente turno?
-		if (!isReadyForNextTurn ()) {
-			if (isReadyForNextTurnTasks ()) {
-				// Hacemos todas las tareas
-				getTaskManager ().executeAll (true);
-				setReadyForNextTurnTasks (false);
-			}
+		long frameNow = Game.getFrameNow ();
+		if (!shouldRunTick (frameNow)) {
 			return;
 		}
-		setReadyForNextTurn (false);
-		setReadyForNextTurnTasks (false);
+		if (Game.isPaused ()) {
+			// Match prior semantics: when paused, tasks still run at tick
+			// cadence (player-issued orders feel responsive), but the world
+			// body doesn't advance.
+			getTaskManager ().executeAll (true);
+			markTickComplete (System.nanoTime ());
+			return;
+		}
 
 		// if (World.getCitizenIDs ().size () > 0) {
 		// setReadyForNextTurn (true);
@@ -1799,6 +1828,7 @@ public final class World implements Externalizable {
 			+ (long) getBuildings ().size ()
 			+ (long) livingsDiscovered.size ()
 			+ (long) projectiles.size ());
+		markTickComplete (System.nanoTime ());
 		} // close try (Span sTick)
 	}
 
@@ -4210,22 +4240,6 @@ public final class World implements Externalizable {
 
 
 	/**
-	 * Suma 1 al contador de frames, si llega a X seteamos el nextTurn y el nextTurnTasks
-	 */
-	public void updateNextFrameTurn () {
-		setReadyForNextTurnFrameCounter (getReadyForNextTurnFrameCounter () + 1);
-
-		if (getReadyForNextTurnFrameCounter () >= FRAMES_PER_TURN) {
-			setReadyForNextTurnFrameCounter (0);
-			if (!Game.isPaused ()) {
-				setReadyForNextTurn (true);
-			}
-			setReadyForNextTurnTasks (true);
-		}
-	}
-
-
-	/**
 	 * @return the readyForNextTurnFrameCounter
 	 */
 	public int getReadyForNextTurnFrameCounter () {
@@ -4240,6 +4254,37 @@ public final class World implements Externalizable {
 
 	public void setReadyForNextTurnTasks (boolean readyForNextTurnTasks) {
 		this.readyForNextTurnTasks = readyForNextTurnTasks;
+	}
+
+
+	/** Should the next sim tick fire now? Bootstraps lastTurnTimeNanos on
+	 *  first call (returns false, defers actual work to the following call).
+	 *  Does NOT advance the clock — see {@link #markTickComplete(long)}. */
+	public boolean shouldRunTick (long frameNow) {
+		if (lastTurnTimeNanos == 0L) {
+			lastTurnTimeNanos = frameNow;
+			return false;
+		}
+		return (frameNow - lastTurnTimeNanos) >= turnIntervalNanos;
+	}
+
+	/** Advance the sim clock to a specific wall-clock time. Called after
+	 *  the full nextTurn body completes (post-work timestamp), so the
+	 *  next interval is measured from when the work ended, not when it
+	 *  started. The "don't move the tick ahead until every nextTurn has
+	 *  been called" rule. */
+	public void markTickComplete (long now) {
+		lastTurnTimeNanos = now;
+	}
+
+	/** Test-only accessor. */
+	long getLastTurnTimeNanosForTest () {
+		return lastTurnTimeNanos;
+	}
+
+	/** Test-only setter. */
+	void setLastTurnTimeNanosForTest (long nanos) {
+		lastTurnTimeNanos = nanos;
 	}
 
 
