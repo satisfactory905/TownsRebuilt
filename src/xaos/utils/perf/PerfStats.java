@@ -91,6 +91,7 @@ public final class PerfStats {
 		MetricSpec.span    ("sim.tick.hourly",                            Category.ENGINE_SIM),
 		MetricSpec.span    ("sim.tick.items",                             Category.ENGINE_SIM),
 		MetricSpec.span    ("sim.tick.livings",                           Category.ENGINE_SIM),
+		MetricSpec.span    ("sim.tick.livings.entity",                    Category.ENGINE_SIM),
 		MetricSpec.span    ("sim.tick.fluids",                            Category.ENGINE_SIM),
 		MetricSpec.span    ("sim.tasks",                                  Category.ENGINE_SIM),
 		MetricSpec.counter ("sim.entities_iterated",                      Category.ENGINE_SIM),

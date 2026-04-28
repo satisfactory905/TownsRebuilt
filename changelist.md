@@ -429,6 +429,18 @@ optimization genuinely requires it.
   filenames matches chronological order, so analysis scripts grab
   the latest with `ls -1 ~/.towns/perf-*.csv | tail -1`.
 
+- **`sim.tick.livings.entity` per-iteration sub-span.** The
+  parent `sim.tick.livings` span wraps the entire livings loop, so a
+  small per-entity AI improvement gets diluted by 1/N before showing
+  up in p50/p99 of the parent. Adds a child span around the
+  individual `LivingEntity.nextTurn()` call inside the loop so the
+  histogram captures *single-entity* AI cost. Wraps only the
+  `nextTurn()` call itself, not the post-mortem (delete + tutorial
+  trigger), so rare death events don't pollute the per-iteration
+  distribution. Same pattern as the existing `sim.tick.*` sub-spans;
+  registered in `PerfStats.KNOWN_METRICS` so CSV schema stays
+  stable. Adds one span (~6 columns) to the unified perf CSV.
+
 ## Performance optimizations
 
 - **Minimap event-driven rebuild + lazy first-paint.** Two changes to

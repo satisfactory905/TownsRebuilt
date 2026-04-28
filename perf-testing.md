@@ -162,7 +162,7 @@ average without surprises.
 
 ## Metric reference (v1)
 
-13 spans + 18 counters + 5 gauges = 36 metrics, ~107 CSV columns when all
+14 spans + 18 counters + 5 gauges = 37 metrics, ~113 CSV columns when all
 categories are on. Schema is **stable from row 1** — every metric in an
 enabled category appears in the header on the first dump tick, with zero
 counts until the metric first fires. This is enforced by a `KNOWN_METRICS`
@@ -187,6 +187,7 @@ metric still works, just messier to parse).
 | `ENGINE_SIM` | `sim.tick.hourly` | span | `World.nextTurn()` hourly block | only records on hourly ticks (modifyHappiness + checkImmigrants + checkHeroes* + checkSiege + checkEvents) |
 | `ENGINE_SIM` | `sim.tick.items` | span | `World.nextTurn()` items iteration | every tick |
 | `ENGINE_SIM` | `sim.tick.livings` | span | `World.nextTurn()` livingsDiscovered iteration | every tick |
+| `ENGINE_SIM` | `sim.tick.livings.entity` | span | `World.nextTurn()` per-iteration `LivingEntity.nextTurn()` | per-entity inside livings loop; gives p50/p99 of single-entity AI cost |
 | `ENGINE_SIM` | `sim.tick.fluids` | span | `World.nextTurn()` moveFluids + evaporateFluids | every tick |
 | `ENGINE_SIM` | `sim.tasks` | span | `TaskManager.executeAll()` | |
 | `ENGINE_SIM` | `sim.entities_iterated` | counter | `World.nextTurn()` | items + buildings + livings + projectiles per tick |

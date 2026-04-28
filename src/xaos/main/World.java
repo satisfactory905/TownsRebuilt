@@ -126,6 +126,13 @@ public final class World implements Externalizable {
 		PerfStats.span ("sim.tick.items", Category.ENGINE_SIM); //$NON-NLS-1$
 	private static final SpanHandle SPAN_SIM_TICK_LIVINGS =
 		PerfStats.span ("sim.tick.livings", Category.ENGINE_SIM); //$NON-NLS-1$
+	/** Per-entity sub-span inside the livings loop: times a single
+	 *  {@code LivingEntity.nextTurn()} call. The histogram captures
+	 *  per-iteration cost; the parent {@code sim.tick.livings} captures
+	 *  total loop cost. Lets a small per-iteration improvement become
+	 *  visible in p50/p99 deltas where it would be hidden in the parent. */
+	private static final SpanHandle SPAN_SIM_TICK_LIVINGS_ENTITY =
+		PerfStats.span ("sim.tick.livings.entity", Category.ENGINE_SIM); //$NON-NLS-1$
 	private static final SpanHandle SPAN_SIM_TICK_FLUIDS =
 		PerfStats.span ("sim.tick.fluids", Category.ENGINE_SIM); //$NON-NLS-1$
 	private static final CounterHandle CNT_SIM_ENTITIES_ITERATED =
@@ -1751,7 +1758,14 @@ public final class World implements Externalizable {
 		// Livings. Snapshot-based iteration because LivingEntity.delete() mutates livingsDiscovered.
 		try (Span sLivings = SPAN_SIM_TICK_LIVINGS.start ()) {
 			livingsIterationBuffer = forEachSnapshotReversed (livingsDiscovered, livingsIterationBuffer, (id, oLiving) -> {
-				if (oLiving.nextTurn ()) {
+				// Time only the nextTurn() call, not the post-mortem (delete +
+				// tutorial trigger) which fires only on death and would skew
+				// the per-iteration histogram with rare-event outliers.
+				boolean shouldDelete;
+				try (Span sEntity = SPAN_SIM_TICK_LIVINGS_ENTITY.start ()) {
+					shouldDelete = oLiving.nextTurn ();
+				}
+				if (shouldDelete) {
 					// Borrar living
 					oLiving.delete ();
 
