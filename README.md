@@ -37,8 +37,9 @@ mvn test
 # (Generational ZGC, Compact Object Headers).
 mvn exec:exec
 
-# Build a self-contained Windows app image — no Java install required on the
-# target machine. Output: target/dist/Towns/Towns.exe (+ runtime/, app/ folders).
+# Build a Windows executable. Produces target/dist/Towns/Towns.exe — a portable,
+# self-contained launcher with a bundled JRE alongside it (no Java install
+# required on the target machine). Double-click the .exe to run the game.
 # Uses jpackage under the hood with a custom jlink runtime (java.base,
 # java.desktop, jdk.unsupported) for a trimmer distribution.
 mvn package -Pdist
