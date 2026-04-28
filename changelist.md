@@ -70,6 +70,21 @@ than strict chronology — reads as the story of the work, newest-within-theme l
 - **Cursor** — `UtilsGL.setNativeCursor()` rewritten for GLFW `GLFWImage` +
   `glfwCreateCursor`.
 
+## Options menu
+
+- **Graphics → VSync toggle and FPS Cap dropdown.** Two new rows added under
+  the existing main-menu `Options → Graphics` submenu. VSync flips ON/OFF as a
+  one-click toggle (calls `DisplayManager.setSwapInterval` immediately). FPS Cap
+  is a cascading dropdown — `30 / 60 / 90 / 120 / 144 / 165 / 240 / Unlimited`,
+  with "Unlimited" mapping to the existing `FPS_CAP = 0` sentinel. Off-list
+  values from a hand-edited `towns.ini` are honored on display ("FPS Cap: 75")
+  rather than silently snapped. Both settings persist via the existing
+  `Utils.saveOptions()` flow into `<userFolder>/towns.ini`. Upstream had no
+  in-menu way to change either — both were ini-only.
+- **`src/towns.ini` cleanup.** Removed `FPS_CAP` and `VSYNC` (now menu-managed,
+  with code-side defaults `0` and `true` in `Game.java`) and the dead
+  `TRANSITION_TILES` entry (no source references in upstream or fork).
+
 ## Encoding
 
 - **UTF-8 source normalized.** Original source had non-ASCII (accented) characters

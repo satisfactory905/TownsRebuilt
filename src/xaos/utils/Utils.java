@@ -1777,6 +1777,8 @@ public final class Utils {
             pw.setProperty(MainProperties.WINDOW_WIDTH, UtilsGL.getLastWindowWidth());
             pw.setProperty(MainProperties.WINDOW_HEIGHT, UtilsGL.getLastWindowHeight());
             pw.setProperty(MainProperties.FULLSCREEN, UtilsGL.isFullScreen());
+            pw.setProperty(MainProperties.VSYNC, Game.isVsync());
+            pw.setProperty(MainProperties.FPS_CAP, Game.FPS_CAP);
             pw.setProperty(MainProperties.MUSIC, Game.isMusicON());
             pw.setProperty(MainProperties.VOLUME_MUSIC, Game.getVolumeMusic());
             pw.setProperty(MainProperties.FX, Game.isFXON());
@@ -2029,6 +2031,22 @@ public final class Utils {
                     }
                 }
             }
+        }
+
+        // VSync ON/OFF (Graphics options menu)
+        iIndex = sString.indexOf("__VSYNC__"); //$NON-NLS-1$
+        if (iIndex != -1) {
+            String sVsyncON = Game.isVsync() ? Messages.getString("Utils.4") : Messages.getString("Utils.5"); //$NON-NLS-1$ //$NON-NLS-2$
+            sAux = sString.substring(0, iIndex) + sVsyncON + sString.substring(iIndex + "__VSYNC__".length()); //$NON-NLS-1$
+            return getDynamicString(sAux);
+        }
+
+        // FPS cap (Graphics options menu); 0 = unlimited
+        iIndex = sString.indexOf("__FPS_CAP__"); //$NON-NLS-1$
+        if (iIndex != -1) {
+            String sFpsCap = Game.FPS_CAP <= 0 ? Messages.getString("Utils.19") : Integer.toString(Game.FPS_CAP); //$NON-NLS-1$
+            sAux = sString.substring(0, iIndex) + sFpsCap + sString.substring(iIndex + "__FPS_CAP__".length()); //$NON-NLS-1$
+            return getDynamicString(sAux);
         }
 
         return sString;

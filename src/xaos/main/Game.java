@@ -147,6 +147,9 @@ public final class Game {
 	public static int FPS_CAP = 0;                  // user-configurable; 0 = unlimited
 	private static boolean vsync = true;            // user-configurable
 
+	public static boolean isVsync () { return vsync; }
+	public static void setVsync (boolean b) { vsync = b; }
+
 	public static final int MIN_DISPLAY_WIDTH = 1024;
 	public static final int MIN_DISPLAY_HEIGHT = 600;
 

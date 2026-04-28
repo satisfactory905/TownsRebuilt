@@ -49,9 +49,11 @@
 
             <!--
                 Run with: mvn exec:exec
-                This launches a fresh JVM (required for LWJGL native loading) with:
-                  - java.library.path pointing at the native DLLs
-                  - working directory set to src/ (where towns.ini and data/ live)
+                This launches a fresh JVM (required so LWJGL 3 can extract its
+                bundled native libraries) with the working directory set to
+                src/ (where towns.ini and data/ live). LWJGL 3 auto-extracts
+                platform natives from the natives-windows classifier JARs at
+                runtime, so no -Djava.library.path / lib/native folder.
             -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>

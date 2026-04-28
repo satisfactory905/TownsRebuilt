@@ -993,6 +993,12 @@ public class SmartMenu implements Externalizable {
                 return null;
             } else {
                 CommandPanel.executeCommand(menu.getCommand(), menu.getParameter(), menu.getParameter2(), menu.getDirectCoordinates(), menu.getIcon(), menu.getIconType());
+                // Dropdown items (final selection): navigate back to the parent
+                // menu after executing so the user sees the updated parent label
+                // (e.g. "FPS Cap: 60") instead of staying on the value list.
+                if (menu.getCommand().equals(CommandPanel.COMMAND_MM_SET_FPS_CAP)) {
+                    return getParent();
+                }
                 if (Game.getCurrentState() == Game.STATE_SHOWING_CONTEXT_MENU && !menu.getCommand().equals(CommandPanel.COMMAND_EXIT_TO_MAIN_MENU)) {
                     if (menu.isMaintainOpen()) {
                         return this;

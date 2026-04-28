@@ -21,6 +21,8 @@ public class MainProperties {
     public static Property<Integer> WINDOW_WIDTH = new Property<Integer>(PropertyFile.PROPERTY_FILE_MAIN, "WINDOW_WIDTH", IntegerPropertyWrapper.INSTANCE);
     public static Property<Integer> WINDOW_HEIGHT = new Property<Integer>(PropertyFile.PROPERTY_FILE_MAIN, "WINDOW_HEIGHT", IntegerPropertyWrapper.INSTANCE);
     public static Property<Boolean> FULLSCREEN = new Property<Boolean>(PropertyFile.PROPERTY_FILE_MAIN, "FULLSCREEN", BooleanPropertyWrapper.INSTANCE);
+    public static Property<Boolean> VSYNC = new Property<Boolean>(PropertyFile.PROPERTY_FILE_MAIN, "VSYNC", BooleanPropertyWrapper.INSTANCE);
+    public static Property<Integer> FPS_CAP = new Property<Integer>(PropertyFile.PROPERTY_FILE_MAIN, "FPS_CAP", IntegerPropertyWrapper.INSTANCE);
 
     public static Property<Boolean> MUSIC = new Property<Boolean>(PropertyFile.PROPERTY_FILE_MAIN, "MUSIC", BooleanPropertyWrapper.INSTANCE);
     public static Property<Integer> VOLUME_MUSIC = new Property<Integer>(PropertyFile.PROPERTY_FILE_MAIN, "VOLUME_MUSIC", IntegerPropertyWrapper.INSTANCE);

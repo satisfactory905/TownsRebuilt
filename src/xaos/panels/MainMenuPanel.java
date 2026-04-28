@@ -411,6 +411,35 @@ public final class MainMenuPanel implements Runnable {
         menuAux.setDynamic(true);
         menuAux.setBorderColor(borderColor);
         menuOptionsGraphics.addItem(menuAux);
+
+        // VSync toggle
+        menuAux = new SmartMenu(SmartMenu.TYPE_ITEM, Messages.getString("MainMenuPanel.79"), null, CommandPanel.COMMAND_MM_TOGGLE_VSYNC, null, null, null, textColor); //$NON-NLS-1$
+        menuAux.setDynamic(true);
+        menuAux.setBorderColor(borderColor);
+        menuOptionsGraphics.addItem(menuAux);
+
+        // FPS Cap dropdown (cascading submenu, parent label updates dynamically)
+        SmartMenu menuFpsCap = new SmartMenu(SmartMenu.TYPE_MENU, Messages.getString("MainMenuPanel.80"), menuOptionsGraphics, null, null, null, null, textColor); //$NON-NLS-1$
+        menuFpsCap.setTrasparency(mainMenu.isTrasparency());
+        menuFpsCap.setBorderColor(borderColor);
+        menuFpsCap.setDynamic(true);
+        menuFpsCap.addItem(new SmartMenu(SmartMenu.TYPE_TEXT, Messages.getString("MainMenuPanel.81"), null, null, null, null)); //$NON-NLS-1$
+        menuFpsCap.addItem(new SmartMenu(SmartMenu.TYPE_TEXT, null, null, null, null, null));
+        int[] fpsValues = {30, 60, 90, 120, 144, 165, 240};
+        for (int v : fpsValues) {
+            SmartMenu fpsItem = new SmartMenu(SmartMenu.TYPE_ITEM, Integer.toString(v), null, CommandPanel.COMMAND_MM_SET_FPS_CAP, Integer.toString(v), null, null, textColor);
+            fpsItem.setBorderColor(borderColor);
+            menuFpsCap.addItem(fpsItem);
+        }
+        SmartMenu fpsUnlimited = new SmartMenu(SmartMenu.TYPE_ITEM, Messages.getString("Utils.19"), null, CommandPanel.COMMAND_MM_SET_FPS_CAP, "0", null, null, textColor); //$NON-NLS-1$ //$NON-NLS-2$
+        fpsUnlimited.setBorderColor(borderColor);
+        menuFpsCap.addItem(fpsUnlimited);
+        menuFpsCap.addItem(new SmartMenu(SmartMenu.TYPE_TEXT, null, null, null, null));
+        SmartMenu fpsBack = new SmartMenu(SmartMenu.TYPE_ITEM, Messages.getString("MainMenuPanel.7"), null, CommandPanel.COMMAND_BACK, null, null, null, textColor); //$NON-NLS-1$
+        fpsBack.setBorderColor(borderColor);
+        menuFpsCap.addItem(fpsBack);
+        menuOptionsGraphics.addItem(menuFpsCap);
+
         menuOptionsGraphics.addItem(new SmartMenu(SmartMenu.TYPE_TEXT, null, null, null, null));
         menuAux = new SmartMenu(SmartMenu.TYPE_ITEM, Messages.getString("MainMenuPanel.7"), null, CommandPanel.COMMAND_BACK, null, null, null, textColor); //$NON-NLS-1$
         menuAux.setBorderColor(borderColor);

@@ -59,6 +59,8 @@ public final class CommandPanel {
     public static String COMMAND_MM_SWITCH_FX = "SWITCHFX"; //$NON-NLS-1$
     public static String COMMAND_MM_ADD_FX_VOLUME = "ADDFVOL"; //$NON-NLS-1$
     public static String COMMAND_MM_TOGGLE_FULL_SCREEN = "TOGGLEFULLSCREEN"; //$NON-NLS-1$
+    public static String COMMAND_MM_TOGGLE_VSYNC = "TOGGLEVSYNC"; //$NON-NLS-1$
+    public static String COMMAND_MM_SET_FPS_CAP = "SETFPSCAP"; //$NON-NLS-1$
     public static String COMMAND_MM_SWITCH_MOUSE_SCROLL = "SWITCHMOUSESCROLL"; //$NON-NLS-1$
     public static String COMMAND_MM_SWITCH_MOUSE_SCROLL_EARS = "SWITCHMOUSESCROLLEARS"; //$NON-NLS-1$
     public static String COMMAND_MM_SWITCH_MOUSE_2D_CUBES = "SWITCHMOUSE2DCUBES"; //$NON-NLS-1$
@@ -1101,6 +1103,25 @@ public final class CommandPanel {
                 Game.getPanelMainMenu().createMenu();
             } else if (sCommand.equals(COMMAND_MM_TOGGLE_FULL_SCREEN)) {
                 UtilsGL.toggleFullScreen();
+                Utils.saveOptions();
+            } else if (sCommand.equals(COMMAND_MM_TOGGLE_VSYNC)) {
+                Game.setVsync(!Game.isVsync());
+                DisplayManager.setSwapInterval(Game.isVsync());
+                Log.log(Log.LEVEL_DEBUG, "VSync set to " + Game.isVsync(), "CommandPanel"); //$NON-NLS-1$ //$NON-NLS-2$
+                Utils.saveOptions();
+            } else if (sCommand.equals(COMMAND_MM_SET_FPS_CAP)) {
+                int iCap;
+                try {
+                    iCap = Integer.parseInt(sParameter);
+                } catch (NumberFormatException nfe) {
+                    Log.log(Log.LEVEL_ERROR, "FPS cap parameter not an integer [" + sParameter + "]", "CommandPanel"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                    iCap = 0;
+                }
+                if (iCap < 0) {
+                    iCap = 0;
+                }
+                Game.FPS_CAP = iCap;
+                Log.log(Log.LEVEL_DEBUG, "FPS cap set to " + iCap, "CommandPanel"); //$NON-NLS-1$ //$NON-NLS-2$
                 Utils.saveOptions();
             } else if (sCommand.equals(COMMAND_MM_SWITCH_MOUSE_SCROLL)) {
                 Game.setMouseScrollON(!Game.isMouseScrollON());
