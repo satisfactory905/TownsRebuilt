@@ -50,7 +50,11 @@ public final class MiniMapPanel {
 
         if (minimapTextures != null) {
             for (TextureData textureData : minimapTextures) {
-                UtilsGL.deleteTexture(textureData);
+                // With lazy-first-paint loadTextures(), entries for never-viewed
+                // levels remain null until rendered. Skip those here.
+                if (textureData != null) {
+                    UtilsGL.deleteTexture(textureData);
+                }
             }
         }
         minimapTextures = new TextureData[World.MAP_DEPTH];
@@ -66,7 +70,14 @@ public final class MiniMapPanel {
             // Paint minimap
             Point3D pointView = Game.getWorld().getView();
 
-            if (texturesReload[pointView.z] && textureRefreshRate == 0) {
+            // Lazy first-paint: if this level's texture has never been built,
+            // build it now (bypasses the refresh-rate countdown). Otherwise
+            // honor the existing dirty + countdown semantics so already-built
+            // levels only re-upload at most once per refresh window.
+            if (minimapTextures[pointView.z] == null) {
+                reloadTexture(pointView.z);
+                texturesReload[pointView.z] = false;
+            } else if (texturesReload[pointView.z] && textureRefreshRate == 0) {
                 texturesReload[pointView.z] = false;
                 reloadTexture(pointView.z);
             }
@@ -111,15 +122,20 @@ public final class MiniMapPanel {
     }
 
     /**
-     * Carga las texturas de cada nivel y va poniendo los IDs en el array de ID
-     * de texturas
+     * Initialise the per-level dirty-flag array and mark every level as needing
+     * a texture build. Per-level rebuilds are deferred until each level is
+     * actually rendered for the first time -- see render() for the
+     * lazy-first-paint trigger.
      *
+     * Eagerly rebuilding every level here used to dominate the first
+     * MiniMapPanel.render() call (~150 ms for ~14 levels of 200x200 cells with
+     * recursive getCellColor walks), surfacing as a frame.render.ui spike
+     * because MiniMapPanel.render runs inside the UIPanel.render span.
      */
     private static void loadTextures() {
         texturesReload = new boolean[World.MAP_DEPTH];
         for (int i = 0; i < World.MAP_DEPTH; i++) {
-            texturesReload[i] = false;
-            reloadTexture(i);
+            texturesReload[i] = true;
         }
     }
 
