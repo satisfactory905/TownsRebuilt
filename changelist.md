@@ -443,6 +443,36 @@ optimization genuinely requires it.
 
 ## Performance optimizations
 
+- **Cache repeated getter calls in `LivingEntity.nextTurn` hot path.** Two
+  micro-caches inside the per-entity AI loop, which dominates simulation
+  cost (`sim.tick.livings` ≈ 95 % of `sim.tick` total in baselines):
+  - **`getEffects()` cached once per effects loop.** The loop at
+    `LivingEntity.java:3420–3570` previously read
+    `getLivingEntityData().getEffects()` four times per iteration (loop
+    bound, per-iteration get, two flee-handling writebacks). Caches the
+    list reference in a `final` local at the top of the loop. Safety
+    verified by grepping every writer of `LivingEntityData.effects`
+    across `src/`: set only at construction and `readExternal`, never
+    reassigned during a tick. Add/remove operations through the cached
+    reference still see the latest state — `removeEffect` uses
+    `.remove(idx)`, `addEffect` uses `.add(...)`, no list-swap anywhere
+    reachable from the loop body.
+  - **`getCheckLOSCounter()` cached as a `losReady` boolean** after the
+    reset block at `LivingEntity.java:3754–3768`. The LOS section
+    previously called `getCheckLOSCounter() == 0` three times after the
+    reset (discover-in-LOS gate, focus gate, and a paranoid defensive
+    re-check inside the focus block). All writers of `checkLOSCounter`
+    in the codebase (init / setter / per-tick increment / per-tick reset
+    to 0) have been checked: after line 3768 nothing in any reachable
+    method mutates the counter for the rest of `nextTurn`.
+
+  Both changes are mechanical; behaviour is preserved exactly. The
+  `getEffects()` cache is the higher-leverage of the two (was flagged
+  HIGH severity in `code-optimizations.md` for the redundant 4–6 reads
+  per loop iteration). Measured impact captured separately via the
+  `sim.tick.livings.entity` per-iteration sub-span added in the
+  preceding commit.
+
 - **Minimap event-driven rebuild + lazy first-paint.** Two changes to
   `MiniMapPanel` that together kill the largest single `frame.render.ui`
   spike observed in baselines (153 ms one-shot at world load, ~99 % of a
