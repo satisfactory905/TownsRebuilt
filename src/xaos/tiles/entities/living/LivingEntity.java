@@ -3766,6 +3766,11 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 				setCheckLOSCounter (0);
 			}
 		}
+		// After the reset block above the counter does not change for the rest
+		// of this method -- no setCheckLOSCounter() exists in any code path
+		// reachable from the LOS, focus, or hero-skills blocks below.
+		// Cache the "ready to do an LOS sweep" boolean once.
+		final boolean losReady = (getCheckLOSCounter () == 0);
 
 		// Fleeing
 		if (fleeing > 0) {
@@ -3775,7 +3780,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 		// Discover in LOS
 		if (lemi.getType () == TYPE_CITIZEN || lemi.getType () == TYPE_HERO) {
 			// Esto es para que descubran celdas NO discovered
-			if (getCheckLOSCounter () == 0) {
+			if (losReady) {
 				if (getCoordinates ().z > 0) { // Las celdas de arriba estan todas discovered
 					discoverInLOS (lemi.getType (), getCoordinates (), getLivingEntityData ().getLOSCurrent ());
 				}
@@ -3785,7 +3790,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 		// Antes de seguir el camino miramos si tiene focus
 		if (getFocusData ().getEntityID () == -1 && fleeing == 0) {
 			FocusData fd = null;
-			if (getCheckLOSCounter () == 0) {
+			if (losReady) {
 				if (lemi.getType () == TYPE_HERO && (getLivingEntityData ().getHealthPointsMAXCurrent () / 3) > getLivingEntityData ().getHealthPoints ()) {
 					// Hero con puntos de vida bajos, no hacemos nada
 				} else {
@@ -3807,7 +3812,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 					return false;
 				} else {
 					// No ve a nadie en LOS, miramos si hay algun item para pillar (caso heroes)
-					if (lemi.getType () == TYPE_HERO && getCheckLOSCounter () == 0) { // Cuidado con esto, se resetea a cero arriba
+					if (lemi.getType () == TYPE_HERO && losReady) { // Redundant within this block (we're already gated on losReady) but kept to preserve original intent
 						Hero hero = (Hero) this;
 						if (hero.canChangeTask (true, true) && hero.getHeroData ().getHeroTask ().getTaskID () != HeroTask.TASK_EQUIPING) {
 							if (hasBetterItemInLOS (entityTypeInLOS (TYPE_HERO, TYPE_CITIZEN)) != null) {
