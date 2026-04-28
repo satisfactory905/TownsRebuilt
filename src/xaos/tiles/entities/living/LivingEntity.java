@@ -3418,10 +3418,17 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 		}
 
 		// Effects
+		// Cache the effects list reference once: LivingEntityData.effects is set
+		// only at construction and readExternal, never reassigned during a tick,
+		// so the reference is stable for the duration of this loop. Add/remove
+		// through the cached reference still sees the latest state -- it's the
+		// same underlying list (removeEffect uses .remove(i), addEffect uses
+		// .add(...), no list swap anywhere).
 		EffectData effectData;
 		boolean bAttackAllies = false;
-		for (int i = (getLivingEntityData ().getEffects ().size () - 1); i >= 0; i--) {
-			effectData = getLivingEntityData ().getEffects ().get (i);
+		final ArrayList<EffectData> effects = getLivingEntityData ().getEffects ();
+		for (int i = (effects.size () - 1); i >= 0; i--) {
+			effectData = effects.get (i);
 
 			// Aplicamos DOTs
 			if (effectData.getDOT () != 0) {
@@ -3472,7 +3479,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 							Point3DShort p3ds = Zone.getFreeCellAtRandom (zone, World.getCell (getCoordinates ()).getAstarZoneID ());
 							if (p3ds != null) {
 								effectData.setFlee (false); // Para evitar stucks
-								getLivingEntityData ().getEffects ().set (i, effectData);
+								effects.set (i, effectData);
 								setDestination (p3ds);
 								fleeing = getLivingEntityData ().getLOSCurrent () * 8;
 							}
@@ -3507,7 +3514,7 @@ public abstract class LivingEntity extends Entity implements Externalizable {
 
 									if (alPoints.size () > 0) {
 										effectData.setFlee (false); // Para evitar stucks
-										getLivingEntityData ().getEffects ().set (i, effectData);
+										effects.set (i, effectData);
 
 										// Pillamos un punto a random
 										setDestination (alPoints.get (Utils.getRandomBetween (0, (alPoints.size () - 1))));
