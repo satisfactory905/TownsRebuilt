@@ -429,3 +429,33 @@ optimization genuinely requires it.
   filenames matches chronological order, so analysis scripts grab
   the latest with `ls -1 ~/.towns/perf-*.csv | tail -1`.
 
+## Performance optimizations
+
+- **Minimap event-driven rebuild + lazy first-paint.** Two changes to
+  `MiniMapPanel` that together kill the largest single `frame.render.ui`
+  spike observed in baselines (153 ms one-shot at world load, ~99 % of a
+  155 ms p99 outlier). Net-vs-upstream:
+  - `loadTextures()` no longer eagerly rebuilds every floor's texture on
+    first render. Upstream walked `[0, MAP_DEPTH)` and called
+    `reloadTexture(i)` for each — at ~14 floors of 200×200 cells with
+    recursive `getCellColor` walks for mined cells, this dominated the
+    first `MiniMapPanel.render()` call (which runs inside the
+    `UIPanel.render` span, so the cost surfaced as a UI render spike).
+    `loadTextures()` now just allocates the dirty-flag array and marks
+    every level as needing rebuild; per-level rebuilds happen on demand
+    when each level is actually viewed. `initialize()` skips null entries
+    when freeing textures since unviewed levels stay null until rendered.
+  - `textureRefreshRate` (a per-frame countdown, decremented every render
+    and reset to `Game.REFERENCE_FPS = 30` after each rebuild) is replaced
+    with a wall-clock `REBUILD_COALESCE_NANOS` window (1 s). First dirty
+    after a clean period rebuilds immediately (better latency for typical
+    bursty events like a single dig); sustained change streams still cap
+    at 1 Hz. Rebuild trigger is now purely the `setMinimapReload(level)`
+    dirty flag — already called from `Cell`, `Stockpile`, `Item`,
+    `Terrain`, `EventData`, and `World` on real change events. Cadence is
+    FPS-independent, consistent with the engine-pacing decoupling work.
+    The `textureRefreshRate = 0` hack in `mousePressed` (a poll-bypass
+    trick to force rebuild after a minimap-click camera jump) is removed
+    too — clicking to move the camera doesn't change texture content, so
+    the forced rebuild was unnecessary.
+
