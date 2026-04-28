@@ -39,14 +39,25 @@ public final class MiniMapPanel {
     public static int renderHeight;
 
     private static boolean[] texturesReload;
-    private static int textureRefreshRate;
+
+    /** Minimum wall-clock interval between consecutive rebuilds of the
+     *  current level's texture. Coalesces rapid {@link #setMinimapReload}
+     *  bursts (e.g. mass-digging at high simulation speed) so the render
+     *  thread isn't baking a 200x200 RGB texture every frame. */
+    private static final long REBUILD_COALESCE_NANOS = 1_000_000_000L; // 1 second
+
+    /** Wall-clock timestamp of the last current-level texture rebuild,
+     *  used together with REBUILD_COALESCE_NANOS to throttle re-rebuilds.
+     *  Replaces the previous per-frame textureRefreshRate countdown so
+     *  the cadence is FPS-independent. */
+    private static long lastRebuildNanos;
 
     public static void initialize(int x, int y, int width, int height) {
         renderX = x;
         renderY = y;
         renderWidth = width;
         renderHeight = height;
-        textureRefreshRate = Game.REFERENCE_FPS;
+        lastRebuildNanos = 0L;
 
         if (minimapTextures != null) {
             for (TextureData textureData : minimapTextures) {
@@ -71,20 +82,23 @@ public final class MiniMapPanel {
             Point3D pointView = Game.getWorld().getView();
 
             // Lazy first-paint: if this level's texture has never been built,
-            // build it now (bypasses the refresh-rate countdown). Otherwise
-            // honor the existing dirty + countdown semantics so already-built
-            // levels only re-upload at most once per refresh window.
+            // build it now -- bypasses the coalescing window so first-frame
+            // output isn't blank. Otherwise rebuild only when the level is
+            // dirty AND enough wall-clock time has elapsed since the last
+            // rebuild (event-driven with a coalescing throttle to avoid
+            // re-baking the 200x200 texture every frame during sustained
+            // cell-change bursts).
             if (minimapTextures[pointView.z] == null) {
                 reloadTexture(pointView.z);
                 texturesReload[pointView.z] = false;
-            } else if (texturesReload[pointView.z] && textureRefreshRate == 0) {
-                texturesReload[pointView.z] = false;
-                reloadTexture(pointView.z);
-            }
-
-            textureRefreshRate--;
-            if (textureRefreshRate < 0) {
-                textureRefreshRate = Game.REFERENCE_FPS; // Cada segundo refresh
+                lastRebuildNanos = Game.getFrameNow();
+            } else if (texturesReload[pointView.z]) {
+                long now = Game.getFrameNow();
+                if (now - lastRebuildNanos >= REBUILD_COALESCE_NANOS) {
+                    texturesReload[pointView.z] = false;
+                    reloadTexture(pointView.z);
+                    lastRebuildNanos = now;
+                }
             }
 
             // Pintamos la textura
@@ -285,7 +299,11 @@ public final class MiniMapPanel {
 
         if (mapX >= 0 && mapX < World.MAP_WIDTH && mapY >= 0 && mapY < World.MAP_HEIGHT) {
             Game.getWorld().setView(mapX, mapY);
-            textureRefreshRate = 0;
+            // Note: clicking on the minimap to jump the camera does not
+            // change the texture content, so no rebuild is needed here.
+            // (Previously this forced textureRefreshRate=0 to bypass the
+            // poll-based throttle; under event-driven dirty flags that's
+            // unnecessary.)
         }
     }
 
