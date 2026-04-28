@@ -53,11 +53,6 @@ public class SmartMenu implements Externalizable {
 
     private static Tile RED_TILE = new Tile("ui_red"); //$NON-NLS-1$
 
-    // DEBUG: Last logged mouse position for the Exit-game highlight trace.
-    // Used to rate-limit the log so it fires only when the mouse actually moves.
-    private static int lastExitDebugMouseX = Integer.MIN_VALUE;
-    private static int lastExitDebugMouseY = Integer.MIN_VALUE;
-
     public final static int TYPE_NO_TYPE = -1;
     public final static int TYPE_TEXT = 0;
     public final static int TYPE_MENU = 1;
@@ -307,16 +302,6 @@ public class SmartMenu implements Externalizable {
         int mouseX = InputState.getMouseX();
         int mouseY = InputState.getMouseY();
 
-        // DEBUG: Query actual cursor position from GLFW to see if callback is correct
-        int nativeMouseX = -1, nativeMouseY = -1;
-        try (org.lwjgl.system.MemoryStack stack = org.lwjgl.system.MemoryStack.stackPush()) {
-            java.nio.DoubleBuffer px = stack.mallocDouble(1);
-            java.nio.DoubleBuffer py = stack.mallocDouble(1);
-            org.lwjgl.glfw.GLFW.glfwGetCursorPos(xaos.utils.DisplayManager.getWindowHandle(), px, py);
-            nativeMouseX = (int) px.get(0);
-            nativeMouseY = (int) py.get(0);
-        }
-
         int itemIndex = -1;
         if (isContext) {
             if (mouseX >= x && mouseX < (x + width) && mouseY >= y && mouseY < (y + getItems().size() * UtilFont.MAX_HEIGHT)) {
@@ -328,36 +313,6 @@ public class SmartMenu implements Externalizable {
                     UtilsGL.glBegin(GL11.GL_QUADS);
                     UtilsGL.drawTexture(x, iY, x + width, iY + UtilFont.MAX_HEIGHT, RED_TILE.getTileSetTexX0(), RED_TILE.getTileSetTexY0(), RED_TILE.getTileSetTexX1(), RED_TILE.getTileSetTexY1());
                     UtilsGL.glEnd();
-
-                    // DEBUG: Log rendered rect, stored mouse, and native GLFW cursor pos
-                    if (getItems().get(itemIndex).getCommand() != null && CommandPanel.COMMAND_EXIT_GAME.equals(getItems().get(itemIndex).getCommand())) {
-                        Log.log(Log.LEVEL_ERROR, "[DIAG] Exit-game RENDERED rect: (" + x + "," + iY + ")-(" + (x+width) + "," + (iY+UtilFont.MAX_HEIGHT) + ") | stored mouse: (" + mouseX + "," + mouseY + ") | native GLFW cursor: (" + nativeMouseX + "," + nativeMouseY + ")", "SmartMenu");
-                    }
-
-                    // DEBUG: log the Exit-game hit rect and mouse pos whenever the mouse
-                    // moves over/within that rect. This isolates any mouse/render drift:
-                    // the hit rect and the painted red rectangle use the exact same
-                    // coordinates, so if the user can see the red highlight but the mouse
-                    // coords reported here don't fall inside that rect, the cursor and
-                    // render-space have diverged.
-                    SmartMenu hoveredItem = getItems().get(itemIndex);
-                    if (hoveredItem.getCommand() != null
-                            && CommandPanel.COMMAND_EXIT_GAME.equals(hoveredItem.getCommand())
-                            && (mouseX != lastExitDebugMouseX || mouseY != lastExitDebugMouseY)) {
-                        int rectX0 = x;
-                        int rectY0 = iY;
-                        int rectX1 = x + width;
-                        int rectY1 = iY + UtilFont.MAX_HEIGHT;
-                        // Escalated to LEVEL_ERROR so it actually writes to error.log
-                        // (the jpackage launcher has no stdout to receive LEVEL_DEBUG).
-                        Log.log(Log.LEVEL_ERROR,
-                                "[DIAG] Exit-game highlight"
-                                + " | rect: (" + rectX0 + "," + rectY0 + ")-(" + rectX1 + "," + rectY1 + ")"
-                                + " | mouse: (" + mouseX + "," + mouseY + ")",
-                                "SmartMenu");
-                        lastExitDebugMouseX = mouseX;
-                        lastExitDebugMouseY = mouseY;
-                    }
                 }
             }
         }
